@@ -1,6 +1,5 @@
 package me.zhyd.oauth.request;
 
-import com.alibaba.fastjson2.JSONObject;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
@@ -13,6 +12,7 @@ import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
+import me.zhyd.oauth.utils.JsonUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
 import tools.jackson.databind.JsonNode;
 
@@ -58,15 +58,18 @@ public class AuthDingTalkV2Request extends AuthDefaultRequest {
         params.put("clientId", config.getClientId());
         params.put("clientSecret", config.getClientSecret());
         params.put(Keys.OAUTH2__CODE, authCallback.getCode());
-        String response = UnifiedHttpClient.getAdapter().post(this.source.accessToken(), JSONObject.toJSONString(params)).getBody();
+
+        String response = UnifiedHttpClient.getAdapter().post(this.source.accessToken(), JsonUtils.toJson(params)).getBody();
+
         JsonNode accessTokenObject = toNode(response);
         if (!containsKey(accessTokenObject, "accessToken")) {
-            throw new AuthException(JSONObject.toJSONString(response), source);
+            throw new AuthException(JsonUtils.toJson(response), source);
         }
+
         return AuthToken.builder()
                 .accessToken(getStringValue(accessTokenObject, "accessToken"))
-                .refreshToken(getStringValue(accessTokenObject, "refreshToken"))
                 .expireIn(getIntValue(accessTokenObject, "expireIn"))
+                .refreshToken(getStringValue(accessTokenObject, "refreshToken"))
                 .corpId(getStringValue(accessTokenObject, "corpId"))
                 .build();
     }
@@ -77,17 +80,19 @@ public class AuthDingTalkV2Request extends AuthDefaultRequest {
         header.add("x-acs-dingtalk-access-token", authToken.getAccessToken());
 
         String response = UnifiedHttpClient.getAdapter().get(this.source.userInfo(), null, header, false).getBody();
-        JsonNode object = toNode(response);
 
-        authToken.setOpenId(getStringValue(object, "openId"));
-        authToken.setUnionId(getStringValue(object, "unionId"));
+        JsonNode userInfoObject = toNode(response);
+
+        authToken.setOpenId(getStringValue(userInfoObject, "openId"));
+        authToken.setUnionId(getStringValue(userInfoObject, "unionId"));
+
         return AuthUser.builder()
-                .rawUserInfo(object)
-                .uuid(getStringValue(object, "unionId"))
-                .username(getStringValue(object, "nick"))
-                .nickname(getStringValue(object, "nick"))
-                .avatar(getStringValue(object, "avatarUrl"))
-                .snapshotUser(getBooleanValue(object, "visitor"))
+                .rawUserInfo(userInfoObject)
+                .uuid(getStringValue(userInfoObject, "unionId"))
+                .username(getStringValue(userInfoObject, "nick"))
+                .nickname(getStringValue(userInfoObject, "nick"))
+                .avatar(getStringValue(userInfoObject, "avatarUrl"))
+                .snapshotUser(getBooleanValue(userInfoObject, "visitor"))
                 .token(authToken)
                 .source(source.toString())
                 .build();

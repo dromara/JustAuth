@@ -29,7 +29,7 @@ import static me.zhyd.oauth.config.AuthDefaultSource.ALIPAY;
  *
  * @since 1.16.7
  */
-public class AuthAlipayCertRequest extends AuthDefaultRequest {
+public class AuthAlipayCertRequest extends AbstractAuthAlipayRequest {
 
     private final AlipayClient alipayClient;
 
@@ -54,21 +54,17 @@ public class AuthAlipayCertRequest extends AuthDefaultRequest {
         AlipaySystemOauthTokenRequest request = new AlipaySystemOauthTokenRequest();
         request.setGrantType(Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
         request.setCode(authCallback.getAuth_code());
-        AlipaySystemOauthTokenResponse response;
+        AlipaySystemOauthTokenResponse accessTokenResponse;
         try {
-            response = this.alipayClient.certificateExecute(request);
+            accessTokenResponse = this.alipayClient.certificateExecute(request);
         } catch (Exception e) {
             throw new AuthException(e);
         }
-        if (!response.isSuccess()) {
-            throw new AuthException(response.getSubMsg());
+        if (!accessTokenResponse.isSuccess()) {
+            throw new AuthException(accessTokenResponse.getSubMsg());
         }
-        return AuthToken.builder()
-                .accessToken(response.getAccessToken())
-                .uid(response.getUserId())
-                .expireIn(Integer.parseInt(response.getExpiresIn()))
-                .refreshToken(response.getRefreshToken())
-                .build();
+
+        return getAccessToken(accessTokenResponse);
     }
 
 
@@ -92,14 +88,10 @@ public class AuthAlipayCertRequest extends AuthDefaultRequest {
         if (!response.isSuccess()) {
             throw new AuthException(response.getSubMsg());
         }
+
         return AuthResponse.<AuthToken>builder()
                 .code(AuthResponseStatus.SUCCESS.getCode())
-                .data(AuthToken.builder()
-                        .accessToken(response.getAccessToken())
-                        .uid(response.getUserId())
-                        .expireIn(Integer.parseInt(response.getExpiresIn()))
-                        .refreshToken(response.getRefreshToken())
-                        .build())
+                .data(getAccessToken(response))
                 .build();
     }
 

@@ -1,6 +1,5 @@
 package me.zhyd.oauth.request;
 
-import com.alibaba.fastjson2.JSONObject;
 import com.google.common.net.HttpHeaders;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
@@ -30,8 +29,8 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Amazon登录
- * Login with Amazon for Websites Overview： https://developer.amazon.com/zh/docs/login-with-amazon/register-web.html
- * Login with Amazon SDK for JavaScript Reference Guide：https://developer.amazon.com/zh/docs/login-with-amazon/javascript-sdk-reference.html
+ * Login with Amazon for Websites Overview： <a href="https://developer.amazon.com/zh/docs/login-with-amazon/register-web.html">...</a>
+ * Login with Amazon SDK for JavaScript Reference Guide：<a href="https://developer.amazon.com/zh/docs/login-with-amazon/javascript-sdk-reference.html">...</a>
  *
  * @author yadong.zhang (yadong.zhang0415(a)gmail.com)
  * @since 1.16.0
@@ -47,7 +46,7 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
     }
 
     /**
-     * https://developer.amazon.com/zh/docs/login-with-amazon/authorization-code-grant.html#authorization-request
+     * <a href="https://developer.amazon.com/zh/docs/login-with-amazon/authorization-code-grant.html#authorization-request">...</a>
      *
      * @param state state 验证授权流程的参数，可以防止csrf
      * @return String
@@ -77,37 +76,38 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
     }
 
     /**
-     * https://developer.amazon.com/zh/docs/login-with-amazon/authorization-code-grant.html#access-token-request
+     * <a href="https://developer.amazon.com/zh/docs/login-with-amazon/authorization-code-grant.html#access-token-request">...</a>
      *
      * @return access token
      */
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
-        Map<String, String> form = new HashMap<>(9);
-        form.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
-        form.put(Keys.OAUTH2__CODE, authCallback.getCode());
-        form.put(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri());
-        form.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
-        form.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
+        Map<String, String> params = new HashMap<>(9);
+        params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
+        params.put(Keys.OAUTH2__CODE, authCallback.getCode());
+        params.put(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri());
+        params.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
+        params.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
 
         if (config.isPkce()) {
             String cacheKey = this.source.getName().concat(":code_verifier:").concat(authCallback.getState());
             String codeVerifier = this.authStateCache.get(cacheKey);
-            form.put("code_verifier", codeVerifier);
+            params.put("code_verifier", codeVerifier);
         }
-        return getToken(form, this.source.accessToken());
+        return getToken(params, this.source.accessToken());
     }
 
     @Override
     public AuthResponse<AuthToken> refresh(AuthToken authToken) {
-        Map<String, String> form = new HashMap<>(7);
-        form.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__REFRESH_TOKEN);
-        form.put(Keys.OAUTH2__REFRESH_TOKEN, authToken.getRefreshToken());
-        form.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
-        form.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
+        Map<String, String> params = new HashMap<>(7);
+        params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__REFRESH_TOKEN);
+        params.put(Keys.OAUTH2__REFRESH_TOKEN, authToken.getRefreshToken());
+        params.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
+        params.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
+
         return AuthResponse.<AuthToken>builder()
                 .code(AuthResponseStatus.SUCCESS.getCode())
-                .data(getToken(form, this.source.refresh()))
+                .data(getToken(params, this.source.refresh()))
                 .build();
 
     }
@@ -116,14 +116,17 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
         HttpHeader httpHeader = new HttpHeader();
         httpHeader.add(HttpHeaders.HOST, "api.amazon.com");
         httpHeader.add(HttpConstants.CONTENT_TYPE, "application/x-www-form-urlencoded;charset=UTF-8");
+
         String response = UnifiedHttpClient.getAdapter().post(url, param, httpHeader, false).getBody();
+
         JsonNode accessTokenObject = toNode(response);
         this.checkResponse(accessTokenObject);
+
         return AuthToken.builder()
                 .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
-                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
                 .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
                 .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
+                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
                 .build();
     }
 
@@ -139,7 +142,7 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
     }
 
     /**
-     * https://developer.amazon.com/zh/docs/login-with-amazon/obtain-customer-profile.html#call-profile-endpoint
+     * <a href="https://developer.amazon.com/zh/docs/login-with-amazon/obtain-customer-profile.html#call-profile-endpoint">...</a>
      *
      * @param authToken token信息
      * @return AuthUser
@@ -152,8 +155,10 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
         HttpHeader httpHeader = new HttpHeader();
         httpHeader.add(HttpHeaders.HOST, "api.amazon.com");
         httpHeader.add(HttpHeaders.AUTHORIZATION, TokenUtils.bearer(accessToken));
-        String userInfo = UnifiedHttpClient.getAdapter().get(this.source.userInfo(), new HashMap<>(0), httpHeader, false).getBody();
-        JsonNode userInfoObject = toNode(userInfo);
+
+        String response = UnifiedHttpClient.getAdapter().get(this.source.userInfo(), new HashMap<>(0), httpHeader, false).getBody();
+
+        JsonNode userInfoObject = toNode(response);
         this.checkResponse(userInfoObject);
 
         return AuthUser.builder()
@@ -169,9 +174,9 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
     }
 
     private void checkToken(String accessToken) {
-        String tokenInfo = UnifiedHttpClient.getAdapter().get("https://api.amazon.com/auth/o2/tokeninfo?access_token=" + HttpUrlEncoding.encode(accessToken)).getBody();
-        JSONObject jsonObject = JSONObject.parseObject(tokenInfo);
-        if (!config.getClientId().equals(jsonObject.getString("aud"))) {
+        String response = UnifiedHttpClient.getAdapter().get("https://api.amazon.com/auth/o2/tokeninfo?access_token=" + HttpUrlEncoding.encode(accessToken)).getBody();
+        JsonNode object = toNode(response);
+        if (!config.getClientId().equals(getStringValue(object, "aud"))) {
             throw new AuthException(AuthResponseStatus.ILLEGAL_TOKEN);
         }
     }

@@ -60,10 +60,13 @@ public class AuthFeishuRequest extends AuthDefaultRequest {
         if (StringUtils.isNotEmpty(cacheAppAccessToken)) {
             return cacheAppAccessToken;
         }
+
         String url = "https://open.feishu.cn/open-apis/auth/v3/" + APP_ACCESS_TOKEN + "/internal/";
+
         Map<String, Object> params = new HashMap<>();
         params.put(Keys.VARIANT__APP_ID, config.getClientId());
         params.put("app_secret", config.getClientSecret());
+
         String response = UnifiedHttpClient.getAdapter().post(url, JsonUtils.toJson(params), new HttpHeader()
                 .add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)).getBody();
 
@@ -77,7 +80,6 @@ public class AuthFeishuRequest extends AuthDefaultRequest {
 
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
-
         Map<String, Object> params = new HashMap<>();
         params.put(APP_ACCESS_TOKEN, this.getAppAccessToken());
         params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
@@ -92,11 +94,14 @@ public class AuthFeishuRequest extends AuthDefaultRequest {
         String response = UnifiedHttpClient.getAdapter().get(source.userInfo(), null, new HttpHeader()
                 .add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
                 .add(HttpHeaders.AUTHORIZATION, TokenUtils.bearer(accessToken)), false).getBody();
-        JsonNode object = toNode(response);
-        this.checkResponse(object);
-        JsonNode userInfoObject = getDataNode(object);
+
+        JsonNode responseObject = toNode(response);
+        this.checkResponse(responseObject);
+
+        JsonNode userInfoObject = getDataNode(responseObject);
+
         return AuthUser.builder()
-                .rawUserInfo(object)
+                .rawUserInfo(responseObject)
                 .uuid(getStringValue(userInfoObject, Keys.VARIANT__UNION_ID))
                 .username(getStringValue(userInfoObject, Keys.NAME))
                 .nickname(getStringValue(userInfoObject, Keys.NAME))
@@ -114,6 +119,7 @@ public class AuthFeishuRequest extends AuthDefaultRequest {
         params.put(APP_ACCESS_TOKEN, this.getAppAccessToken());
         params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__REFRESH_TOKEN);
         params.put(Keys.OAUTH2__REFRESH_TOKEN, authToken.getRefreshToken());
+
         return AuthResponse.<AuthToken>builder()
                 .code(AuthResponseStatus.SUCCESS.getCode())
                 .data(getToken(params, this.source.refresh()))
@@ -124,15 +130,18 @@ public class AuthFeishuRequest extends AuthDefaultRequest {
     private AuthToken getToken(Map<String, Object> param, String url) {
         String response = UnifiedHttpClient.getAdapter().post(url, JsonUtils.toJson(param), new HttpHeader()
                 .add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)).getBody();
-        JsonNode object = toNode(response);
-        this.checkResponse(object);
-        JsonNode accessTokenObject = getDataNode(object);
+
+        JsonNode responseObject = toNode(response);
+        this.checkResponse(responseObject);
+
+        JsonNode accessTokenObject = getDataNode(responseObject);
+
         return AuthToken.builder()
                 .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
-                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
                 .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
-                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
                 .openId(getStringValue(accessTokenObject, Keys.VARIANT__OPEN_ID))
+                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
                 .build();
     }
 

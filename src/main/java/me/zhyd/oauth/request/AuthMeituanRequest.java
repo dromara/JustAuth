@@ -36,15 +36,16 @@ public class AuthMeituanRequest extends AuthDefaultRequest {
 
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
-        Map<String, String> form = new HashMap<>(7);
-        form.put(Keys.VARIANT__APP_ID, config.getClientId());
-        form.put("secret", config.getClientSecret());
-        form.put(Keys.OAUTH2__CODE, authCallback.getCode());
-        form.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
 
-        String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), form, false).getBody();
+        Map<String, String> params = new HashMap<>(7);
+        params.put(Keys.VARIANT__APP_ID, config.getClientId());
+        params.put("secret", config.getClientSecret());
+        params.put(Keys.OAUTH2__CODE, authCallback.getCode());
+        params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
+
+        String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), params, false).getBody();
+
         JsonNode accessTokenObject = toNode(response);
-
         this.checkResponse(accessTokenObject);
 
         return AuthToken.builder()
@@ -56,14 +57,15 @@ public class AuthMeituanRequest extends AuthDefaultRequest {
 
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
-        Map<String, String> form = new HashMap<>(5);
-        form.put(Keys.VARIANT__APP_ID, config.getClientId());
-        form.put("secret", config.getClientSecret());
-        form.put(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken());
 
-        String response = UnifiedHttpClient.getAdapter().post(source.userInfo(), form, false).getBody();
+        Map<String, String> params = new HashMap<>(5);
+        params.put(Keys.VARIANT__APP_ID, config.getClientId());
+        params.put("secret", config.getClientSecret());
+        params.put(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken());
+
+        String response = UnifiedHttpClient.getAdapter().post(source.userInfo(), params, false).getBody();
+
         JsonNode userInfoObject = toNode(response);
-
         this.checkResponse(userInfoObject);
 
         return AuthUser.builder()
@@ -80,23 +82,24 @@ public class AuthMeituanRequest extends AuthDefaultRequest {
 
     @Override
     public AuthResponse<AuthToken> refresh(AuthToken oldToken) {
-        Map<String, String> form = new HashMap<>(7);
-        form.put(Keys.VARIANT__APP_ID, config.getClientId());
-        form.put("secret", config.getClientSecret());
-        form.put(Keys.OAUTH2__REFRESH_TOKEN, oldToken.getRefreshToken());
-        form.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__REFRESH_TOKEN);
 
-        String response = UnifiedHttpClient.getAdapter().post(source.refresh(), form, false).getBody();
+        Map<String, String> params = new HashMap<>(7);
+        params.put(Keys.VARIANT__APP_ID, config.getClientId());
+        params.put("secret", config.getClientSecret());
+        params.put(Keys.OAUTH2__REFRESH_TOKEN, oldToken.getRefreshToken());
+        params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__REFRESH_TOKEN);
+
+        String response = UnifiedHttpClient.getAdapter().post(source.refresh(), params, false).getBody();
+
         JsonNode refreshTokenObject = toNode(response);
-
         this.checkResponse(refreshTokenObject);
 
         return AuthResponse.<AuthToken>builder()
                 .code(AuthResponseStatus.SUCCESS.getCode())
                 .data(AuthToken.builder()
                         .accessToken(getStringValue(refreshTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
-                        .refreshToken(getStringValue(refreshTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
                         .expireIn(getIntValue(refreshTokenObject, Keys.OAUTH2__EXPIRES_IN))
+                        .refreshToken(getStringValue(refreshTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
                         .build())
                 .build();
     }

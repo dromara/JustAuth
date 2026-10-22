@@ -41,8 +41,8 @@ public class AuthBaiduRequest extends AuthDefaultRequest {
     }
 
     /**
-     * https://openapi.baidu.com/rest/2.0/passport/users/getInfo?access_token=121.c86e87cc0828cc1dabb8faee540531d4.YsUIAWvYbgqVni1VhkgKgyLh8nEyELbDOEZs_OA.OgDgmA
-     * https://openapi.baidu.com/rest/2.0/passport/users/getInfo?access_token=121.2907d9facf9fb97adf7287fa75496eda.Y3NSjR3-3HKt1RgT0HEl7GgxRXT5gOOVdngXezY.OcC_7g
+     * <a href="https://openapi.baidu.com/rest/2.0/passport/users/getInfo?access_token=121.c86e87cc0828cc1dabb8faee540531d4.YsUIAWvYbgqVni1VhkgKgyLh8nEyELbDOEZs_OA.OgDgmA">...</a>
+     * <a href="https://openapi.baidu.com/rest/2.0/passport/users/getInfo?access_token=121.2907d9facf9fb97adf7287fa75496eda.Y3NSjR3-3HKt1RgT0HEl7GgxRXT5gOOVdngXezY.OcC_7g">...</a>
      * 新旧应用返回的用户信息不一致
      *
      * @param authToken token信息
@@ -51,8 +51,10 @@ public class AuthBaiduRequest extends AuthDefaultRequest {
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
         String userInfo = doGetUserInfo(authToken);
+
         JsonNode userInfoObject = toNode(userInfo);
         this.checkResponse(userInfoObject);
+
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
                 .uuid(containsKey(userInfoObject, Keys.USERID) ? getStringValue(userInfoObject, Keys.USERID) : getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__OPENID))
@@ -74,6 +76,7 @@ public class AuthBaiduRequest extends AuthDefaultRequest {
     @Override
     public AuthResponse<?> revoke(AuthToken authToken) {
         String response = doGetRevoke(authToken);
+
         JsonNode object = toNode(response);
         this.checkResponse(object);
         // 返回1表示取消授权成功，否则失败
@@ -89,7 +92,9 @@ public class AuthBaiduRequest extends AuthDefaultRequest {
                 .queryParam(Keys.OAUTH2__CLIENT_ID, this.config.getClientId())
                 .queryParam(Keys.OAUTH2__CLIENT_SECRET, this.config.getClientSecret())
                 .build();
+
         String response = UnifiedHttpClient.getAdapter().get(refreshUrl).getBody();
+
         return AuthResponse.<AuthToken>builder()
                 .code(AuthResponseStatus.SUCCESS.getCode())
                 .data(this.getAuthToken(response))
@@ -124,13 +129,15 @@ public class AuthBaiduRequest extends AuthDefaultRequest {
     }
 
     private AuthToken getAuthToken(String response) {
+
         JsonNode accessTokenObject = toNode(response);
         this.checkResponse(accessTokenObject);
+
         return AuthToken.builder()
                 .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
                 .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
                 .scope(getStringValue(accessTokenObject, Keys.OAUTH2__SCOPE))
-                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
                 .build();
     }
 }

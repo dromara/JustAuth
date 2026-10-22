@@ -44,22 +44,23 @@ public class AuthXmlyRequest extends AuthDefaultRequest {
      */
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
-        Map<String, String> map = new HashMap<>(9);
-        map.put(Keys.OAUTH2__CODE, authCallback.getCode());
-        map.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
-        map.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
-        map.put("device_id", config.getDeviceId());
-        map.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
-        map.put(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri());
-        String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), map, true).getBody();
+
+        Map<String, String> params = new HashMap<>(9);
+        params.put(Keys.OAUTH2__CODE, authCallback.getCode());
+        params.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
+        params.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
+        params.put("device_id", config.getDeviceId());
+        params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
+        params.put(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri());
+        String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), params, true).getBody();
 
         JsonNode accessTokenObject = toNode(response);
         this.checkResponse(accessTokenObject);
 
         return AuthToken.builder()
                 .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
-                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
                 .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
                 .uid(getStringValue(accessTokenObject, Keys.UID))
                 .build();
     }
@@ -92,17 +93,19 @@ public class AuthXmlyRequest extends AuthDefaultRequest {
      */
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
-        Map<String, String> map = new TreeMap<>();
-        map.put(Keys.VARIANT__APP_KEY, config.getClientId());
-        map.put("client_os_type", Optional.ofNullable(config.getClientOsType()).orElse(3).toString());
-        map.put("device_id", config.getDeviceId());
-        map.put("pack_id", config.getPackId());
-        map.put(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken());
-        map.put("sig", GlobalAuthUtils.generateXmlySignature(map, config.getClientSecret()));
-        String rawUserInfo = UnifiedHttpClient.getAdapter().get(source.userInfo(), map, false).getBody();
+
+        Map<String, String> params = new TreeMap<>();
+        params.put(Keys.VARIANT__APP_KEY, config.getClientId());
+        params.put("client_os_type", Optional.ofNullable(config.getClientOsType()).orElse(3).toString());
+        params.put("device_id", config.getDeviceId());
+        params.put("pack_id", config.getPackId());
+        params.put(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken());
+        params.put("sig", GlobalAuthUtils.generateXmlySignature(params, config.getClientSecret()));
+        String rawUserInfo = UnifiedHttpClient.getAdapter().get(source.userInfo(), params, false).getBody();
 
         JsonNode userInfoObject = toNode(rawUserInfo);
         checkResponse(userInfoObject);
+
         return AuthUser.builder()
                 .uuid(getStringValue(userInfoObject, Keys.ID))
                 .nickname(getStringValue(userInfoObject, Keys.NICKNAME))

@@ -15,7 +15,6 @@ import me.zhyd.oauth.utils.JsonUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
 import org.apache.commons.lang3.StringUtils;
 import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.node.ObjectNode;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,11 +42,11 @@ public abstract class AbstractAuthWeChatEnterpriseRequest extends AuthDefaultReq
     public AuthToken getAccessToken(AuthCallback authCallback) {
         String response = doGetAuthorizationCode(accessTokenUrl(null));
 
-        JsonNode object = this.checkResponse(response);
+        JsonNode accessTokenObject = this.checkResponse(response);
 
         return AuthToken.builder()
-                .accessToken(getStringValue(object, Keys.OAUTH2__ACCESS_TOKEN))
-                .expireIn(getIntValue(object, Keys.OAUTH2__EXPIRES_IN))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
                 .code(authCallback.getCode())
                 .build();
     }
@@ -55,25 +54,26 @@ public abstract class AbstractAuthWeChatEnterpriseRequest extends AuthDefaultReq
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
         String response = doGetUserInfo(authToken);
-        JsonNode object = this.checkResponse(response);
 
+        JsonNode responseObject = this.checkResponse(response);
         // 返回 OpenId 或其他，均代表非当前企业用户，不支持
-        if (!containsKey(object, "UserId")) {
+        if (!containsKey(responseObject, "UserId")) {
             throw new AuthException(AuthResponseStatus.UNIDENTIFIED_PLATFORM, source);
         }
-        String userId = getStringValue(object, "UserId");
-        String userTicket = getStringValue(object, "user_ticket");
-        JsonNode userDetail = getUserDetail(authToken.getAccessToken(), userId, userTicket);
+        String userId = getStringValue(responseObject, "UserId");
+        String userTicket = getStringValue(responseObject, "user_ticket");
+
+        JsonNode userInfoObject = getUserDetail(authToken.getAccessToken(), userId, userTicket);
 
         return AuthUser.builder()
-                .rawUserInfo(userDetail)
-                .username(getStringValue(userDetail, Keys.NAME))
-                .nickname(getStringValue(userDetail, "alias"))
-                .avatar(getStringValue(userDetail, Keys.AVATAR))
-                .location(getStringValue(userDetail, Keys.OAUTH2_SCOPE__ADDRESS))
-                .email(getStringValue(userDetail, Keys.OAUTH2_SCOPE__EMAIL))
+                .rawUserInfo(userInfoObject)
+                .username(getStringValue(userInfoObject, Keys.NAME))
+                .nickname(getStringValue(userInfoObject, "alias"))
+                .avatar(getStringValue(userInfoObject, Keys.AVATAR))
+                .location(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__ADDRESS))
+                .email(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
                 .uuid(userId)
-                .gender(AuthUserGender.getWechatRealGender(getStringValue(userDetail, Keys.GENDER)))
+                .gender(AuthUserGender.getWechatRealGender(getStringValue(userInfoObject, Keys.GENDER)))
                 .token(authToken)
                 .source(source.toString())
                 .build();
@@ -149,12 +149,10 @@ public abstract class AbstractAuthWeChatEnterpriseRequest extends AuthDefaultReq
             Map<String, Object> param = new HashMap<>();
             param.put("user_ticket", userTicket);
             String userDetailResponse = UnifiedHttpClient.getAdapter().post(userDetailUrl, JsonUtils.toJson(param)).getBody();
+
             JsonNode userDetail = checkResponse(userDetailResponse);
 
-            ObjectNode userInfoObjectNode = (ObjectNode) userInfoObject;
-
-            ObjectNode userDetailObjectNode = (ObjectNode) userDetail;
-            userInfoObjectNode.setAll(userDetailObjectNode);
+            userInfoObject.asObject().setAll(userDetail.asObject());
         }
         return userInfoObject;
     }

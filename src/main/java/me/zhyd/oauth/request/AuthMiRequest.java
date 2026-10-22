@@ -46,8 +46,8 @@ public class AuthMiRequest extends AuthDefaultRequest {
     private AuthToken getToken(String accessTokenUrl) {
         String response = UnifiedHttpClient.getAdapter().get(accessTokenUrl).getBody();
         String jsonStr = response.replace(PREFIX, HttpConstants.EMPTY);
-        JsonNode accessTokenObject = toNode(jsonStr);
 
+        JsonNode accessTokenObject = toNode(jsonStr);
         if (containsKey(accessTokenObject, Keys.ERROR)) {
             throw new AuthException(getStringValue(accessTokenObject, Keys.ERROR_DESCRIPTION));
         }

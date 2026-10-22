@@ -49,9 +49,9 @@ public class AuthWeiboRequest extends AuthDefaultRequest {
 
         return AuthToken.builder()
                 .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
                 .uid(getStringValue(accessTokenObject, Keys.UID))
                 .openId(getStringValue(accessTokenObject, Keys.UID))
-                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
                 .build();
     }
 

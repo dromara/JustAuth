@@ -1,6 +1,5 @@
 package me.zhyd.oauth.request;
 
-import com.alibaba.fastjson2.JSON;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.constant.Keys;
 import me.zhyd.oauth.model.AuthCallback;
@@ -8,6 +7,7 @@ import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthStateUtils;
+import me.zhyd.oauth.utils.JsonUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -51,7 +51,7 @@ public class AuthExtendRequestTest {
 
         AuthUser user = response.getData();
         Assert.assertNotNull(user);
-        System.out.println(JSON.toJSONString(user));
+        System.out.println(JsonUtils.toJson(user));
     }
 
     @Test
@@ -64,7 +64,7 @@ public class AuthExtendRequestTest {
 
         AuthResponse<?> response = request.revoke(AuthToken.builder().build());
         Assert.assertNotNull(response);
-        System.out.println(JSON.toJSONString(response));
+        System.out.println(JsonUtils.toJson(response));
     }
 
     @Test
@@ -77,7 +77,7 @@ public class AuthExtendRequestTest {
 
         AuthResponse<AuthToken> response = request.refresh(AuthToken.builder().build());
         Assert.assertNotNull(response);
-        System.out.println(JSON.toJSONString(response.getData()));
+        System.out.println(JsonUtils.toJson(response.getData()));
 
     }
 }

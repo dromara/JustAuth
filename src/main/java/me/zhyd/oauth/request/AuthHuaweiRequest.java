@@ -51,14 +51,15 @@ public class AuthHuaweiRequest extends AuthDefaultRequest {
      */
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
-        Map<String, String> form = new HashMap<>(8);
-        form.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
-        form.put(Keys.OAUTH2__CODE, authCallback.getAuthorization_code());
-        form.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
-        form.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
-        form.put(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri());
+        Map<String, String> params = new HashMap<>(8);
+        params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
+        params.put(Keys.OAUTH2__CODE, authCallback.getAuthorization_code());
+        params.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
+        params.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
+        params.put(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri());
 
-        String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), form, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), params, false).getBody();
+
         return getAuthToken(response);
     }
 
@@ -71,17 +72,17 @@ public class AuthHuaweiRequest extends AuthDefaultRequest {
      */
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
-        Map<String, String> form = new HashMap<>(7);
-        form.put("nsp_ts", System.currentTimeMillis() + "");
-        form.put(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken());
-        form.put("nsp_fmt", "JS");
-        form.put(Keys.VARIANT__OPEN_ID, "OPENID");
+        Map<String, String> params = new HashMap<>(7);
+        params.put("nsp_ts", System.currentTimeMillis() + "");
+        params.put(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken());
+        params.put("nsp_fmt", "JS");
+        params.put(Keys.VARIANT__OPEN_ID, "OPENID");
         // form.put("nsp_svc", "OpenUP.User.getInfo");
-        form.put("nsp_svc", "huawei.oauth2.user.getTokenInfo");
+        params.put("nsp_svc", "huawei.oauth2.user.getTokenInfo");
 
-        String response = UnifiedHttpClient.getAdapter().post(source.userInfo(), form, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(source.userInfo(), params, false).getBody();
+
         JsonNode userInfoObject = toNode(response);
-
         this.checkResponse(userInfoObject);
 
         AuthUserGender gender = getRealGender(userInfoObject);
@@ -106,13 +107,14 @@ public class AuthHuaweiRequest extends AuthDefaultRequest {
      */
     @Override
     public AuthResponse<AuthToken> refresh(AuthToken authToken) {
-        Map<String, String> form = new HashMap<>(7);
-        form.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
-        form.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
-        form.put(Keys.OAUTH2__REFRESH_TOKEN, authToken.getRefreshToken());
-        form.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__REFRESH_TOKEN);
+        Map<String, String> params = new HashMap<>(7);
+        params.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
+        params.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
+        params.put(Keys.OAUTH2__REFRESH_TOKEN, authToken.getRefreshToken());
+        params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__REFRESH_TOKEN);
 
-        String response = UnifiedHttpClient.getAdapter().post(source.refresh(), form, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(source.refresh(), params, false).getBody();
+
         return AuthResponse.<AuthToken>builder().code(SUCCESS.getCode()).data(getAuthToken(response)).build();
     }
 

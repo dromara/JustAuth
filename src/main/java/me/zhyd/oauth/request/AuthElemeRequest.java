@@ -1,6 +1,5 @@
 package me.zhyd.oauth.request;
 
-import com.alibaba.fastjson2.JSONObject;
 import com.google.common.net.HttpHeaders;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
@@ -15,10 +14,7 @@ import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
-import me.zhyd.oauth.utils.GlobalAuthUtils;
-import me.zhyd.oauth.utils.TokenUtils;
-import me.zhyd.oauth.utils.UrlBuilder;
-import me.zhyd.oauth.utils.UuidUtils;
+import me.zhyd.oauth.utils.*;
 import tools.jackson.databind.JsonNode;
 
 import java.util.HashMap;
@@ -54,16 +50,17 @@ public class AuthElemeRequest extends AuthDefaultRequest {
         form.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
 
         HttpHeader httpHeader = this.buildHeader(CONTENT_TYPE_FORM, this.getRequestId(), true);
+
         String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), form, httpHeader, false).getBody();
 
-        JsonNode object = toNode(response);
-        this.checkResponse(object);
+        JsonNode accessTokenObject = toNode(response);
+        this.checkResponse(accessTokenObject);
 
         return AuthToken.builder()
-                .accessToken(getStringValue(object, Keys.OAUTH2__ACCESS_TOKEN))
-                .expireIn(getIntValue(object, Keys.OAUTH2__EXPIRES_IN))
-                .refreshToken(getStringValue(object, Keys.OAUTH2__REFRESH_TOKEN))
-                .tokenType(getStringValue(object, Keys.OAUTH2__TOKEN_TYPE))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
+                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
                 .build();
     }
 
@@ -93,20 +90,20 @@ public class AuthElemeRequest extends AuthDefaultRequest {
         paramsMap.put("signature", signature);
 
         HttpHeader httpHeader = this.buildHeader(CONTENT_TYPE_JSON, requestId, false);
-        String response = UnifiedHttpClient.getAdapter().post(source.userInfo(), JSONObject.toJSONString(paramsMap), httpHeader).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(source.userInfo(), JsonUtils.toJson(paramsMap), httpHeader).getBody();
 
-        JsonNode object = toNode(response);
+        JsonNode responseObject = toNode(response);
 
         // 校验请求
-        if (containsKey(object, Keys.NAME)) {
-            throw new AuthException(getStringValue(object, Keys.MESSAGE));
+        if (containsKey(responseObject, Keys.NAME)) {
+            throw new AuthException(getStringValue(responseObject, Keys.MESSAGE));
         }
-        if (containsKey(object, Keys.ERROR) && null != object.get(Keys.ERROR)) {
-            JsonNode error = object.get(Keys.ERROR);
+        if (containsKey(responseObject, Keys.ERROR) && null != responseObject.get(Keys.ERROR)) {
+            JsonNode error = responseObject.get(Keys.ERROR);
             throw new AuthException(getStringValue(error, Keys.MESSAGE));
         }
 
-        JsonNode userInfoObject = getObjectNode(object, Keys.RESULT);
+        JsonNode userInfoObject = getObjectNode(responseObject, Keys.RESULT);
 
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
@@ -121,24 +118,25 @@ public class AuthElemeRequest extends AuthDefaultRequest {
 
     @Override
     public AuthResponse<AuthToken> refresh(AuthToken oldToken) {
-        Map<String, String> form = new HashMap<>(4);
-        form.put(Keys.OAUTH2__REFRESH_TOKEN, oldToken.getRefreshToken());
-        form.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__REFRESH_TOKEN);
-
         HttpHeader httpHeader = this.buildHeader(CONTENT_TYPE_FORM, this.getRequestId(), true);
-        String response = UnifiedHttpClient.getAdapter().post(source.refresh(), form, httpHeader, false).getBody();
 
-        JsonNode object = toNode(response);
+        Map<String, String> params = new HashMap<>(4);
+        params.put(Keys.OAUTH2__REFRESH_TOKEN, oldToken.getRefreshToken());
+        params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__REFRESH_TOKEN);
 
-        this.checkResponse(object);
+        String response = UnifiedHttpClient.getAdapter().post(source.refresh(), params, httpHeader, false).getBody();
+
+        JsonNode refreshTokenObject = toNode(response);
+
+        this.checkResponse(refreshTokenObject);
 
         return AuthResponse.<AuthToken>builder()
                 .code(AuthResponseStatus.SUCCESS.getCode())
                 .data(AuthToken.builder()
-                        .accessToken(getStringValue(object, Keys.OAUTH2__ACCESS_TOKEN))
-                        .refreshToken(getStringValue(object, Keys.OAUTH2__REFRESH_TOKEN))
-                        .tokenType(getStringValue(object, Keys.OAUTH2__TOKEN_TYPE))
-                        .expireIn(getIntValue(object, Keys.OAUTH2__EXPIRES_IN))
+                        .accessToken(getStringValue(refreshTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
+                        .expireIn(getIntValue(refreshTokenObject, Keys.OAUTH2__EXPIRES_IN))
+                        .refreshToken(getStringValue(refreshTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
+                        .tokenType(getStringValue(refreshTokenObject, Keys.OAUTH2__TOKEN_TYPE))
                         .build())
                 .build();
     }

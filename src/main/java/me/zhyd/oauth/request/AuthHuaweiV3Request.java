@@ -56,22 +56,25 @@ public class AuthHuaweiV3Request extends AuthDefaultRequest {
      */
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
-        Map<String, String> form = new HashMap<>(8);
-        form.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
-        form.put(Keys.OAUTH2__CODE, authCallback.getCode());
-        form.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
-        form.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
-        form.put(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri());
+
+        Map<String, String> params = new HashMap<>(8);
+        params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
+        params.put(Keys.OAUTH2__CODE, authCallback.getCode());
+        params.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
+        params.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
+        params.put(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri());
 
         if (config.isPkce()) {
             String cacheKey = this.source.getName().concat(":code_verifier:").concat(authCallback.getState());
             String codeVerifier = this.authStateCache.get(cacheKey);
-            form.put("code_verifier", codeVerifier);
+            params.put("code_verifier", codeVerifier);
         }
 
         HttpHeader httpHeader = new HttpHeader();
         httpHeader.add(HttpConstants.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
-        String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), form, httpHeader, false).getBody();
+
+        String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), params, httpHeader, false).getBody();
+
         return getAuthToken(response);
     }
 
@@ -86,17 +89,17 @@ public class AuthHuaweiV3Request extends AuthDefaultRequest {
     public AuthUser getUserInfo(AuthToken authToken) {
         String idToken = authToken.getIdToken();
         if (StringUtils.isEmpty(idToken)) {
-            Map<String, String> form = new HashMap<>(7);
-            form.put(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken());
-            form.put("getNickName", "1");
-            form.put("nsp_svc", "GOpen.User.getInfo");
+            Map<String, String> params = new HashMap<>(7);
+            params.put(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken());
+            params.put("getNickName", "1");
+            params.put("nsp_svc", "GOpen.User.getInfo");
 
             HttpHeader httpHeader = new HttpHeader();
             httpHeader.add(HttpConstants.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
-            String response = UnifiedHttpClient.getAdapter().post(source.userInfo(), form, httpHeader, false).getBody();
+
+            String response = UnifiedHttpClient.getAdapter().post(source.userInfo(), params, httpHeader, false).getBody();
 
             JsonNode userInfoObject = toNode(response);
-
             this.checkResponse(userInfoObject);
 
             return AuthUser.builder()
@@ -110,16 +113,18 @@ public class AuthHuaweiV3Request extends AuthDefaultRequest {
                     .source(source.toString())
                     .build();
         }
+
         String payload = new String(Base64.getUrlDecoder().decode(idToken.split("\\.")[1]), StandardCharsets.UTF_8);
 
-        JsonNode object = toNode(payload);
+        JsonNode userInfoObject = toNode(payload);
+
         return AuthUser.builder()
-                .rawUserInfo(object)
-                .uuid(getStringValue(object, "sub"))
-                .username(getStringValue(object, Keys.NAME))
-                .nickname(getStringValue(object, Keys.NICKNAME))
+                .rawUserInfo(userInfoObject)
+                .uuid(getStringValue(userInfoObject, "sub"))
+                .username(getStringValue(userInfoObject, Keys.NAME))
+                .nickname(getStringValue(userInfoObject, Keys.NICKNAME))
                 .gender(AuthUserGender.UNKNOWN)
-                .avatar(getStringValue(object, "picture"))
+                .avatar(getStringValue(userInfoObject, "picture"))
                 .token(authToken)
                 .source(source.toString())
                 .build();

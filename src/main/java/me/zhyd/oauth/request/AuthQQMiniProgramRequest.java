@@ -1,7 +1,6 @@
 package me.zhyd.oauth.request;
 
-import com.alibaba.fastjson2.JSONObject;
-import com.alibaba.fastjson2.annotation.JSONField;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
@@ -12,6 +11,7 @@ import me.zhyd.oauth.http.UnifiedHttpClient;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
+import me.zhyd.oauth.utils.JsonUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
 
 /**
@@ -37,14 +37,14 @@ public class AuthQQMiniProgramRequest extends AuthDefaultRequest {
         // 使用 code 获取对应的 openId、unionId 等字段
         String response = UnifiedHttpClient.getAdapter().get(accessTokenUrl(authCallback.getCode())).getBody();
 
-        JSCode2SessionResponse accessTokenObject = JSONObject.parseObject(response, JSCode2SessionResponse.class);
+        JSCode2SessionResponse accessTokenObject = JsonUtils.toObject(response, JSCode2SessionResponse.class);
         assert accessTokenObject != null;
         checkResponse(accessTokenObject);
         // 拼装结果
         return AuthToken.builder()
+                .accessToken(accessTokenObject.getSessionKey())
                 .openId(accessTokenObject.getOpenid())
                 .unionId(accessTokenObject.getUnionId())
-                .accessToken(accessTokenObject.getSessionKey())
                 .build();
     }
 
@@ -84,17 +84,16 @@ public class AuthQQMiniProgramRequest extends AuthDefaultRequest {
     }
 
     @Data
-    @SuppressWarnings("SpellCheckingInspection")
     private static class JSCode2SessionResponse {
 
-        @JSONField(name = Keys.VARIANT__ERRCODE)
+        @JsonProperty(Keys.VARIANT__ERRCODE)
         private int errorCode;
-        @JSONField(name = Keys.VARIANT__ERRMSG)
+        @JsonProperty(Keys.VARIANT__ERRMSG)
         private String errorMsg;
-        @JSONField(name = "session_key")
+        @JsonProperty("session_key")
         private String sessionKey;
         private String openid;
-        @JSONField(name = Keys.UNIONID)
+        @JsonProperty(Keys.UNIONID)
         private String unionId;
 
     }

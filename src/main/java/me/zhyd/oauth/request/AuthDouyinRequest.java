@@ -97,6 +97,7 @@ public class AuthDouyinRequest extends AuthDefaultRequest {
         this.checkResponse(object);
 
         JsonNode accessTokenObject = getDataNode(object);
+
         return AuthToken.builder()
                 .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
                 .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))

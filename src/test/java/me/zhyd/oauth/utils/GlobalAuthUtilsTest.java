@@ -1,6 +1,5 @@
 package me.zhyd.oauth.utils;
 
-import com.alibaba.fastjson2.JSON;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.constant.Keys;
 import me.zhyd.oauth.model.AuthCallback;
@@ -164,7 +163,7 @@ public class GlobalAuthUtilsTest {
         parameters.put("a", "222");
         parameters.put("include_entities", Boolean.toString(true));
         final Map<String, Object> sorted = new TreeMap<>(parameters);
-        assertEquals("{\"a\":\"222\",\"include_entities\":\"true\",\"screen_name\":\"222\",\"user_id\":\"1\"}", JSON.toJSONString(sorted));
+        assertEquals("{\"a\":\"222\",\"include_entities\":\"true\",\"screen_name\":\"222\",\"user_id\":\"1\"}", JsonUtils.toJson(sorted));
     }
 
     @Test

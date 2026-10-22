@@ -1,9 +1,9 @@
 package me.zhyd.oauth.model;
 
-import com.alibaba.fastjson2.JSON;
 import me.zhyd.oauth.config.AuthDefaultSource;
 import me.zhyd.oauth.config.AuthExtendSource;
 import me.zhyd.oauth.config.AuthSource;
+import me.zhyd.oauth.utils.JsonUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -15,7 +15,7 @@ public class AuthUserTest {
         AuthUser user = AuthUser.builder()
                 .nickname("test")
                 .build();
-        String json = JSON.toJSONString(user);
+        String json = JsonUtils.toJson(user);
         Assert.assertEquals("{\"nickname\":\"test\",\"snapshotUser\":false}", json);
 
     }
@@ -25,9 +25,9 @@ public class AuthUserTest {
         AuthUser user = AuthUser.builder()
                 .nickname("test")
                 .build();
-        String json = JSON.toJSONString(user);
+        String json = JsonUtils.toJson(user);
 
-        AuthUser deserializeUser = JSON.parseObject(json, AuthUser.class);
+        AuthUser deserializeUser = JsonUtils.toObject(json, AuthUser.class);
         Assert.assertEquals("test", deserializeUser.getNickname());
     }
 

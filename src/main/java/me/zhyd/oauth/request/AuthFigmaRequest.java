@@ -49,16 +49,17 @@ public class AuthFigmaRequest extends AuthDefaultRequest {
                 .add(HttpHeaders.AUTHORIZATION, TokenUtils.basic(config.getClientId(), config.getClientSecret()));
 
         String response = UnifiedHttpClient.getAdapter().post(super.accessTokenUrl(authCallback.getCode()), null, header, true).getBody();
+
         JsonNode accessTokenObject = toNode(response);
 
         this.checkResponse(accessTokenObject);
 
         return AuthToken.builder()
                 .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
                 .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
                 .scope(getStringValue(accessTokenObject, Keys.OAUTH2__SCOPE))
                 .userId(getStringValue(accessTokenObject, Keys.VARIANT__USER_ID))
-                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
                 .build();
     }
 
@@ -66,6 +67,7 @@ public class AuthFigmaRequest extends AuthDefaultRequest {
     public AuthResponse<AuthToken> refresh(AuthToken authToken) {
         HttpHeader header = new HttpHeader().add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
         String response = UnifiedHttpClient.getAdapter().post(this.refreshTokenUrl(authToken.getRefreshToken()), null, header, false).getBody();
+
         JsonNode refreshTokenObject = toNode(response);
 
         this.checkResponse(refreshTokenObject);

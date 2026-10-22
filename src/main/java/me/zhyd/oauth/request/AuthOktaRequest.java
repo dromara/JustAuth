@@ -53,16 +53,19 @@ public class AuthOktaRequest extends AuthDefaultRequest {
                 .add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON)
                 .add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED)
                 .add(HttpHeaders.AUTHORIZATION, TokenUtils.basic(config.getClientId(), config.getClientSecret()));
+
         String response = UnifiedHttpClient.getAdapter().post(tokenUrl, null, header, false).getBody();
+
         JsonNode accessTokenObject = toNode(response);
         this.checkResponse(accessTokenObject);
+
         return AuthToken.builder()
                 .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
-                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
                 .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
-                .scope(getStringValue(accessTokenObject, Keys.OAUTH2__SCOPE))
                 .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
+                .scope(getStringValue(accessTokenObject, Keys.OAUTH2__SCOPE))
                 .idToken(getStringValue(accessTokenObject, Keys.OIDC__ID_TOKEN))
+                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
                 .build();
     }
 
@@ -85,9 +88,12 @@ public class AuthOktaRequest extends AuthDefaultRequest {
     public AuthUser getUserInfo(AuthToken authToken) {
         HttpHeader header = new HttpHeader()
                 .add(HttpHeaders.AUTHORIZATION, TokenUtils.bearer(authToken.getAccessToken()));
+
         String response = UnifiedHttpClient.getAdapter().post(userInfoUrl(authToken), null, header, false).getBody();
+
         JsonNode userInfoObject = toNode(response);
         this.checkResponse(userInfoObject);
+
         JsonNode address = getObjectNode(userInfoObject, Keys.OAUTH2_SCOPE__ADDRESS);
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)

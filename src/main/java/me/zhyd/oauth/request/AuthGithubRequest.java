@@ -58,7 +58,6 @@ public class AuthGithubRequest extends AuthDefaultRequest {
         String response = UnifiedHttpClient.getAdapter().get(UrlBuilder.fromBaseUrl(source.userInfo()).build(), null, header, false).getBody();
 
         JsonNode userInfoObject = toNode(response);
-
         this.checkResponse(containsKey(userInfoObject, Keys.ERROR), getStringValue(userInfoObject, Keys.ERROR_DESCRIPTION));
 
         return AuthUser.builder()

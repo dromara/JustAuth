@@ -31,16 +31,20 @@ public class AuthCsdnRequest extends AuthDefaultRequest {
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
         String response = doPostAuthorizationCode(authCallback.getCode());
+
         JsonNode accessTokenObject = toNode(response);
         this.checkResponse(accessTokenObject);
+
         return AuthToken.builder().accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN)).build();
     }
 
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
         String response = doGetUserInfo(authToken);
+
         JsonNode userInfoObject = toNode(response);
         this.checkResponse(userInfoObject);
+
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
                 .uuid(getStringValue(userInfoObject, Keys.USERNAME))

@@ -35,23 +35,22 @@ public class AuthGitlabRequest extends AuthDefaultRequest {
         String response = doPostAuthorizationCode(authCallback.getCode());
 
         JsonNode accessTokenObject = toNode(response);
-
         this.checkResponse(accessTokenObject);
 
         return AuthToken.builder()
                 .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
                 .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
+                .scope(getStringValue(accessTokenObject, Keys.OAUTH2__SCOPE))
                 .idToken(getStringValue(accessTokenObject, Keys.OIDC__ID_TOKEN))
                 .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
-                .scope(getStringValue(accessTokenObject, Keys.OAUTH2__SCOPE))
                 .build();
     }
 
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
         String response = doGetUserInfo(authToken);
-        JsonNode userInfoObject = toNode(response);
 
+        JsonNode userInfoObject = toNode(response);
         this.checkResponse(userInfoObject);
 
         return AuthUser.builder()

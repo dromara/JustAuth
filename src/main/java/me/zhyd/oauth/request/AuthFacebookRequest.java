@@ -35,8 +35,10 @@ public class AuthFacebookRequest extends AuthDefaultRequest {
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
         String response = doPostAuthorizationCode(authCallback.getCode());
+
         JsonNode accessTokenObject = toNode(response);
         this.checkResponse(accessTokenObject);
+
         return AuthToken.builder()
                 .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
                 .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
@@ -46,19 +48,21 @@ public class AuthFacebookRequest extends AuthDefaultRequest {
 
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
-        String userInfo = doGetUserInfo(authToken);
-        JsonNode object = toNode(userInfo);
-        this.checkResponse(object);
+        String response = doGetUserInfo(authToken);
+
+        JsonNode userInfoObject = toNode(response);
+        this.checkResponse(userInfoObject);
+
         return AuthUser.builder()
-                .rawUserInfo(object)
-                .uuid(getStringValue(object, Keys.ID))
-                .username(getStringValue(object, Keys.NAME))
-                .nickname(getStringValue(object, Keys.NAME))
-                .blog(getStringValue(object, "link"))
-                .avatar(getUserPicture(object))
-                .location(getStringValue(object, "locale"))
-                .email(getStringValue(object, Keys.OAUTH2_SCOPE__EMAIL))
-                .gender(AuthUserGender.getRealGender(getStringValue(object, Keys.GENDER)))
+                .rawUserInfo(userInfoObject)
+                .uuid(getStringValue(userInfoObject, Keys.ID))
+                .username(getStringValue(userInfoObject, Keys.NAME))
+                .nickname(getStringValue(userInfoObject, Keys.NAME))
+                .blog(getStringValue(userInfoObject, "link"))
+                .avatar(getUserPicture(userInfoObject))
+                .location(getStringValue(userInfoObject, "locale"))
+                .email(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
+                .gender(AuthUserGender.getRealGender(getStringValue(userInfoObject, Keys.GENDER)))
                 .token(authToken)
                 .source(source.toString())
                 .build();
