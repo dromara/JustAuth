@@ -1,8 +1,8 @@
 <p align="center">
-	<a href="https://www.justauth.cn"><img src="https://gitee.com/yadong.zhang/static/raw/master/JustAuth/Justauth.png" width="400"></a>
+	<img src="https://gitee.com/yadong.zhang/static/raw/master/JustAuth/Justauth.png" width="200">
 </p>
 <p align="center">
-	<strong>Login, so easy.</strong>
+	<strong>Social Login, so easy.</strong>
 </p>
 <p align="center">
 	<a target="_blank" href="https://search.maven.org/search?q=JustAuth">
@@ -10,9 +10,6 @@
 	</a>
 	<a target="_blank" href="https://www.oracle.com/technetwork/java/javase/downloads/index.html">
 		<img src="https://img.shields.io/badge/JDK-17+-green.svg" ></img>
-	</a>
-	<a href="https://codecov.io/gh/justauth/JustAuth">
-		<img src="https://codecov.io/gh/justauth/JustAuth/branch/master/graph/badge.svg?token=zYiAqd9aFz" />
 	</a>
 	<a href='https://gitee.com/yadong.zhang/JustAuth/stargazers'>
 	  <img src='https://gitee.com/yadong.zhang/JustAuth/badge/star.svg?theme=gvp' alt='star'></img>
@@ -23,20 +20,14 @@
 </p>
 
 -------------------------------------------------------------------------------
-<p align="center">
-<img src='./docs/media/75a3c076.png' alt='star'></img>
-</p>
 
--------------------------------------------------------------------------------
+`Dromara JustAuth`, as you see, It is just a Java library of third-party authorized login, It's smaller and easier to use. JustAuth is the best third-party login tool written in JAVA.
 
-`JustAuth`, as you see, It is just a Java library of third-party authorized login, It's smaller and easier to use. JustAuth is the best third-party login tool written in JAVA.
-
-Source Code：[gitee](https://gitee.com/yadong.zhang/JustAuth) | [github](https://github.com/zhangyd-c/JustAuth)    
-Docs：[Reference Doc](https://www.justauth.cn)
+JustAuth is an open-source project maintained by the Dromara community, based on `yadong.zhang/JustAuth v1.16.7`, and released under the MIT License.
 
 ## Features
 
-1. **Multiple platform**: Has integrated more than a dozen third-party platforms.([plan](https://gitee.com/yadong.zhang/JustAuth/issues/IUGRK))
+1. **Multiple platform**: Has integrated more than a dozen third-party platforms.([plan](https://gitee.com/dromara/JustAuth/issues))
 2. **Minimalist**: The minimalist design is very simple to use.
 
 ## Quick start
@@ -50,30 +41,34 @@ Docs：[Reference Doc](https://www.justauth.cn)
 These artifacts are available from Maven Central:
 ```xml
 <dependency>
-    <groupId>me.zhyd.oauth</groupId>
+    <groupId>org.dromara.justauth</groupId>
     <artifactId>JustAuth</artifactId>
     <version>{latest-version}</version>
 </dependency>
 ```
-
-> **latest-version** ：
-> - CURRENT: ![](https://img.shields.io/github/v/release/justauth/JustAuth?style=flat-square)
-> - SNAPSHOT: ![](https://img.shields.io/nexus/s/https/oss.sonatype.org/me.zhyd.oauth/JustAuth.svg?style=flat-square)
 
 ### Using JustAuth API
 
 #### Simple
 
 ```java
-// Create authorization request
+//1. Create authorization request
 AuthRequest authRequest = new AuthGiteeRequest(AuthConfig.builder()
         .clientId("clientId")
         .clientSecret("clientSecret")
         .redirectUri("redirectUri")
         .build());
-// Generate authorization page url
-authRequest.authorize("state");
-// Get token and userinfo
+
+//2. Generate authorization page url
+//   AuthStateUtils.createState()//create state
+//   authRequest.authorize(AuthStateUtils.createState())
+authRequest.authorize("your state");
+
+//3. Get token and userinfo
+AuthCallback callback = AuthCallback.builder()
+        .code("code")
+        .state("state")
+        .build();
 authRequest.login(callback);
 ```
 
