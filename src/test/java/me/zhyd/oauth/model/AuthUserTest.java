@@ -16,7 +16,7 @@ public class AuthUserTest {
                 .nickname("test")
                 .build();
         String json = JsonUtils.toJson(user);
-        Assert.assertEquals("{\"nickname\":\"test\",\"snapshotUser\":false}", json);
+        Assert.assertEquals("{\"avatar\":null,\"blog\":null,\"company\":null,\"email\":null,\"gender\":null,\"location\":null,\"nickname\":\"test\",\"rawUserInfo\":null,\"remark\":null,\"snapshotUser\":false,\"source\":null,\"token\":null,\"username\":null,\"uuid\":null}", json);
 
     }
 
