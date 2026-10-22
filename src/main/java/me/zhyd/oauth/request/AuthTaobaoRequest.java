@@ -1,6 +1,5 @@
 package me.zhyd.oauth.request;
 
-import com.alibaba.fastjson2.JSONObject;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
@@ -16,6 +15,7 @@ import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.GlobalAuthUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
 import org.apache.commons.lang3.StringUtils;
+import tools.jackson.databind.JsonNode;
 
 /**
  * 淘宝登录
@@ -38,36 +38,36 @@ public class AuthTaobaoRequest extends AuthDefaultRequest {
         return AuthToken.builder().accessCode(authCallback.getCode()).build();
     }
 
-    private AuthToken getAuthToken(JSONObject object) {
+    private AuthToken getAuthToken(JsonNode object) {
         this.checkResponse(object);
 
         return AuthToken.builder()
-                .accessToken(object.getString(Keys.OAUTH2_ACCESS_TOKEN))
-                .expireIn(object.getIntValue(Keys.OAUTH2_EXPIRES_IN))
-                .tokenType(object.getString(Keys.OAUTH2_TOKEN_TYPE))
-                .idToken(object.getString(Keys.OIDC_ID_TOKEN))
-                .refreshToken(object.getString(Keys.OAUTH2_REFRESH_TOKEN))
-                .uid(object.getString("taobao_user_id"))
-                .openId(object.getString("taobao_open_uid"))
+                .accessToken(getStringValue(object, Keys.OAUTH2__ACCESS_TOKEN))
+                .expireIn(getIntValue(object, Keys.OAUTH2__EXPIRES_IN))
+                .tokenType(getStringValue(object, Keys.OAUTH2__TOKEN_TYPE))
+                .idToken(getStringValue(object, Keys.OIDC__ID_TOKEN))
+                .refreshToken(getStringValue(object, Keys.OAUTH2__REFRESH_TOKEN))
+                .uid(getStringValue(object, "taobao_user_id"))
+                .openId(getStringValue(object, "taobao_open_uid"))
                 .build();
     }
 
-    private void checkResponse(JSONObject object) {
-        if (object.containsKey(Keys.ERROR)) {
-            throw new AuthException(object.getString(Keys.ERROR_DESCRIPTION));
+    private void checkResponse(JsonNode object) {
+        if (containsKey(object, Keys.ERROR)) {
+            throw new AuthException(getStringValue(object, Keys.ERROR_DESCRIPTION));
         }
     }
 
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
         String response = doPostAuthorizationCode(authToken.getAccessCode());
-        JSONObject accessTokenObject = JSONObject.parseObject(response);
-        if (accessTokenObject.containsKey(Keys.ERROR)) {
-            throw new AuthException(accessTokenObject.getString(Keys.ERROR_DESCRIPTION));
+        JsonNode accessTokenObject = toNode(response);
+        if (containsKey(accessTokenObject, Keys.ERROR)) {
+            throw new AuthException(getStringValue(accessTokenObject, Keys.ERROR_DESCRIPTION));
         }
         authToken = this.getAuthToken(accessTokenObject);
 
-        String nick = GlobalAuthUtils.urlDecode(accessTokenObject.getString("taobao_user_nick"));
+        String nick = GlobalAuthUtils.urlDecode(getStringValue(accessTokenObject, "taobao_user_nick"));
         return AuthUser.builder()
                 .rawUserInfo(accessTokenObject)
                 .uuid(StringUtils.isEmpty(authToken.getUid()) ? authToken.getOpenId() : authToken.getUid())
@@ -83,7 +83,7 @@ public class AuthTaobaoRequest extends AuthDefaultRequest {
     public AuthResponse<AuthToken> refresh(AuthToken oldToken) {
         String tokenUrl = refreshTokenUrl(oldToken.getRefreshToken());
         String response = UnifiedHttpClient.getAdapter().post(tokenUrl).getBody();
-        JSONObject accessTokenObject = JSONObject.parseObject(response);
+        JsonNode accessTokenObject = toNode(response);
         return AuthResponse.<AuthToken>builder()
                 .code(AuthResponseStatus.SUCCESS.getCode())
                 .data(this.getAuthToken(accessTokenObject))
@@ -100,11 +100,11 @@ public class AuthTaobaoRequest extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(source.authorize())
-                .queryParam(Keys.OAUTH2_RESPONSE_TYPE, Keys.OAUTH2_CODE)
-                .queryParam(Keys.OAUTH2_CLIENT_ID, config.getClientId())
-                .queryParam(Keys.OAUTH2_REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2__RESPONSE_TYPE, Keys.OAUTH2__CODE)
+                .queryParam(Keys.OAUTH2__CLIENT_ID, config.getClientId())
+                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
                 .queryParam("view", "web")
-                .queryParam(Keys.OAUTH2_STATE, getRealState(state))
+                .queryParam(Keys.OAUTH2__STATE, getRealState(state))
                 .build();
     }
 }

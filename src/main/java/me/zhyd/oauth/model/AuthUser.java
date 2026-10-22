@@ -1,8 +1,8 @@
 package me.zhyd.oauth.model;
 
-import com.alibaba.fastjson2.JSONObject;
 import lombok.*;
 import me.zhyd.oauth.enums.AuthUserGender;
+import tools.jackson.databind.JsonNode;
 
 import java.io.Serializable;
 
@@ -75,7 +75,7 @@ public class AuthUser implements Serializable {
     /**
      * 第三方平台返回的原始用户信息
      */
-    private JSONObject rawUserInfo;
+    private JsonNode rawUserInfo;
 
     /**
      * 微信公众号 - 网页授权的登录时可用

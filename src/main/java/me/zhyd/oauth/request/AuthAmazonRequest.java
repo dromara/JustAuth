@@ -22,6 +22,7 @@ import me.zhyd.oauth.utils.AuthScopeUtils;
 import me.zhyd.oauth.utils.PkceUtil;
 import me.zhyd.oauth.utils.TokenUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
+import tools.jackson.databind.JsonNode;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -55,11 +56,11 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
     public String authorize(String state) {
         String realState = getRealState(state);
         UrlBuilder builder = UrlBuilder.fromBaseUrl(source.authorize())
-                .queryParam(Keys.OAUTH2_CLIENT_ID, config.getClientId())
-                .queryParam(Keys.OAUTH2_SCOPE, this.getScopes(" ", true, AuthScopeUtils.getDefaultScopes(AuthAmazonScope.values())))
-                .queryParam(Keys.OAUTH2_REDIRECT_URI, config.getRedirectUri())
-                .queryParam(Keys.OAUTH2_RESPONSE_TYPE, Keys.OAUTH2_CODE)
-                .queryParam(Keys.OAUTH2_STATE, realState);
+                .queryParam(Keys.OAUTH2__CLIENT_ID, config.getClientId())
+                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(" ", true, AuthScopeUtils.getDefaultScopes(AuthAmazonScope.values())))
+                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2__RESPONSE_TYPE, Keys.OAUTH2__CODE)
+                .queryParam(Keys.OAUTH2__STATE, realState);
 
         if (config.isPkce()) {
             String cacheKey = this.source.getName().concat(":code_verifier:").concat(realState);
@@ -83,11 +84,11 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
         Map<String, String> form = new HashMap<>(9);
-        form.put(Keys.OAUTH2_GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
-        form.put(Keys.OAUTH2_CODE, authCallback.getCode());
-        form.put(Keys.OAUTH2_REDIRECT_URI, config.getRedirectUri());
-        form.put(Keys.OAUTH2_CLIENT_ID, config.getClientId());
-        form.put(Keys.OAUTH2_CLIENT_SECRET, config.getClientSecret());
+        form.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
+        form.put(Keys.OAUTH2__CODE, authCallback.getCode());
+        form.put(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri());
+        form.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
+        form.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
 
         if (config.isPkce()) {
             String cacheKey = this.source.getName().concat(":code_verifier:").concat(authCallback.getState());
@@ -100,10 +101,10 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
     @Override
     public AuthResponse<AuthToken> refresh(AuthToken authToken) {
         Map<String, String> form = new HashMap<>(7);
-        form.put(Keys.OAUTH2_GRANT_TYPE, Keys.OAUTH2_REFRESH_TOKEN);
-        form.put(Keys.OAUTH2_REFRESH_TOKEN, authToken.getRefreshToken());
-        form.put(Keys.OAUTH2_CLIENT_ID, config.getClientId());
-        form.put(Keys.OAUTH2_CLIENT_SECRET, config.getClientSecret());
+        form.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__REFRESH_TOKEN);
+        form.put(Keys.OAUTH2__REFRESH_TOKEN, authToken.getRefreshToken());
+        form.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
+        form.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
         return AuthResponse.<AuthToken>builder()
                 .code(AuthResponseStatus.SUCCESS.getCode())
                 .data(getToken(form, this.source.refresh()))
@@ -116,24 +117,24 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
         httpHeader.add(HttpHeaders.HOST, "api.amazon.com");
         httpHeader.add(HttpConstants.CONTENT_TYPE, "application/x-www-form-urlencoded;charset=UTF-8");
         String response = UnifiedHttpClient.getAdapter().post(url, param, httpHeader, false).getBody();
-        JSONObject jsonObject = JSONObject.parseObject(response);
-        this.checkResponse(jsonObject);
+        JsonNode accessTokenObject = toNode(response);
+        this.checkResponse(accessTokenObject);
         return AuthToken.builder()
-                .accessToken(jsonObject.getString(Keys.OAUTH2_ACCESS_TOKEN))
-                .tokenType(jsonObject.getString(Keys.OAUTH2_TOKEN_TYPE))
-                .expireIn(jsonObject.getIntValue(Keys.OAUTH2_EXPIRES_IN))
-                .refreshToken(jsonObject.getString(Keys.OAUTH2_REFRESH_TOKEN))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
+                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
                 .build();
     }
 
     /**
      * 校验响应内容是否正确
      *
-     * @param jsonObject 响应内容
+     * @param jsonNode 响应内容
      */
-    private void checkResponse(JSONObject jsonObject) {
-        if (jsonObject.containsKey(Keys.ERROR)) {
-            throw new AuthException(jsonObject.getString(Keys.ERROR_DESCRIPTION).concat(" ") + jsonObject.getString(Keys.ERROR_DESCRIPTION));
+    private void checkResponse(JsonNode jsonNode) {
+        if (containsKey(jsonNode, Keys.ERROR)) {
+            throw new AuthException(getStringValue(jsonNode, Keys.ERROR_DESCRIPTION).concat(" ") + getStringValue(jsonNode, Keys.ERROR_DESCRIPTION));
         }
     }
 
@@ -152,15 +153,15 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
         httpHeader.add(HttpHeaders.HOST, "api.amazon.com");
         httpHeader.add(HttpHeaders.AUTHORIZATION, TokenUtils.bearer(accessToken));
         String userInfo = UnifiedHttpClient.getAdapter().get(this.source.userInfo(), new HashMap<>(0), httpHeader, false).getBody();
-        JSONObject jsonObject = JSONObject.parseObject(userInfo);
-        this.checkResponse(jsonObject);
+        JsonNode userInfoObject = toNode(userInfo);
+        this.checkResponse(userInfoObject);
 
         return AuthUser.builder()
-                .rawUserInfo(jsonObject)
-                .uuid(jsonObject.getString(Keys.VARIANT__USER_ID))
-                .username(jsonObject.getString(Keys.NAME))
-                .nickname(jsonObject.getString(Keys.NAME))
-                .email(jsonObject.getString(Keys.OAUTH2_SCOPE__EMAIL))
+                .rawUserInfo(userInfoObject)
+                .uuid(getStringValue(userInfoObject, Keys.VARIANT__USER_ID))
+                .username(getStringValue(userInfoObject, Keys.NAME))
+                .nickname(getStringValue(userInfoObject, Keys.NAME))
+                .email(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
                 .gender(AuthUserGender.UNKNOWN)
                 .source(source.toString())
                 .token(authToken)

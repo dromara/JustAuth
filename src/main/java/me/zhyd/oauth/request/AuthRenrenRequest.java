@@ -1,7 +1,5 @@
 package me.zhyd.oauth.request;
 
-import com.alibaba.fastjson2.JSONArray;
-import com.alibaba.fastjson2.JSONObject;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.constant.Keys;
@@ -16,6 +14,7 @@ import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
+import tools.jackson.databind.JsonNode;
 
 import java.util.Objects;
 
@@ -46,15 +45,17 @@ public class AuthRenrenRequest extends AuthDefaultRequest {
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
         String response = doGetUserInfo(authToken);
-        JSONObject userObj = JSONObject.parseObject(response).getJSONObject("response");
+
+        JsonNode object = toNode(response);
+        JsonNode userInfoObject = getObjectNode(object, "response");
 
         return AuthUser.builder()
-                .rawUserInfo(userObj)
-                .uuid(userObj.getString(Keys.ID))
-                .avatar(getAvatarUrl(userObj))
-                .nickname(userObj.getString(Keys.NAME))
-                .company(getCompany(userObj))
-                .gender(getGender(userObj))
+                .rawUserInfo(userInfoObject)
+                .uuid(getStringValue(userInfoObject, Keys.ID))
+                .avatar(getAvatarUrl(userInfoObject))
+                .nickname(getStringValue(userInfoObject, Keys.NAME))
+                .company(getCompany(userInfoObject))
+                .gender(getGender(userInfoObject))
                 .token(authToken)
                 .source(source.toString())
                 .build();
@@ -70,42 +71,44 @@ public class AuthRenrenRequest extends AuthDefaultRequest {
 
     private AuthToken getToken(String url) {
         String response = UnifiedHttpClient.getAdapter().post(url).getBody();
-        JSONObject jsonObject = JSONObject.parseObject(response);
-        if (jsonObject.containsKey(Keys.ERROR)) {
-            throw new AuthException("Failed to get token from Renren: " + jsonObject);
+        JsonNode accessTokenObject = toNode(response);
+        if (containsKey(accessTokenObject, Keys.ERROR)) {
+            throw new AuthException("Failed to get token from Renren: " + accessTokenObject.toString());
         }
 
+        JsonNode userObject = getObjectNode(accessTokenObject, "user");
+
         return AuthToken.builder()
-                .tokenType(jsonObject.getString(Keys.OAUTH2_TOKEN_TYPE))
-                .expireIn(jsonObject.getIntValue(Keys.OAUTH2_EXPIRES_IN))
-                .accessToken(HttpUrlEncoding.encode(jsonObject.getString(Keys.OAUTH2_ACCESS_TOKEN)))
-                .refreshToken(HttpUrlEncoding.encode(jsonObject.getString(Keys.OAUTH2_REFRESH_TOKEN)))
-                .openId(jsonObject.getJSONObject("user").getString(Keys.ID))
+                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
+                .accessToken(HttpUrlEncoding.encode(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN)))
+                .refreshToken(HttpUrlEncoding.encode(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN)))
+                .openId(getStringValue(userObject, Keys.ID))
                 .build();
     }
 
-    private String getAvatarUrl(JSONObject userObj) {
-        JSONArray jsonArray = userObj.getJSONArray(Keys.AVATAR);
+    private String getAvatarUrl(JsonNode userObj) {
+        JsonNode jsonArray = getArrayNode(userObj, Keys.AVATAR);
         if (Objects.isNull(jsonArray) || jsonArray.isEmpty()) {
             return null;
         }
-        return jsonArray.getJSONObject(0).getString(Keys.URL);
+        return getStringValue(jsonArray.asArray().get(0), Keys.URL);
     }
 
-    private AuthUserGender getGender(JSONObject userObj) {
-        JSONObject basicInformation = userObj.getJSONObject("basicInformation");
+    private AuthUserGender getGender(JsonNode userObj) {
+        JsonNode basicInformation = getObjectNode(userObj, "basicInformation");
         if (Objects.isNull(basicInformation)) {
             return AuthUserGender.UNKNOWN;
         }
-        return AuthUserGender.getRealGender(basicInformation.getString("sex"));
+        return AuthUserGender.getRealGender(getStringValue(basicInformation, "sex"));
     }
 
-    private String getCompany(JSONObject userObj) {
-        JSONArray jsonArray = userObj.getJSONArray("work");
+    private String getCompany(JsonNode userObj) {
+        JsonNode jsonArray = getArrayNode(userObj, "work");
         if (Objects.isNull(jsonArray) || jsonArray.isEmpty()) {
             return null;
         }
-        return jsonArray.getJSONObject(0).getString(Keys.NAME);
+        return getStringValue(jsonArray.asArray().get(0), Keys.NAME);
     }
 
     /**
@@ -117,7 +120,7 @@ public class AuthRenrenRequest extends AuthDefaultRequest {
     @Override
     protected String userInfoUrl(AuthToken authToken) {
         return UrlBuilder.fromBaseUrl(source.userInfo())
-                .queryParam(Keys.OAUTH2_ACCESS_TOKEN, authToken.getAccessToken())
+                .queryParam(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken())
                 .queryParam("userId", authToken.getOpenId())
                 .build();
     }
@@ -125,7 +128,7 @@ public class AuthRenrenRequest extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(super.authorize(state))
-                .queryParam(Keys.OAUTH2_SCOPE, this.getScopes(",", false, AuthScopeUtils.getDefaultScopes(AuthRenrenScope.values())))
+                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(",", false, AuthScopeUtils.getDefaultScopes(AuthRenrenScope.values())))
                 .build();
     }
 }

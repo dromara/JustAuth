@@ -1,6 +1,5 @@
 package me.zhyd.oauth.request;
 
-import com.alibaba.fastjson2.JSONObject;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
@@ -13,6 +12,7 @@ import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.GlobalAuthUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
+import tools.jackson.databind.JsonNode;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -45,21 +45,22 @@ public class AuthXmlyRequest extends AuthDefaultRequest {
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
         Map<String, String> map = new HashMap<>(9);
-        map.put(Keys.OAUTH2_CODE, authCallback.getCode());
-        map.put(Keys.OAUTH2_CLIENT_ID, config.getClientId());
-        map.put(Keys.OAUTH2_CLIENT_SECRET, config.getClientSecret());
+        map.put(Keys.OAUTH2__CODE, authCallback.getCode());
+        map.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
+        map.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
         map.put("device_id", config.getDeviceId());
-        map.put(Keys.OAUTH2_GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
-        map.put(Keys.OAUTH2_REDIRECT_URI, config.getRedirectUri());
+        map.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
+        map.put(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri());
         String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), map, true).getBody();
-        JSONObject accessTokenObject = JSONObject.parseObject(response);
+
+        JsonNode accessTokenObject = toNode(response);
         this.checkResponse(accessTokenObject);
 
         return AuthToken.builder()
-                .accessToken(accessTokenObject.getString(Keys.OAUTH2_ACCESS_TOKEN))
-                .refreshToken(accessTokenObject.getString(Keys.OAUTH2_REFRESH_TOKEN))
-                .expireIn(accessTokenObject.getIntValue(Keys.OAUTH2_EXPIRES_IN))
-                .uid(accessTokenObject.getString(Keys.UID))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
+                .uid(getStringValue(accessTokenObject, Keys.UID))
                 .build();
     }
 
@@ -73,10 +74,10 @@ public class AuthXmlyRequest extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(source.authorize())
-                .queryParam(Keys.OAUTH2_RESPONSE_TYPE, Keys.OAUTH2_CODE)
-                .queryParam(Keys.OAUTH2_CLIENT_ID, config.getClientId())
-                .queryParam(Keys.OAUTH2_REDIRECT_URI, config.getRedirectUri())
-                .queryParam(Keys.OAUTH2_STATE, getRealState(state))
+                .queryParam(Keys.OAUTH2__RESPONSE_TYPE, Keys.OAUTH2__CODE)
+                .queryParam(Keys.OAUTH2__CLIENT_ID, config.getClientId())
+                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2__STATE, getRealState(state))
                 .queryParam("client_os_type", "3")
                 .queryParam("device_id", config.getDeviceId())
                 .build();
@@ -96,16 +97,17 @@ public class AuthXmlyRequest extends AuthDefaultRequest {
         map.put("client_os_type", Optional.ofNullable(config.getClientOsType()).orElse(3).toString());
         map.put("device_id", config.getDeviceId());
         map.put("pack_id", config.getPackId());
-        map.put(Keys.OAUTH2_ACCESS_TOKEN, authToken.getAccessToken());
+        map.put(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken());
         map.put("sig", GlobalAuthUtils.generateXmlySignature(map, config.getClientSecret()));
         String rawUserInfo = UnifiedHttpClient.getAdapter().get(source.userInfo(), map, false).getBody();
-        JSONObject object = JSONObject.parseObject(rawUserInfo);
-        checkResponse(object);
+
+        JsonNode userInfoObject = toNode(rawUserInfo);
+        checkResponse(userInfoObject);
         return AuthUser.builder()
-                .uuid(object.getString(Keys.ID))
-                .nickname(object.getString(Keys.NICKNAME))
-                .avatar(object.getString(Keys.AVATAR_URL))
-                .rawUserInfo(object)
+                .uuid(getStringValue(userInfoObject, Keys.ID))
+                .nickname(getStringValue(userInfoObject, Keys.NICKNAME))
+                .avatar(getStringValue(userInfoObject, Keys.AVATAR_URL))
+                .rawUserInfo(userInfoObject)
                 .source(source.toString())
                 .token(authToken)
                 .gender(AuthUserGender.UNKNOWN)
@@ -115,11 +117,11 @@ public class AuthXmlyRequest extends AuthDefaultRequest {
     /**
      * 校验响应结果
      *
-     * @param object 接口返回的结果
+     * @param jsonNode 接口返回的结果
      */
-    private void checkResponse(JSONObject object) {
-        if (object.containsKey(Keys.VARIANT__ERRCODE)) {
-            throw new AuthException(object.getIntValue("error_no"), object.getString("error_desc"));
+    private void checkResponse(JsonNode jsonNode) {
+        if (containsKey(jsonNode, Keys.VARIANT__ERRCODE)) {
+            throw new AuthException(getIntValue(jsonNode, "error_no"), getStringValue(jsonNode, "error_desc"));
         }
     }
 }

@@ -1,6 +1,5 @@
 package me.zhyd.oauth.request;
 
-import com.alibaba.fastjson2.JSONObject;
 import com.google.common.net.HttpHeaders;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
@@ -15,6 +14,7 @@ import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.GlobalAuthUtils;
 import me.zhyd.oauth.utils.MapUtil;
 import me.zhyd.oauth.utils.UrlBuilder;
+import tools.jackson.databind.JsonNode;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -134,20 +134,21 @@ public class AuthTwitterRequest extends AuthDefaultRequest {
 
         HttpHeader httpHeader = new HttpHeader();
         httpHeader.add(HttpHeaders.AUTHORIZATION, header);
+
         String response = UnifiedHttpClient.getAdapter().get(userInfoUrl(authToken), null, httpHeader, false).getBody();
-        JSONObject userInfo = JSONObject.parseObject(response);
+        JsonNode userInfoObject = toNode(response);
 
         return AuthUser.builder()
-                .rawUserInfo(userInfo)
-                .uuid(userInfo.getString("id_str"))
-                .username(userInfo.getString("screen_name"))
-                .nickname(userInfo.getString(Keys.NAME))
-                .remark(userInfo.getString(Keys.DESCRIPTION))
-                .avatar(userInfo.getString("profile_image_url_https"))
-                .blog(userInfo.getString(Keys.URL))
-                .location(userInfo.getString(Keys.LOCATION))
-                .avatar(userInfo.getString("profile_image_url"))
-                .email(userInfo.getString(Keys.OAUTH2_SCOPE__EMAIL))
+                .rawUserInfo(userInfoObject)
+                .uuid(getStringValue(userInfoObject, "id_str"))
+                .username(getStringValue(userInfoObject, "screen_name"))
+                .nickname(getStringValue(userInfoObject, Keys.NAME))
+                .remark(getStringValue(userInfoObject, Keys.DESCRIPTION))
+                .avatar(getStringValue(userInfoObject, "profile_image_url_https"))
+                .blog(getStringValue(userInfoObject, Keys.URL))
+                .location(getStringValue(userInfoObject, Keys.LOCATION))
+                .avatar(getStringValue(userInfoObject, "profile_image_url"))
+                .email(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
                 .source(source.toString())
                 .token(authToken)
                 .build();

@@ -31,10 +31,10 @@ public class AuthWeChatEnterpriseWebRequest extends AbstractAuthWeChatEnterprise
         return UrlBuilder.fromBaseUrl(source.authorize())
                 .queryParam(Keys.APPID, config.getClientId())
                 .queryParam("agentid", config.getAgentId())
-                .queryParam(Keys.OAUTH2_REDIRECT_URI, GlobalAuthUtils.urlEncode(config.getRedirectUri()))
-                .queryParam(Keys.OAUTH2_RESPONSE_TYPE, Keys.OAUTH2_CODE)
-                .queryParam(Keys.OAUTH2_SCOPE, this.getScopes(",", false, AuthScopeUtils.getDefaultScopes(AuthWeChatEnterpriseWebScope.values())))
-                .queryParam(Keys.OAUTH2_STATE, getRealState(state).concat("#wechat_redirect"))
+                .queryParam(Keys.OAUTH2__REDIRECT_URI, GlobalAuthUtils.urlEncode(config.getRedirectUri()))
+                .queryParam(Keys.OAUTH2__RESPONSE_TYPE, Keys.OAUTH2__CODE)
+                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(",", false, AuthScopeUtils.getDefaultScopes(AuthWeChatEnterpriseWebScope.values())))
+                .queryParam(Keys.OAUTH2__STATE, getRealState(state).concat("#wechat_redirect"))
                 .build();
     }
 }

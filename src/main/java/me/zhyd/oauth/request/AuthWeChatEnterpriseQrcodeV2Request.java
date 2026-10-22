@@ -35,8 +35,8 @@ public class AuthWeChatEnterpriseQrcodeV2Request extends AbstractAuthWeChatEnter
                 .queryParam(Keys.APPID, config.getClientId())
                 // 企业自建应用/服务商代开发应用 AgentID，当login_type=CorpApp时填写
                 .queryParam("agentid", config.getAgentId())
-                .queryParam(Keys.OAUTH2_REDIRECT_URI, GlobalAuthUtils.urlEncode(config.getRedirectUri()))
-                .queryParam(Keys.OAUTH2_STATE, getRealState(state))
+                .queryParam(Keys.OAUTH2__REDIRECT_URI, GlobalAuthUtils.urlEncode(config.getRedirectUri()))
+                .queryParam(Keys.OAUTH2__STATE, getRealState(state))
                 .queryParam("lang", config.getLang())
                 .build()
                 .concat("#wechat_redirect");
@@ -45,7 +45,7 @@ public class AuthWeChatEnterpriseQrcodeV2Request extends AbstractAuthWeChatEnter
     @Override
     protected void checkConfig(AuthConfig config) {
         super.checkConfig(config);
-        if ("CorpApp" .equals(config.getLoginType()) && StringUtils.isEmpty(config.getAgentId())) {
+        if ("CorpApp".equals(config.getLoginType()) && StringUtils.isEmpty(config.getAgentId())) {
             throw new AuthException(AuthResponseStatus.ILLEGAL_WECHAT_AGENT_ID, source);
         }
     }

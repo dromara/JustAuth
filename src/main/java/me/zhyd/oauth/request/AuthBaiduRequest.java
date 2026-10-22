@@ -1,6 +1,5 @@
 package me.zhyd.oauth.request;
 
-import com.alibaba.fastjson2.JSONObject;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
@@ -17,6 +16,7 @@ import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
 import org.apache.commons.lang3.StringUtils;
+import tools.jackson.databind.JsonNode;
 
 /**
  * 百度账号登录
@@ -51,43 +51,43 @@ public class AuthBaiduRequest extends AuthDefaultRequest {
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
         String userInfo = doGetUserInfo(authToken);
-        JSONObject object = JSONObject.parseObject(userInfo);
-        this.checkResponse(object);
+        JsonNode userInfoObject = toNode(userInfo);
+        this.checkResponse(userInfoObject);
         return AuthUser.builder()
-                .rawUserInfo(object)
-                .uuid(object.containsKey(Keys.USERID) ? object.getString(Keys.USERID) : object.getString(Keys.OAUTH2_SCOPE__OPENID))
-                .username(object.getString(Keys.USERNAME))
-                .nickname(object.getString(Keys.USERNAME))
-                .avatar(getAvatar(object))
-                .remark(object.getString("userdetail"))
-                .gender(AuthUserGender.getRealGender(object.getString("sex")))
+                .rawUserInfo(userInfoObject)
+                .uuid(containsKey(userInfoObject, Keys.USERID) ? getStringValue(userInfoObject, Keys.USERID) : getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__OPENID))
+                .username(getStringValue(userInfoObject, Keys.USERNAME))
+                .nickname(getStringValue(userInfoObject, Keys.USERNAME))
+                .avatar(getAvatar(userInfoObject))
+                .remark(getStringValue(userInfoObject, "userdetail"))
+                .gender(AuthUserGender.getRealGender(getStringValue(userInfoObject, "sex")))
                 .token(authToken)
                 .source(source.toString())
                 .build();
     }
 
-    private String getAvatar(JSONObject object) {
-        String protrait = object.getString("portrait");
+    private String getAvatar(JsonNode object) {
+        String protrait = getStringValue(object, "portrait");
         return StringUtils.isEmpty(protrait) ? null : String.format("http://himg.bdimg.com/sys/portrait/item/%s.jpg", protrait);
     }
 
     @Override
     public AuthResponse<?> revoke(AuthToken authToken) {
         String response = doGetRevoke(authToken);
-        JSONObject object = JSONObject.parseObject(response);
+        JsonNode object = toNode(response);
         this.checkResponse(object);
         // 返回1表示取消授权成功，否则失败
-        AuthResponseStatus status = object.getIntValue(Keys.RESULT) == 1 ? AuthResponseStatus.SUCCESS : AuthResponseStatus.FAILURE;
+        AuthResponseStatus status = getIntValue(object, Keys.RESULT) == 1 ? AuthResponseStatus.SUCCESS : AuthResponseStatus.FAILURE;
         return AuthResponse.builder().code(status.getCode()).msg(status.getMsg()).build();
     }
 
     @Override
     public AuthResponse<AuthToken> refresh(AuthToken authToken) {
         String refreshUrl = UrlBuilder.fromBaseUrl(this.source.refresh())
-                .queryParam(Keys.OAUTH2_GRANT_TYPE, Keys.OAUTH2_REFRESH_TOKEN)
-                .queryParam(Keys.OAUTH2_REFRESH_TOKEN, authToken.getRefreshToken())
-                .queryParam(Keys.OAUTH2_CLIENT_ID, this.config.getClientId())
-                .queryParam(Keys.OAUTH2_CLIENT_SECRET, this.config.getClientSecret())
+                .queryParam(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__REFRESH_TOKEN)
+                .queryParam(Keys.OAUTH2__REFRESH_TOKEN, authToken.getRefreshToken())
+                .queryParam(Keys.OAUTH2__CLIENT_ID, this.config.getClientId())
+                .queryParam(Keys.OAUTH2__CLIENT_SECRET, this.config.getClientSecret())
                 .build();
         String response = UnifiedHttpClient.getAdapter().get(refreshUrl).getBody();
         return AuthResponse.<AuthToken>builder()
@@ -107,7 +107,7 @@ public class AuthBaiduRequest extends AuthDefaultRequest {
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(super.authorize(state))
                 .queryParam("display", "popup")
-                .queryParam(Keys.OAUTH2_SCOPE, this.getScopes(" ", true, AuthScopeUtils.getDefaultScopes(AuthBaiduScope.values())))
+                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(" ", true, AuthScopeUtils.getDefaultScopes(AuthBaiduScope.values())))
                 .build();
     }
 
@@ -116,21 +116,21 @@ public class AuthBaiduRequest extends AuthDefaultRequest {
      *
      * @param object 请求响应内容
      */
-    private void checkResponse(JSONObject object) {
-        if (object.containsKey(Keys.ERROR) || object.containsKey(Keys.ERROR_CODE)) {
-            String msg = object.containsKey(Keys.ERROR_DESCRIPTION) ? object.getString(Keys.ERROR_DESCRIPTION) : object.getString("error_msg");
+    private void checkResponse(JsonNode object) {
+        if (containsKey(object, Keys.ERROR) || containsKey(object, Keys.ERROR_CODE)) {
+            String msg = containsKey(object, Keys.ERROR_DESCRIPTION) ? getStringValue(object, Keys.ERROR_DESCRIPTION) : getStringValue(object, "error_msg");
             throw new AuthException(msg);
         }
     }
 
     private AuthToken getAuthToken(String response) {
-        JSONObject accessTokenObject = JSONObject.parseObject(response);
+        JsonNode accessTokenObject = toNode(response);
         this.checkResponse(accessTokenObject);
         return AuthToken.builder()
-                .accessToken(accessTokenObject.getString(Keys.OAUTH2_ACCESS_TOKEN))
-                .refreshToken(accessTokenObject.getString(Keys.OAUTH2_REFRESH_TOKEN))
-                .scope(accessTokenObject.getString(Keys.OAUTH2_SCOPE))
-                .expireIn(accessTokenObject.getIntValue(Keys.OAUTH2_EXPIRES_IN))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
+                .scope(getStringValue(accessTokenObject, Keys.OAUTH2__SCOPE))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
                 .build();
     }
 }

@@ -19,6 +19,7 @@ import me.zhyd.oauth.utils.GlobalAuthUtils;
 import me.zhyd.oauth.utils.TokenUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
 import me.zhyd.oauth.utils.UuidUtils;
+import tools.jackson.databind.JsonNode;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -47,22 +48,22 @@ public class AuthElemeRequest extends AuthDefaultRequest {
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
         Map<String, String> form = new HashMap<>(7);
-        form.put(Keys.OAUTH2_CLIENT_ID, config.getClientId());
-        form.put(Keys.OAUTH2_REDIRECT_URI, config.getRedirectUri());
-        form.put(Keys.OAUTH2_CODE, authCallback.getCode());
-        form.put(Keys.OAUTH2_GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
+        form.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
+        form.put(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri());
+        form.put(Keys.OAUTH2__CODE, authCallback.getCode());
+        form.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
 
         HttpHeader httpHeader = this.buildHeader(CONTENT_TYPE_FORM, this.getRequestId(), true);
         String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), form, httpHeader, false).getBody();
-        JSONObject object = JSONObject.parseObject(response);
 
+        JsonNode object = toNode(response);
         this.checkResponse(object);
 
         return AuthToken.builder()
-                .accessToken(object.getString(Keys.OAUTH2_ACCESS_TOKEN))
-                .refreshToken(object.getString(Keys.OAUTH2_REFRESH_TOKEN))
-                .tokenType(object.getString(Keys.OAUTH2_TOKEN_TYPE))
-                .expireIn(object.getIntValue(Keys.OAUTH2_EXPIRES_IN))
+                .accessToken(getStringValue(object, Keys.OAUTH2__ACCESS_TOKEN))
+                .expireIn(getIntValue(object, Keys.OAUTH2__EXPIRES_IN))
+                .refreshToken(getStringValue(object, Keys.OAUTH2__REFRESH_TOKEN))
+                .tokenType(getStringValue(object, Keys.OAUTH2__TOKEN_TYPE))
                 .build();
     }
 
@@ -94,23 +95,24 @@ public class AuthElemeRequest extends AuthDefaultRequest {
         HttpHeader httpHeader = this.buildHeader(CONTENT_TYPE_JSON, requestId, false);
         String response = UnifiedHttpClient.getAdapter().post(source.userInfo(), JSONObject.toJSONString(paramsMap), httpHeader).getBody();
 
-        JSONObject object = JSONObject.parseObject(response);
+        JsonNode object = toNode(response);
 
         // 校验请求
-        if (object.containsKey(Keys.NAME)) {
-            throw new AuthException(object.getString(Keys.MESSAGE));
+        if (containsKey(object, Keys.NAME)) {
+            throw new AuthException(getStringValue(object, Keys.MESSAGE));
         }
-        if (object.containsKey(Keys.ERROR) && null != object.get(Keys.ERROR)) {
-            throw new AuthException(object.getJSONObject(Keys.ERROR).getString(Keys.MESSAGE));
+        if (containsKey(object, Keys.ERROR) && null != object.get(Keys.ERROR)) {
+            JsonNode error = object.get(Keys.ERROR);
+            throw new AuthException(getStringValue(error, Keys.MESSAGE));
         }
 
-        JSONObject result = object.getJSONObject(Keys.RESULT);
+        JsonNode userInfoObject = getObjectNode(object, Keys.RESULT);
 
         return AuthUser.builder()
-                .rawUserInfo(result)
-                .uuid(result.getString("userId"))
-                .username(result.getString("userName"))
-                .nickname(result.getString("userName"))
+                .rawUserInfo(userInfoObject)
+                .uuid(getStringValue(userInfoObject, "userId"))
+                .username(getStringValue(userInfoObject, "userName"))
+                .nickname(getStringValue(userInfoObject, "userName"))
                 .gender(AuthUserGender.UNKNOWN)
                 .token(authToken)
                 .source(source.toString())
@@ -120,30 +122,30 @@ public class AuthElemeRequest extends AuthDefaultRequest {
     @Override
     public AuthResponse<AuthToken> refresh(AuthToken oldToken) {
         Map<String, String> form = new HashMap<>(4);
-        form.put(Keys.OAUTH2_REFRESH_TOKEN, oldToken.getRefreshToken());
-        form.put(Keys.OAUTH2_GRANT_TYPE, Keys.OAUTH2_REFRESH_TOKEN);
+        form.put(Keys.OAUTH2__REFRESH_TOKEN, oldToken.getRefreshToken());
+        form.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__REFRESH_TOKEN);
 
         HttpHeader httpHeader = this.buildHeader(CONTENT_TYPE_FORM, this.getRequestId(), true);
         String response = UnifiedHttpClient.getAdapter().post(source.refresh(), form, httpHeader, false).getBody();
 
-        JSONObject object = JSONObject.parseObject(response);
+        JsonNode object = toNode(response);
 
         this.checkResponse(object);
 
         return AuthResponse.<AuthToken>builder()
                 .code(AuthResponseStatus.SUCCESS.getCode())
                 .data(AuthToken.builder()
-                        .accessToken(object.getString(Keys.OAUTH2_ACCESS_TOKEN))
-                        .refreshToken(object.getString(Keys.OAUTH2_REFRESH_TOKEN))
-                        .tokenType(object.getString(Keys.OAUTH2_TOKEN_TYPE))
-                        .expireIn(object.getIntValue(Keys.OAUTH2_EXPIRES_IN))
+                        .accessToken(getStringValue(object, Keys.OAUTH2__ACCESS_TOKEN))
+                        .refreshToken(getStringValue(object, Keys.OAUTH2__REFRESH_TOKEN))
+                        .tokenType(getStringValue(object, Keys.OAUTH2__TOKEN_TYPE))
+                        .expireIn(getIntValue(object, Keys.OAUTH2__EXPIRES_IN))
                         .build())
                 .build();
     }
 
     @Override
     public String authorize(String state) {
-        return UrlBuilder.fromBaseUrl(super.authorize(state)).queryParam(Keys.OAUTH2_SCOPE, "all").build();
+        return UrlBuilder.fromBaseUrl(super.authorize(state)).queryParam(Keys.OAUTH2__SCOPE, "all").build();
     }
 
     private HttpHeader buildHeader(String contentType, String requestId, boolean auth) {
@@ -163,9 +165,9 @@ public class AuthElemeRequest extends AuthDefaultRequest {
         return (UuidUtils.getUUID() + "|" + System.currentTimeMillis()).toUpperCase();
     }
 
-    private void checkResponse(JSONObject object) {
-        if (object.containsKey(Keys.ERROR)) {
-            throw new AuthException(object.getString(Keys.ERROR_DESCRIPTION));
+    private void checkResponse(JsonNode object) {
+        if (containsKey(object, Keys.ERROR)) {
+            throw new AuthException(getStringValue(object, Keys.ERROR_DESCRIPTION));
         }
     }
 

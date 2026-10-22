@@ -1,7 +1,5 @@
 package me.zhyd.oauth.request;
 
-import com.alibaba.fastjson2.JSONArray;
-import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.JSONPath;
 import com.google.common.net.HttpHeaders;
 import me.zhyd.oauth.cache.AuthStateCache;
@@ -20,6 +18,7 @@ import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
 import me.zhyd.oauth.utils.TokenUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
+import tools.jackson.databind.JsonNode;
 
 
 /**
@@ -52,7 +51,7 @@ public class AuthLinkedinRequest extends AuthDefaultRequest {
         httpHeader.add(HttpHeaders.AUTHORIZATION, TokenUtils.bearer(accessToken));
 
         String response = UnifiedHttpClient.getAdapter().get(userInfoUrl(authToken), null, httpHeader, false).getBody();
-        JSONObject userInfoObject = JSONObject.parseObject(response);
+        JsonNode userInfoObject = toNode(response);
 
         this.checkResponse(userInfoObject);
 
@@ -65,7 +64,7 @@ public class AuthLinkedinRequest extends AuthDefaultRequest {
         String email = this.getUserEmail(accessToken);
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
-                .uuid(userInfoObject.getString(Keys.ID))
+                .uuid(getStringValue(userInfoObject, Keys.ID))
                 .username(userName)
                 .nickname(userName)
                 .avatar(avatar)
@@ -82,18 +81,18 @@ public class AuthLinkedinRequest extends AuthDefaultRequest {
      * @param userInfoObject 用户json对象
      * @return 用户名
      */
-    private String getUserName(JSONObject userInfoObject) {
+    private String getUserName(JsonNode userInfoObject) {
         String firstName;
         String lastName;
         // 获取firstName
-        if (userInfoObject.containsKey("localizedFirstName")) {
-            firstName = userInfoObject.getString("localizedFirstName");
+        if (containsKey(userInfoObject, "localizedFirstName")) {
+            firstName = getStringValue(userInfoObject, "localizedFirstName");
         } else {
-            firstName = getUserName(userInfoObject, "firstName");
+            firstName = getStringValue(userInfoObject, "firstName");
         }
         // 获取lastName
-        if (userInfoObject.containsKey("localizedLastName")) {
-            lastName = userInfoObject.getString("localizedLastName");
+        if (containsKey(userInfoObject, "localizedLastName")) {
+            lastName = getStringValue(userInfoObject, "localizedLastName");
         } else {
             lastName = getUserName(userInfoObject, "lastName");
         }
@@ -106,28 +105,28 @@ public class AuthLinkedinRequest extends AuthDefaultRequest {
      * @param userInfoObject 用户json对象
      * @return 用户的头像地址
      */
-    private String getAvatar(JSONObject userInfoObject) {
-        JSONObject profilePictureObject = userInfoObject.getJSONObject("profilePicture");
-        if (null == profilePictureObject || !profilePictureObject.containsKey("displayImage~")) {
+    private String getAvatar(JsonNode userInfoObject) {
+        JsonNode profilePictureObject = getObjectNode(userInfoObject, "profilePicture");
+        if (null == profilePictureObject || !containsKey(profilePictureObject, "displayImage~")) {
             return null;
         }
-        JSONObject displayImageObject = profilePictureObject.getJSONObject("displayImage~");
-        if (null == displayImageObject || !displayImageObject.containsKey("elements")) {
+        JsonNode displayImageObject = getObjectNode(profilePictureObject, "displayImage~");
+        if (null == displayImageObject || !containsKey(displayImageObject, "elements")) {
             return null;
         }
-        JSONArray displayImageElements = displayImageObject.getJSONArray("elements");
+        JsonNode displayImageElements = getArrayNode(displayImageObject, "elements");
         if (null == displayImageElements || displayImageElements.isEmpty()) {
             return null;
         }
-        JSONObject largestImageObj = displayImageElements.getJSONObject(displayImageElements.size() - 1);
-        if (null == largestImageObj || !largestImageObj.containsKey("identifiers")) {
+        JsonNode largestImageObj = displayImageElements.asArray().get(displayImageElements.size() - 1);
+        if (null == largestImageObj || !containsKey(largestImageObj, "identifiers")) {
             return null;
         }
-        JSONArray identifiers = largestImageObj.getJSONArray("identifiers");
+        JsonNode identifiers = getArrayNode(largestImageObj, "identifiers");
         if (null == identifiers || identifiers.isEmpty()) {
             return null;
         }
-        return identifiers.getJSONObject(0).getString("identifier");
+        return getStringValue(identifiers.asArray().get(0), "identifier");
     }
 
     /**
@@ -144,7 +143,7 @@ public class AuthLinkedinRequest extends AuthDefaultRequest {
 
         String emailResponse = UnifiedHttpClient.getAdapter().get("https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))", null, httpHeader, false)
                 .getBody();
-        JSONObject emailObj = JSONObject.parseObject(emailResponse);
+        JsonNode emailObj = toNode(emailResponse);
 
         this.checkResponse(emailObj);
 
@@ -152,12 +151,12 @@ public class AuthLinkedinRequest extends AuthDefaultRequest {
         return null == obj ? null : (String) obj;
     }
 
-    private String getUserName(JSONObject userInfoObject, String nameKey) {
+    private String getUserName(JsonNode userInfoObject, String nameKey) {
         String firstName;
-        JSONObject firstNameObj = userInfoObject.getJSONObject(nameKey);
-        JSONObject localizedObj = firstNameObj.getJSONObject("localized");
-        JSONObject preferredLocaleObj = firstNameObj.getJSONObject("preferredLocale");
-        firstName = localizedObj.getString(preferredLocaleObj.getString("language") + "_" + preferredLocaleObj.getString("country"));
+        JsonNode firstNameObj = getObjectNode(userInfoObject, nameKey);
+        JsonNode localizedObj = getObjectNode(firstNameObj, "localized");
+        JsonNode preferredLocaleObj = getObjectNode(firstNameObj, "preferredLocale");
+        firstName = getStringValue(localizedObj, getStringValue(preferredLocaleObj, "language") + "_" + getStringValue(preferredLocaleObj, "country"));
         return firstName;
     }
 
@@ -166,9 +165,9 @@ public class AuthLinkedinRequest extends AuthDefaultRequest {
      *
      * @param object 请求响应内容
      */
-    private void checkResponse(JSONObject object) {
-        if (object.containsKey(Keys.ERROR)) {
-            throw new AuthException(object.getString(Keys.ERROR_DESCRIPTION), source);
+    private void checkResponse(JsonNode object) {
+        if (containsKey(object, Keys.ERROR)) {
+            throw new AuthException(getStringValue(object, Keys.ERROR_DESCRIPTION), source);
         }
     }
 
@@ -184,14 +183,14 @@ public class AuthLinkedinRequest extends AuthDefaultRequest {
         httpHeader.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
 
         String response = UnifiedHttpClient.getAdapter().post(accessTokenUrl, null, httpHeader).getBody();
-        JSONObject accessTokenObject = JSONObject.parseObject(response);
 
+        JsonNode accessTokenObject = toNode(response);
         this.checkResponse(accessTokenObject);
 
         return AuthToken.builder()
-                .accessToken(accessTokenObject.getString(Keys.OAUTH2_ACCESS_TOKEN))
-                .expireIn(accessTokenObject.getIntValue(Keys.OAUTH2_EXPIRES_IN))
-                .refreshToken(accessTokenObject.getString(Keys.OAUTH2_REFRESH_TOKEN))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
                 .build();
     }
 
@@ -205,7 +204,7 @@ public class AuthLinkedinRequest extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(super.authorize(state))
-                .queryParam(Keys.OAUTH2_SCOPE, this.getScopes(" ", false, AuthScopeUtils.getDefaultScopes(AuthLinkedinScope.values())))
+                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(" ", false, AuthScopeUtils.getDefaultScopes(AuthLinkedinScope.values())))
                 .build();
     }
 

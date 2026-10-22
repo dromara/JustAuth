@@ -14,6 +14,7 @@ import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
+import tools.jackson.databind.JsonNode;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,16 +38,16 @@ public class AuthDingTalkV2Request extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(source.authorize())
-                .queryParam(Keys.OAUTH2_RESPONSE_TYPE, Keys.OAUTH2_CODE)
-                .queryParam(Keys.OAUTH2_CLIENT_ID, config.getClientId())
-                .queryParam(Keys.OAUTH2_SCOPE, this.getScopes(",", true, AuthScopeUtils.getDefaultScopes(AuthDingTalkScope.values())))
-                .queryParam(Keys.OAUTH2_REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2__RESPONSE_TYPE, Keys.OAUTH2__CODE)
+                .queryParam(Keys.OAUTH2__CLIENT_ID, config.getClientId())
+                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(",", true, AuthScopeUtils.getDefaultScopes(AuthDingTalkScope.values())))
+                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
                 .queryParam("prompt", "consent")
                 .queryParam("org_type", config.getDingTalkOrgType())
                 .queryParam("corpId", config.getDingTalkCorpId())
                 .queryParam("exclusiveLogin", config.isDingTalkExclusiveLogin())
                 .queryParam("exclusiveCorpId", config.getDingTalkExclusiveCorpId())
-                .queryParam(Keys.OAUTH2_STATE, getRealState(state))
+                .queryParam(Keys.OAUTH2__STATE, getRealState(state))
                 .build();
     }
 
@@ -56,17 +57,17 @@ public class AuthDingTalkV2Request extends AuthDefaultRequest {
         params.put("grantType", Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
         params.put("clientId", config.getClientId());
         params.put("clientSecret", config.getClientSecret());
-        params.put(Keys.OAUTH2_CODE, authCallback.getCode());
+        params.put(Keys.OAUTH2__CODE, authCallback.getCode());
         String response = UnifiedHttpClient.getAdapter().post(this.source.accessToken(), JSONObject.toJSONString(params)).getBody();
-        JSONObject accessTokenObject = JSONObject.parseObject(response);
-        if (!accessTokenObject.containsKey("accessToken")) {
+        JsonNode accessTokenObject = toNode(response);
+        if (!containsKey(accessTokenObject, "accessToken")) {
             throw new AuthException(JSONObject.toJSONString(response), source);
         }
         return AuthToken.builder()
-                .accessToken(accessTokenObject.getString("accessToken"))
-                .refreshToken(accessTokenObject.getString("refreshToken"))
-                .expireIn(accessTokenObject.getIntValue("expireIn"))
-                .corpId(accessTokenObject.getString("corpId"))
+                .accessToken(getStringValue(accessTokenObject, "accessToken"))
+                .refreshToken(getStringValue(accessTokenObject, "refreshToken"))
+                .expireIn(getIntValue(accessTokenObject, "expireIn"))
+                .corpId(getStringValue(accessTokenObject, "corpId"))
                 .build();
     }
 
@@ -76,17 +77,17 @@ public class AuthDingTalkV2Request extends AuthDefaultRequest {
         header.add("x-acs-dingtalk-access-token", authToken.getAccessToken());
 
         String response = UnifiedHttpClient.getAdapter().get(this.source.userInfo(), null, header, false).getBody();
-        JSONObject object = JSONObject.parseObject(response);
+        JsonNode object = toNode(response);
 
-        authToken.setOpenId(object.getString("openId"));
-        authToken.setUnionId(object.getString("unionId"));
+        authToken.setOpenId(getStringValue(object, "openId"));
+        authToken.setUnionId(getStringValue(object, "unionId"));
         return AuthUser.builder()
                 .rawUserInfo(object)
-                .uuid(object.getString("unionId"))
-                .username(object.getString("nick"))
-                .nickname(object.getString("nick"))
-                .avatar(object.getString("avatarUrl"))
-                .snapshotUser(object.getBooleanValue("visitor"))
+                .uuid(getStringValue(object, "unionId"))
+                .username(getStringValue(object, "nick"))
+                .nickname(getStringValue(object, "nick"))
+                .avatar(getStringValue(object, "avatarUrl"))
+                .snapshotUser(getBooleanValue(object, "visitor"))
                 .token(authToken)
                 .source(source.toString())
                 .build();
@@ -101,7 +102,7 @@ public class AuthDingTalkV2Request extends AuthDefaultRequest {
     @Override
     protected String accessTokenUrl(String code) {
         return UrlBuilder.fromBaseUrl(source.accessToken())
-                .queryParam(Keys.OAUTH2_CODE, code)
+                .queryParam(Keys.OAUTH2__CODE, code)
                 .queryParam("clientId", config.getClientId())
                 .queryParam("clientSecret", config.getClientSecret())
                 .queryParam("grantType", Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE)

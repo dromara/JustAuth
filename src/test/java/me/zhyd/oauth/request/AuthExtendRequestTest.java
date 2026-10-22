@@ -43,7 +43,7 @@ public class AuthExtendRequestTest {
         String state = AuthStateUtils.createState();
         request.authorize(state);
         AuthCallback callback = AuthCallback.builder()
-                .code(Keys.OAUTH2_CODE)
+                .code(Keys.OAUTH2__CODE)
                 .state(state)
                 .build();
         AuthResponse<AuthUser> response = request.login(callback);

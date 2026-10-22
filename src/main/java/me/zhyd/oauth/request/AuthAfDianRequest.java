@@ -1,6 +1,5 @@
 package me.zhyd.oauth.request;
 
-import com.alibaba.fastjson2.JSONObject;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
@@ -10,7 +9,9 @@ import me.zhyd.oauth.http.UnifiedHttpClient;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
+import me.zhyd.oauth.utils.JsonNodeUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
+import tools.jackson.databind.JsonNode;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,14 +34,17 @@ public class AuthAfDianRequest extends AuthDefaultRequest {
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
         Map<String, String> params = new HashMap<>();
-        params.put(Keys.OAUTH2_GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
-        params.put(Keys.OAUTH2_CLIENT_ID, config.getClientId());
-        params.put(Keys.OAUTH2_CLIENT_SECRET, config.getClientSecret());
-        params.put(Keys.OAUTH2_CODE, authCallback.getCode());
-        params.put(Keys.OAUTH2_REDIRECT_URI, config.getRedirectUri());
+        params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
+        params.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
+        params.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
+        params.put(Keys.OAUTH2__CODE, authCallback.getCode());
+        params.put(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri());
         String response = UnifiedHttpClient.getAdapter().post(AuthDefaultSource.AFDIAN.accessToken(), params, false).getBody();
-        JSONObject accessTokenObject = JSONObject.parseObject(response);
-        String userId = accessTokenObject.getJSONObject(Keys.DATA).getString(Keys.VARIANT__USER_ID);
+        JsonNode accessTokenObject = toNode(response);
+
+        JsonNode data = JsonNodeUtils.findObjectNode(accessTokenObject, Keys.DATA);
+
+        String userId = getStringValue(data, Keys.VARIANT__USER_ID);
         return AuthToken.builder().userId(userId).build();
     }
 
@@ -63,11 +67,11 @@ public class AuthAfDianRequest extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(source.authorize())
-                .queryParam(Keys.OAUTH2_RESPONSE_TYPE, Keys.OAUTH2_CODE)
-                .queryParam(Keys.OAUTH2_SCOPE, "basic")
-                .queryParam(Keys.OAUTH2_CLIENT_ID, config.getClientId())
-                .queryParam(Keys.OAUTH2_REDIRECT_URI, config.getRedirectUri())
-                .queryParam(Keys.OAUTH2_STATE, getRealState(state))
+                .queryParam(Keys.OAUTH2__RESPONSE_TYPE, Keys.OAUTH2__CODE)
+                .queryParam(Keys.OAUTH2__SCOPE, "basic")
+                .queryParam(Keys.OAUTH2__CLIENT_ID, config.getClientId())
+                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2__STATE, getRealState(state))
                 .build();
     }
 

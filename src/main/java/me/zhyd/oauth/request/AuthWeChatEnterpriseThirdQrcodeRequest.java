@@ -14,7 +14,12 @@ import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthChecker;
+import me.zhyd.oauth.utils.JsonUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
+import tools.jackson.databind.JsonNode;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * <p>
@@ -37,8 +42,8 @@ public class AuthWeChatEnterpriseThirdQrcodeRequest extends AbstractAuthWeChatEn
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(source.authorize())
                 .queryParam(Keys.APPID, config.getClientId())
-                .queryParam(Keys.OAUTH2_REDIRECT_URI, config.getRedirectUri())
-                .queryParam(Keys.OAUTH2_STATE, getRealState(state))
+                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2__STATE, getRealState(state))
                 .queryParam("usertype", config.getUsertype())
                 .build();
     }
@@ -62,10 +67,10 @@ public class AuthWeChatEnterpriseThirdQrcodeRequest extends AbstractAuthWeChatEn
     public AuthToken getAccessToken(AuthCallback authCallback) {
         try {
             String response = doGetAuthorizationCode(accessTokenUrl());
-            JSONObject object = this.checkResponse(response);
+            JsonNode object = this.checkResponse(response);
             return AuthToken.builder()
-                    .accessToken(object.getString("provider_access_token"))
-                    .expireIn(object.getIntValue(Keys.OAUTH2_EXPIRES_IN))
+                    .accessToken(getStringValue(object, "provider_access_token"))
+                    .expireIn(getIntValue(object, Keys.OAUTH2__EXPIRES_IN))
                     .code(authCallback.getCode())
                     .build();
         } catch (Exception e) {
@@ -75,10 +80,10 @@ public class AuthWeChatEnterpriseThirdQrcodeRequest extends AbstractAuthWeChatEn
 
     @Override
     protected String doGetAuthorizationCode(String code) {
-        JSONObject data = new JSONObject();
-        data.put("corpid", config.getClientId());
-        data.put("provider_secret", config.getClientSecret());
-        return UnifiedHttpClient.getAdapter().post(accessTokenUrl(code), data.toJSONString()).getBody();
+        Map<String, Object> params = new HashMap<>();
+        params.put("corpid", config.getClientId());
+        params.put("provider_secret", config.getClientSecret());
+        return UnifiedHttpClient.getAdapter().post(accessTokenUrl(code), JsonUtils.toJson(params)).getBody();
     }
 
     /**
@@ -93,7 +98,7 @@ public class AuthWeChatEnterpriseThirdQrcodeRequest extends AbstractAuthWeChatEn
 
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
-        JSONObject response = this.checkResponse(doGetUserInfo(authToken));
+        JsonNode response = this.checkResponse(doGetUserInfo(authToken));
         return AuthUser.builder()
                 .rawUserInfo(response)
                 .build();
@@ -109,14 +114,14 @@ public class AuthWeChatEnterpriseThirdQrcodeRequest extends AbstractAuthWeChatEn
     @Override
     protected String userInfoUrl(AuthToken authToken) {
         return UrlBuilder.fromBaseUrl(source.userInfo())
-                .queryParam(Keys.OAUTH2_ACCESS_TOKEN, authToken.getAccessToken()).
+                .queryParam(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken()).
                 build();
     }
 
-    private JSONObject checkResponse(String response) {
-        JSONObject object = JSONObject.parseObject(response);
-        if (object.containsKey(Keys.VARIANT__ERRCODE) && object.getIntValue(Keys.VARIANT__ERRCODE) != 0) {
-            throw new AuthException(object.getString(Keys.VARIANT__ERRMSG), source);
+    private JsonNode checkResponse(String response) {
+        JsonNode object = toNode(response);
+        if (containsKey(object, Keys.VARIANT__ERRCODE) && getIntValue(object, Keys.VARIANT__ERRCODE) != 0) {
+            throw new AuthException(getStringValue(object, Keys.VARIANT__ERRMSG), source);
         }
         return object;
     }

@@ -51,7 +51,7 @@ public enum AuthUserGender {
      * @since 1.13.2
      */
     public static AuthUserGender getWechatRealGender(String originalGender) {
-        if (StringUtils.isEmpty(originalGender) || "0" .equals(originalGender)) {
+        if (StringUtils.isEmpty(originalGender) || "0".equals(originalGender)) {
             return AuthUserGender.UNKNOWN;
         }
         return getRealGender(originalGender);

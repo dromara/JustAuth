@@ -1,6 +1,5 @@
 package me.zhyd.oauth.request;
 
-import com.alibaba.fastjson2.JSONObject;
 import com.google.common.net.HttpHeaders;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
@@ -20,6 +19,7 @@ import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
 import me.zhyd.oauth.utils.TokenUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
+import tools.jackson.databind.JsonNode;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -54,15 +54,15 @@ public class AuthOktaRequest extends AuthDefaultRequest {
                 .add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED)
                 .add(HttpHeaders.AUTHORIZATION, TokenUtils.basic(config.getClientId(), config.getClientSecret()));
         String response = UnifiedHttpClient.getAdapter().post(tokenUrl, null, header, false).getBody();
-        JSONObject accessTokenObject = JSONObject.parseObject(response);
+        JsonNode accessTokenObject = toNode(response);
         this.checkResponse(accessTokenObject);
         return AuthToken.builder()
-                .accessToken(accessTokenObject.getString(Keys.OAUTH2_ACCESS_TOKEN))
-                .tokenType(accessTokenObject.getString(Keys.OAUTH2_TOKEN_TYPE))
-                .expireIn(accessTokenObject.getIntValue(Keys.OAUTH2_EXPIRES_IN))
-                .scope(accessTokenObject.getString(Keys.OAUTH2_SCOPE))
-                .refreshToken(accessTokenObject.getString(Keys.OAUTH2_REFRESH_TOKEN))
-                .idToken(accessTokenObject.getString(Keys.OIDC_ID_TOKEN))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
+                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
+                .scope(getStringValue(accessTokenObject, Keys.OAUTH2__SCOPE))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
+                .idToken(getStringValue(accessTokenObject, Keys.OIDC__ID_TOKEN))
                 .build();
     }
 
@@ -86,17 +86,17 @@ public class AuthOktaRequest extends AuthDefaultRequest {
         HttpHeader header = new HttpHeader()
                 .add(HttpHeaders.AUTHORIZATION, TokenUtils.bearer(authToken.getAccessToken()));
         String response = UnifiedHttpClient.getAdapter().post(userInfoUrl(authToken), null, header, false).getBody();
-        JSONObject object = JSONObject.parseObject(response);
-        this.checkResponse(object);
-        JSONObject address = object.getJSONObject(Keys.OAUTH2_SCOPE__ADDRESS);
+        JsonNode userInfoObject = toNode(response);
+        this.checkResponse(userInfoObject);
+        JsonNode address = getObjectNode(userInfoObject, Keys.OAUTH2_SCOPE__ADDRESS);
         return AuthUser.builder()
-                .rawUserInfo(object)
-                .uuid(object.getString("sub"))
-                .username(object.getString(Keys.NAME))
-                .nickname(object.getString(Keys.NICKNAME))
-                .email(object.getString(Keys.OAUTH2_SCOPE__EMAIL))
-                .location(null == address ? null : address.getString("street_address"))
-                .gender(AuthUserGender.getRealGender(object.getString("sex")))
+                .rawUserInfo(userInfoObject)
+                .uuid(getStringValue(userInfoObject, "sub"))
+                .username(getStringValue(userInfoObject, Keys.NAME))
+                .nickname(getStringValue(userInfoObject, Keys.NICKNAME))
+                .email(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
+                .location(null == address ? null : getStringValue(address, "street_address"))
+                .gender(AuthUserGender.getRealGender(getStringValue(userInfoObject, "sex")))
                 .token(authToken)
                 .source(source.toString())
                 .build();
@@ -106,7 +106,7 @@ public class AuthOktaRequest extends AuthDefaultRequest {
     public AuthResponse<?> revoke(AuthToken authToken) {
         Map<String, String> params = new HashMap<>(4);
         params.put("token", authToken.getAccessToken());
-        params.put("token_type_hint", Keys.OAUTH2_ACCESS_TOKEN);
+        params.put("token_type_hint", Keys.OAUTH2__ACCESS_TOKEN);
 
         HttpHeader header = new HttpHeader()
                 .add(HttpHeaders.AUTHORIZATION, TokenUtils.basic(config.getClientId(), config.getClientSecret()));
@@ -115,38 +115,38 @@ public class AuthOktaRequest extends AuthDefaultRequest {
         return AuthResponse.builder().code(status.getCode()).msg(status.getMsg()).build();
     }
 
-    private void checkResponse(JSONObject object) {
-        if (object.containsKey(Keys.ERROR)) {
-            throw new AuthException(object.getString(Keys.ERROR_DESCRIPTION));
+    private void checkResponse(JsonNode object) {
+        if (containsKey(object, Keys.ERROR)) {
+            throw new AuthException(getStringValue(object, Keys.ERROR_DESCRIPTION));
         }
     }
 
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(String.format(source.authorize(), config.getDomainPrefix(), config.getAuthServerId()))
-                .queryParam(Keys.OAUTH2_RESPONSE_TYPE, Keys.OAUTH2_CODE)
+                .queryParam(Keys.OAUTH2__RESPONSE_TYPE, Keys.OAUTH2__CODE)
                 .queryParam("prompt", "consent")
-                .queryParam(Keys.OAUTH2_CLIENT_ID, config.getClientId())
-                .queryParam(Keys.OAUTH2_REDIRECT_URI, config.getRedirectUri())
-                .queryParam(Keys.OAUTH2_SCOPE, this.getScopes(" ", true, AuthScopeUtils.getDefaultScopes(AuthOktaScope.values())))
-                .queryParam(Keys.OAUTH2_STATE, getRealState(state))
+                .queryParam(Keys.OAUTH2__CLIENT_ID, config.getClientId())
+                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(" ", true, AuthScopeUtils.getDefaultScopes(AuthOktaScope.values())))
+                .queryParam(Keys.OAUTH2__STATE, getRealState(state))
                 .build();
     }
 
     @Override
     public String accessTokenUrl(String code) {
         return UrlBuilder.fromBaseUrl(String.format(source.accessToken(), config.getDomainPrefix(), config.getAuthServerId()))
-                .queryParam(Keys.OAUTH2_CODE, code)
-                .queryParam(Keys.OAUTH2_GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE)
-                .queryParam(Keys.OAUTH2_REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2__CODE, code)
+                .queryParam(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE)
+                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
                 .build();
     }
 
     @Override
     protected String refreshTokenUrl(String refreshToken) {
         return UrlBuilder.fromBaseUrl(String.format(source.refresh(), config.getDomainPrefix(), config.getAuthServerId()))
-                .queryParam(Keys.OAUTH2_REFRESH_TOKEN, refreshToken)
-                .queryParam(Keys.OAUTH2_GRANT_TYPE, Keys.OAUTH2_REFRESH_TOKEN)
+                .queryParam(Keys.OAUTH2__REFRESH_TOKEN, refreshToken)
+                .queryParam(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__REFRESH_TOKEN)
                 .build();
     }
 

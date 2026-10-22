@@ -25,14 +25,14 @@ public class UrlBuilderTest {
                 .build();
         String build = UrlBuilder.fromBaseUrl(AuthDefaultSource.WECHAT_OPEN.authorize())
                 .queryParam(Keys.APPID, config.getClientId())
-                .queryParam(Keys.OAUTH2_REDIRECT_URI, config.getRedirectUri())
-                .queryParam(Keys.OAUTH2_RESPONSE_TYPE, Keys.OAUTH2_CODE)
-                .queryParam(Keys.OAUTH2_SCOPE, "snsapi_login")
-                .queryParam(Keys.OAUTH2_STATE, "")
+                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2__RESPONSE_TYPE, Keys.OAUTH2__CODE)
+                .queryParam(Keys.OAUTH2__SCOPE, "snsapi_login")
+                .queryParam(Keys.OAUTH2__STATE, "")
                 .build(false);
         System.out.println(build);
         AuthWeChatOpenRequest request = new AuthWeChatOpenRequest(config);
-        String authorize = request.authorize(Keys.OAUTH2_STATE);
+        String authorize = request.authorize(Keys.OAUTH2__STATE);
         System.out.println(authorize);
     }
 

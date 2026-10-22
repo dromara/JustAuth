@@ -1,6 +1,5 @@
 package me.zhyd.oauth.request;
 
-import com.alibaba.fastjson2.JSONObject;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
@@ -15,6 +14,7 @@ import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
 import me.zhyd.oauth.utils.GlobalAuthUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Facebook登录
@@ -35,42 +35,42 @@ public class AuthFacebookRequest extends AuthDefaultRequest {
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
         String response = doPostAuthorizationCode(authCallback.getCode());
-        JSONObject accessTokenObject = JSONObject.parseObject(response);
+        JsonNode accessTokenObject = toNode(response);
         this.checkResponse(accessTokenObject);
         return AuthToken.builder()
-                .accessToken(accessTokenObject.getString(Keys.OAUTH2_ACCESS_TOKEN))
-                .expireIn(accessTokenObject.getIntValue(Keys.OAUTH2_EXPIRES_IN))
-                .tokenType(accessTokenObject.getString(Keys.OAUTH2_TOKEN_TYPE))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
+                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
                 .build();
     }
 
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
         String userInfo = doGetUserInfo(authToken);
-        JSONObject object = JSONObject.parseObject(userInfo);
+        JsonNode object = toNode(userInfo);
         this.checkResponse(object);
         return AuthUser.builder()
                 .rawUserInfo(object)
-                .uuid(object.getString(Keys.ID))
-                .username(object.getString(Keys.NAME))
-                .nickname(object.getString(Keys.NAME))
-                .blog(object.getString("link"))
+                .uuid(getStringValue(object, Keys.ID))
+                .username(getStringValue(object, Keys.NAME))
+                .nickname(getStringValue(object, Keys.NAME))
+                .blog(getStringValue(object, "link"))
                 .avatar(getUserPicture(object))
-                .location(object.getString("locale"))
-                .email(object.getString(Keys.OAUTH2_SCOPE__EMAIL))
-                .gender(AuthUserGender.getRealGender(object.getString(Keys.GENDER)))
+                .location(getStringValue(object, "locale"))
+                .email(getStringValue(object, Keys.OAUTH2_SCOPE__EMAIL))
+                .gender(AuthUserGender.getRealGender(getStringValue(object, Keys.GENDER)))
                 .token(authToken)
                 .source(source.toString())
                 .build();
     }
 
-    private String getUserPicture(JSONObject object) {
+    private String getUserPicture(JsonNode object) {
         String picture = null;
-        if (object.containsKey("picture")) {
-            JSONObject pictureObj = object.getJSONObject("picture");
-            pictureObj = pictureObj.getJSONObject(Keys.DATA);
-            if (null != pictureObj) {
-                picture = pictureObj.getString(Keys.URL);
+        if (containsKey(object, "picture")) {
+            JsonNode pictureObj = getObjectNode(object, "picture");
+            JsonNode dataObject = getDataNode(pictureObj);
+            if (null != dataObject) {
+                picture = getStringValue(dataObject, Keys.URL);
             }
         }
         return picture;
@@ -85,7 +85,7 @@ public class AuthFacebookRequest extends AuthDefaultRequest {
     @Override
     protected String userInfoUrl(AuthToken authToken) {
         return UrlBuilder.fromBaseUrl(source.userInfo())
-                .queryParam(Keys.OAUTH2_ACCESS_TOKEN, authToken.getAccessToken())
+                .queryParam(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken())
                 .queryParam("fields", "id,name,birthday,gender,hometown,email,devices,picture.width(400),link")
                 .build();
     }
@@ -105,9 +105,10 @@ public class AuthFacebookRequest extends AuthDefaultRequest {
      *
      * @param object 请求响应内容
      */
-    private void checkResponse(JSONObject object) {
-        if (object.containsKey(Keys.ERROR)) {
-            throw new AuthException(object.getJSONObject(Keys.ERROR).getString(Keys.MESSAGE));
+    private void checkResponse(JsonNode object) {
+        if (containsKey(object, Keys.ERROR)) {
+            JsonNode errorObject = getObjectNode(object, Keys.ERROR);
+            throw new AuthException(getStringValue(errorObject, Keys.MESSAGE));
         }
     }
 
@@ -120,7 +121,7 @@ public class AuthFacebookRequest extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(super.authorize(state))
-                .queryParam(Keys.OAUTH2_SCOPE, this.getScopes(",", false, AuthScopeUtils.getDefaultScopes(AuthFacebookScope.values())))
+                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(",", false, AuthScopeUtils.getDefaultScopes(AuthFacebookScope.values())))
                 .build();
     }
 }

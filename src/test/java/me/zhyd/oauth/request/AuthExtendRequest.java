@@ -42,10 +42,10 @@ public class AuthExtendRequest extends AuthDefaultRequest {
                 .openId("openId")
                 .expireIn(1000)
                 .idToken("idToken")
-                .scope(Keys.OAUTH2_SCOPE)
+                .scope(Keys.OAUTH2__SCOPE)
                 .refreshToken("refreshToken")
                 .accessToken("accessToken")
-                .code(Keys.OAUTH2_CODE)
+                .code(Keys.OAUTH2__CODE)
                 .build();
     }
 
@@ -95,10 +95,10 @@ public class AuthExtendRequest extends AuthDefaultRequest {
                         .openId("openId")
                         .expireIn(1000)
                         .idToken("idToken")
-                        .scope(Keys.OAUTH2_SCOPE)
+                        .scope(Keys.OAUTH2__SCOPE)
                         .refreshToken("refreshToken")
                         .accessToken("accessToken")
-                        .code(Keys.OAUTH2_CODE)
+                        .code(Keys.OAUTH2__CODE)
                         .build())
                 .build();
     }

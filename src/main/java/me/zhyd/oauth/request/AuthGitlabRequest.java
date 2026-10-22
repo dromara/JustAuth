@@ -1,6 +1,5 @@
 package me.zhyd.oauth.request;
 
-import com.alibaba.fastjson2.JSONObject;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
@@ -13,6 +12,7 @@ import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Gitlab登录
@@ -33,51 +33,52 @@ public class AuthGitlabRequest extends AuthDefaultRequest {
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
         String response = doPostAuthorizationCode(authCallback.getCode());
-        JSONObject object = JSONObject.parseObject(response);
 
-        this.checkResponse(object);
+        JsonNode accessTokenObject = toNode(response);
+
+        this.checkResponse(accessTokenObject);
 
         return AuthToken.builder()
-                .accessToken(object.getString(Keys.OAUTH2_ACCESS_TOKEN))
-                .refreshToken(object.getString(Keys.OAUTH2_REFRESH_TOKEN))
-                .idToken(object.getString(Keys.OIDC_ID_TOKEN))
-                .tokenType(object.getString(Keys.OAUTH2_TOKEN_TYPE))
-                .scope(object.getString(Keys.OAUTH2_SCOPE))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
+                .idToken(getStringValue(accessTokenObject, Keys.OIDC__ID_TOKEN))
+                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
+                .scope(getStringValue(accessTokenObject, Keys.OAUTH2__SCOPE))
                 .build();
     }
 
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
         String response = doGetUserInfo(authToken);
-        JSONObject object = JSONObject.parseObject(response);
+        JsonNode userInfoObject = toNode(response);
 
-        this.checkResponse(object);
+        this.checkResponse(userInfoObject);
 
         return AuthUser.builder()
-                .rawUserInfo(object)
-                .uuid(object.getString(Keys.ID))
-                .username(object.getString(Keys.USERNAME))
-                .nickname(object.getString(Keys.NAME))
-                .avatar(object.getString(Keys.AVATAR_URL))
-                .blog(object.getString("web_url"))
-                .company(object.getString("organization"))
-                .location(object.getString(Keys.LOCATION))
-                .email(object.getString(Keys.OAUTH2_SCOPE__EMAIL))
-                .remark(object.getString("bio"))
+                .rawUserInfo(userInfoObject)
+                .uuid(getStringValue(userInfoObject, Keys.ID))
+                .username(getStringValue(userInfoObject, Keys.USERNAME))
+                .nickname(getStringValue(userInfoObject, Keys.NAME))
+                .avatar(getStringValue(userInfoObject, Keys.AVATAR_URL))
+                .blog(getStringValue(userInfoObject, "web_url"))
+                .company(getStringValue(userInfoObject, "organization"))
+                .location(getStringValue(userInfoObject, Keys.LOCATION))
+                .email(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
+                .remark(getStringValue(userInfoObject, "bio"))
                 .gender(AuthUserGender.UNKNOWN)
                 .token(authToken)
                 .source(source.toString())
                 .build();
     }
 
-    private void checkResponse(JSONObject object) {
+    private void checkResponse(JsonNode object) {
         // oauth/token 验证异常
-        if (object.containsKey(Keys.ERROR)) {
-            throw new AuthException(object.getString(Keys.ERROR_DESCRIPTION));
+        if (containsKey(object, Keys.ERROR)) {
+            throw new AuthException(getStringValue(object, Keys.ERROR_DESCRIPTION));
         }
         // user 验证异常
-        if (object.containsKey(Keys.MESSAGE)) {
-            throw new AuthException(object.getString(Keys.MESSAGE));
+        if (containsKey(object, Keys.MESSAGE)) {
+            throw new AuthException(getStringValue(object, Keys.MESSAGE));
         }
     }
 
@@ -91,7 +92,7 @@ public class AuthGitlabRequest extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(super.authorize(state))
-                .queryParam(Keys.OAUTH2_SCOPE, this.getScopes("+", false, AuthScopeUtils.getDefaultScopes(AuthGitlabScope.values())))
+                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes("+", false, AuthScopeUtils.getDefaultScopes(AuthGitlabScope.values())))
                 .build();
     }
 

@@ -1,6 +1,5 @@
 package me.zhyd.oauth.request;
 
-import com.alibaba.fastjson2.JSONObject;
 import com.google.common.net.HttpHeaders;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
@@ -20,7 +19,7 @@ import me.zhyd.oauth.utils.AuthScopeUtils;
 import me.zhyd.oauth.utils.IpUtils;
 import me.zhyd.oauth.utils.TokenUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
-import org.apache.commons.lang3.StringUtils;
+import tools.jackson.databind.JsonNode;
 
 
 /**
@@ -42,15 +41,17 @@ public class AuthWeiboRequest extends AuthDefaultRequest {
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
         String response = doPostAuthorizationCode(authCallback.getCode());
-        JSONObject accessTokenObject = JSONObject.parseObject(response);
-        if (accessTokenObject.containsKey(Keys.ERROR)) {
-            throw new AuthException(accessTokenObject.getString(Keys.ERROR_DESCRIPTION));
+
+        JsonNode accessTokenObject = toNode(response);
+        if (containsKey(accessTokenObject, Keys.ERROR)) {
+            throw new AuthException(getStringValue(accessTokenObject, Keys.ERROR_DESCRIPTION));
         }
+
         return AuthToken.builder()
-                .accessToken(accessTokenObject.getString(Keys.OAUTH2_ACCESS_TOKEN))
-                .uid(accessTokenObject.getString(Keys.UID))
-                .openId(accessTokenObject.getString(Keys.UID))
-                .expireIn(accessTokenObject.getIntValue(Keys.OAUTH2_EXPIRES_IN))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
+                .uid(getStringValue(accessTokenObject, Keys.UID))
+                .openId(getStringValue(accessTokenObject, Keys.UID))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
                 .build();
     }
 
@@ -64,21 +65,22 @@ public class AuthWeiboRequest extends AuthDefaultRequest {
         httpHeader.add(HttpHeaders.AUTHORIZATION, TokenUtils.oauth2(oauthParam));
         httpHeader.add("API-RemoteIP", IpUtils.getLocalIp());
         String userInfo = UnifiedHttpClient.getAdapter().get(userInfoUrl(authToken), null, httpHeader, false).getBody();
-        JSONObject object = JSONObject.parseObject(userInfo);
-        if (object.containsKey(Keys.ERROR)) {
-            throw new AuthException(object.getString(Keys.ERROR));
+
+        JsonNode userInfoObject = toNode(userInfo);
+        if (containsKey(userInfoObject, Keys.ERROR)) {
+            throw new AuthException(getStringValue(userInfoObject, Keys.ERROR));
         }
         return AuthUser.builder()
-                .rawUserInfo(object)
-                .uuid(object.getString(Keys.ID))
-                .username(object.getString(Keys.NAME))
-                .avatar(object.getString("profile_image_url"))
-                .blog(StringUtils.isEmpty(object.getString(Keys.URL)) ? "https://weibo.com/" + object.getString("profile_url") : object
-                        .getString(Keys.URL))
-                .nickname(object.getString("screen_name"))
-                .location(object.getString(Keys.LOCATION))
-                .remark(object.getString(Keys.DESCRIPTION))
-                .gender(AuthUserGender.getRealGender(object.getString(Keys.GENDER)))
+                .rawUserInfo(userInfoObject)
+                .uuid(getStringValue(userInfoObject, Keys.ID))
+                .username(getStringValue(userInfoObject, Keys.NAME))
+                .avatar(getStringValue(userInfoObject, "profile_image_url"))
+                .blog(containsKey(userInfoObject, Keys.URL) ? "https://weibo.com/" + getStringValue(userInfoObject, "profile_url") : getStringValue(userInfoObject
+                        , Keys.URL))
+                .nickname(getStringValue(userInfoObject, "screen_name"))
+                .location(getStringValue(userInfoObject, Keys.LOCATION))
+                .remark(getStringValue(userInfoObject, Keys.DESCRIPTION))
+                .gender(AuthUserGender.getRealGender(getStringValue(userInfoObject, Keys.GENDER)))
                 .token(authToken)
                 .source(source.toString())
                 .build();
@@ -93,7 +95,7 @@ public class AuthWeiboRequest extends AuthDefaultRequest {
     @Override
     protected String userInfoUrl(AuthToken authToken) {
         return UrlBuilder.fromBaseUrl(source.userInfo())
-                .queryParam(Keys.OAUTH2_ACCESS_TOKEN, authToken.getAccessToken())
+                .queryParam(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken())
                 .queryParam(Keys.UID, authToken.getUid())
                 .build();
     }
@@ -101,22 +103,23 @@ public class AuthWeiboRequest extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(super.authorize(state))
-                .queryParam(Keys.OAUTH2_SCOPE, this.getScopes(",", false, AuthScopeUtils.getDefaultScopes(AuthWeiboScope.values())))
+                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(",", false, AuthScopeUtils.getDefaultScopes(AuthWeiboScope.values())))
                 .build();
     }
 
     @Override
     public AuthResponse<?> revoke(AuthToken authToken) {
         String response = doGetRevoke(authToken);
-        JSONObject object = JSONObject.parseObject(response);
-        if (object.containsKey(Keys.ERROR)) {
+
+        JsonNode object = toNode(response);
+        if (containsKey(object, Keys.ERROR)) {
             return AuthResponse.builder()
                     .code(AuthResponseStatus.FAILURE.getCode())
-                    .msg(object.getString(Keys.ERROR))
+                    .msg(getStringValue(object, Keys.ERROR))
                     .build();
         }
         // 返回 result = true 表示取消授权成功，否则失败
-        AuthResponseStatus status = object.getBooleanValue(Keys.RESULT) ? AuthResponseStatus.SUCCESS : AuthResponseStatus.FAILURE;
+        AuthResponseStatus status = getBooleanValue(object, Keys.RESULT) ? AuthResponseStatus.SUCCESS : AuthResponseStatus.FAILURE;
         return AuthResponse.builder().code(status.getCode()).msg(status.getMsg()).build();
     }
 }

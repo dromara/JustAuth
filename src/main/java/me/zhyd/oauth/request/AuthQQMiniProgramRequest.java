@@ -36,6 +36,7 @@ public class AuthQQMiniProgramRequest extends AuthDefaultRequest {
         // 参见 https://q.qq.com/wiki/develop/miniprogram/server/open_port/port_login.html#code2session 文档
         // 使用 code 获取对应的 openId、unionId 等字段
         String response = UnifiedHttpClient.getAdapter().get(accessTokenUrl(authCallback.getCode())).getBody();
+
         JSCode2SessionResponse accessTokenObject = JSONObject.parseObject(response, JSCode2SessionResponse.class);
         assert accessTokenObject != null;
         checkResponse(accessTokenObject);
@@ -78,7 +79,7 @@ public class AuthQQMiniProgramRequest extends AuthDefaultRequest {
                 .queryParam(Keys.APPID, config.getClientId())
                 .queryParam("secret", config.getClientSecret())
                 .queryParam("js_code", code)
-                .queryParam(Keys.OAUTH2_GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE)
+                .queryParam(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE)
                 .build();
     }
 

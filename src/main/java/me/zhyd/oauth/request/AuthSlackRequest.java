@@ -1,7 +1,5 @@
 package me.zhyd.oauth.request;
 
-import com.alibaba.fastjson2.JSONArray;
-import com.alibaba.fastjson2.JSONObject;
 import com.google.common.net.HttpHeaders;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
@@ -21,6 +19,10 @@ import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
 import me.zhyd.oauth.utils.TokenUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
+import org.apache.commons.collections4.CollectionUtils;
+import tools.jackson.databind.JsonNode;
+
+import java.util.List;
 
 /**
  * slack登录, slack.com
@@ -44,13 +46,14 @@ public class AuthSlackRequest extends AuthDefaultRequest {
                 .add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
         String response = UnifiedHttpClient.getAdapter()
                 .get(accessTokenUrl(authCallback.getCode()), null, header, false).getBody();
-        JSONObject accessTokenObject = JSONObject.parseObject(response);
+        JsonNode accessTokenObject = toNode(response);
         this.checkResponse(accessTokenObject);
+        JsonNode userObject = getObjectNode(accessTokenObject, "authed_user");
         return AuthToken.builder()
-                .accessToken(accessTokenObject.getString(Keys.OAUTH2_ACCESS_TOKEN))
-                .scope(accessTokenObject.getString(Keys.OAUTH2_SCOPE))
-                .tokenType(accessTokenObject.getString(Keys.OAUTH2_TOKEN_TYPE))
-                .uid(accessTokenObject.getJSONObject("authed_user").getString(Keys.ID))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
+                .scope(getStringValue(accessTokenObject, Keys.OAUTH2__SCOPE))
+                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
+                .uid(getStringValue(userObject, Keys.ID))
                 .build();
     }
 
@@ -61,17 +64,17 @@ public class AuthSlackRequest extends AuthDefaultRequest {
                 .add(HttpHeaders.AUTHORIZATION, TokenUtils.bearer(authToken.getAccessToken()));
         String userInfo = UnifiedHttpClient.getAdapter()
                 .get(userInfoUrl(authToken), null, header, false).getBody();
-        JSONObject object = JSONObject.parseObject(userInfo);
+        JsonNode object = toNode(userInfo);
         this.checkResponse(object);
-        JSONObject user = object.getJSONObject("user");
-        JSONObject profile = user.getJSONObject(Keys.OAUTH2_SCOPE__PROFILE);
+        JsonNode user = getObjectNode(object, "user");
+        JsonNode profile = getObjectNode(user, Keys.OAUTH2_SCOPE__PROFILE);
         return AuthUser.builder()
                 .rawUserInfo(user)
-                .uuid(user.getString(Keys.ID))
-                .username(user.getString(Keys.NAME))
-                .nickname(user.getString("real_name"))
-                .avatar(profile.getString("image_original"))
-                .email(profile.getString(Keys.OAUTH2_SCOPE__EMAIL))
+                .uuid(getStringValue(user, Keys.ID))
+                .username(getStringValue(user, Keys.NAME))
+                .nickname(getStringValue(user, "real_name"))
+                .avatar(getStringValue(profile, "image_original"))
+                .email(getStringValue(profile, Keys.OAUTH2_SCOPE__EMAIL))
                 .gender(AuthUserGender.UNKNOWN)
                 .token(authToken)
                 .source(source.toString())
@@ -85,10 +88,10 @@ public class AuthSlackRequest extends AuthDefaultRequest {
                 .add(HttpHeaders.AUTHORIZATION, TokenUtils.bearer(authToken.getAccessToken()));
         String userInfo = UnifiedHttpClient.getAdapter()
                 .get(source.revoke(), null, header, false).getBody();
-        JSONObject object = JSONObject.parseObject(userInfo);
+        JsonNode object = toNode(userInfo);
         this.checkResponse(object);
         // 返回1表示取消授权成功，否则失败
-        AuthResponseStatus status = object.getBooleanValue("revoked") ? AuthResponseStatus.SUCCESS : AuthResponseStatus.FAILURE;
+        AuthResponseStatus status = getBooleanValue(object, "revoked") ? AuthResponseStatus.SUCCESS : AuthResponseStatus.FAILURE;
         return AuthResponse.builder().code(status.getCode()).msg(status.getMsg()).build();
     }
 
@@ -97,13 +100,14 @@ public class AuthSlackRequest extends AuthDefaultRequest {
      *
      * @param object 请求响应内容
      */
-    private void checkResponse(JSONObject object) {
-        if (!object.getBooleanValue("ok")) {
-            String errorMsg = object.getString(Keys.ERROR);
-            if (object.containsKey("response_metadata")) {
-                JSONArray array = object.getJSONObject("response_metadata").getJSONArray("messages");
-                if (null != array && array.size() > 0) {
-                    errorMsg += "; " + String.join(",", array.toArray(new String[0]));
+    private void checkResponse(JsonNode object) {
+        if (!getBooleanValue(object, "ok")) {
+            String errorMsg = getStringValue(object, Keys.ERROR);
+            if (containsKey(object, "response_metadata")) {
+                JsonNode responseMetadataObject = getObjectNode(object, "response_metadata");
+                List<String> messages = responseMetadataObject.findValuesAsString("messages");
+                if (CollectionUtils.isNotEmpty(messages)) {
+                    errorMsg += "; " + String.join(",", messages);
                 }
             }
 
@@ -127,20 +131,20 @@ public class AuthSlackRequest extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(source.authorize())
-                .queryParam(Keys.OAUTH2_CLIENT_ID, config.getClientId())
-                .queryParam(Keys.OAUTH2_STATE, getRealState(state))
-                .queryParam(Keys.OAUTH2_REDIRECT_URI, config.getRedirectUri())
-                .queryParam(Keys.OAUTH2_SCOPE, this.getScopes(",", true, AuthScopeUtils.getDefaultScopes(AuthSlackScope.values())))
+                .queryParam(Keys.OAUTH2__CLIENT_ID, config.getClientId())
+                .queryParam(Keys.OAUTH2__STATE, getRealState(state))
+                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(",", true, AuthScopeUtils.getDefaultScopes(AuthSlackScope.values())))
                 .build();
     }
 
     @Override
     protected String accessTokenUrl(String code) {
         return UrlBuilder.fromBaseUrl(source.accessToken())
-                .queryParam(Keys.OAUTH2_CODE, code)
-                .queryParam(Keys.OAUTH2_CLIENT_ID, config.getClientId())
-                .queryParam(Keys.OAUTH2_CLIENT_SECRET, config.getClientSecret())
-                .queryParam(Keys.OAUTH2_REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2__CODE, code)
+                .queryParam(Keys.OAUTH2__CLIENT_ID, config.getClientId())
+                .queryParam(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret())
+                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
                 .build();
     }
 }
