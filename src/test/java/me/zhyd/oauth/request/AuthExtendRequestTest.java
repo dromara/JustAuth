@@ -8,8 +8,8 @@ import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthStateUtils;
 import me.zhyd.oauth.utils.JsonUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * 自定义扩展的第三方request的测试类，用于演示具体的用法
@@ -29,7 +29,7 @@ public class AuthExtendRequestTest {
                 .build());
         String authorize = request.authorize(AuthStateUtils.createState());
         System.out.println(authorize);
-        Assert.assertNotNull(authorize);
+        Assertions.assertNotNull(authorize);
     }
 
     @Test
@@ -47,10 +47,10 @@ public class AuthExtendRequestTest {
                 .state(state)
                 .build();
         AuthResponse<AuthUser> response = request.login(callback);
-        Assert.assertNotNull(response);
+        Assertions.assertNotNull(response);
 
         AuthUser user = response.getData();
-        Assert.assertNotNull(user);
+        Assertions.assertNotNull(user);
         System.out.println(JsonUtils.toJson(user));
     }
 
@@ -63,7 +63,7 @@ public class AuthExtendRequestTest {
                 .build());
 
         AuthResponse<?> response = request.revoke(AuthToken.builder().build());
-        Assert.assertNotNull(response);
+        Assertions.assertNotNull(response);
         System.out.println(JsonUtils.toJson(response));
     }
 
@@ -76,7 +76,7 @@ public class AuthExtendRequestTest {
                 .build());
 
         AuthResponse<AuthToken> response = request.refresh(AuthToken.builder().build());
-        Assert.assertNotNull(response);
+        Assertions.assertNotNull(response);
         System.out.println(JsonUtils.toJson(response.getData()));
 
     }

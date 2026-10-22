@@ -1,6 +1,6 @@
 package me.zhyd.oauth.log;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author yadong.zhang (yadong.zhang0415(a)gmail.com)

@@ -1,7 +1,7 @@
 package me.zhyd.oauth.utils;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
 
 import java.util.ArrayList;
@@ -34,14 +34,14 @@ public class JsonPathTest {
 
         JsonNode elements = JsonNodeUtils.findArrayNode(emailObj, "elements");
 
-        Assert.assertFalse("elements is null", elements == null || elements.isEmpty());
+        Assertions.assertFalse(elements == null || elements.isEmpty(), "elements is null");
 
         JsonNode element = elements.get(0);
-        Assert.assertNotNull("element is null", element);
+        Assertions.assertNotNull(element, "element is null");
 
         JsonNode handle = JsonNodeUtils.findObjectNode(element, "handle~");
-        Assert.assertNotNull("handle is null", handle);
-        String address =  JsonNodeUtils.findStringValue(handle, "emailAddress");
-        Assert.assertEquals("xxxx", address);
+        Assertions.assertNotNull(handle, "handle is null");
+        String address = JsonNodeUtils.findStringValue(handle, "emailAddress");
+        Assertions.assertEquals("xxxx", address);
     }
 }

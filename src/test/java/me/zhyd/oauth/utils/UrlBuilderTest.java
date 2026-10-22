@@ -4,8 +4,8 @@ import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
 import me.zhyd.oauth.constant.Keys;
 import me.zhyd.oauth.request.AuthWeChatOpenRequest;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * <p>
@@ -41,13 +41,13 @@ public class UrlBuilderTest {
         String url = UrlBuilder.fromBaseUrl("https://www.zhyd.me")
                 .queryParam(Keys.NAME, "yadong.zhang")
                 .build();
-        Assert.assertEquals("https://www.zhyd.me?name=yadong.zhang", url);
+        Assertions.assertEquals("https://www.zhyd.me?name=yadong.zhang", url);
 
         url = UrlBuilder.fromBaseUrl("https://www.zhyd.me")
                 .queryParam(Keys.NAME, "yadong.zhang")
                 .queryParam("github", "https://github.com/zhangyd-c")
                 .build();
-        Assert.assertEquals("https://www.zhyd.me?name=yadong.zhang&github=https://github.com/zhangyd-c", url);
+        Assertions.assertEquals("https://www.zhyd.me?name=yadong.zhang&github=https://github.com/zhangyd-c", url);
     }
 
     @Test
@@ -55,12 +55,12 @@ public class UrlBuilderTest {
         String url = UrlBuilder.fromBaseUrl("https://www.zhyd.me")
                 .queryParam(Keys.NAME, "yadong.zhang")
                 .build(true);
-        Assert.assertEquals("https://www.zhyd.me?name=yadong.zhang", url);
+        Assertions.assertEquals("https://www.zhyd.me?name=yadong.zhang", url);
 
         url = UrlBuilder.fromBaseUrl("https://www.zhyd.me")
                 .queryParam(Keys.NAME, "yadong.zhang")
                 .queryParam("github", "https://github.com/zhangyd-c")
                 .build(true);
-        Assert.assertEquals("https://www.zhyd.me?name=yadong.zhang&github=https%3A%2F%2Fgithub.com%2Fzhangyd-c", url);
+        Assertions.assertEquals("https://www.zhyd.me?name=yadong.zhang&github=https%3A%2F%2Fgithub.com%2Fzhangyd-c", url);
     }
 }

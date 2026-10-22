@@ -5,8 +5,8 @@ import me.zhyd.oauth.config.AuthDefaultSource;
 import me.zhyd.oauth.config.AuthExtendSource;
 import me.zhyd.oauth.request.*;
 import me.zhyd.oauth.utils.AuthStateUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class AuthRequestBuilderTest {
 
@@ -23,7 +23,7 @@ public class AuthRequestBuilderTest {
                         .redirectUri("https://www.justauth.cn")
                         .build())
                 .build();
-        Assert.assertTrue(authRequest instanceof AuthGithubRequest);
+        Assertions.assertInstanceOf(AuthGithubRequest.class, authRequest);
         System.out.println(authRequest.authorize(AuthStateUtils.createState()));
     }
 
@@ -44,7 +44,7 @@ public class AuthRequestBuilderTest {
                             .build();
                 })
                 .build();
-        Assert.assertTrue(authRequest instanceof AuthGiteeRequest);
+        Assertions.assertInstanceOf(AuthGiteeRequest.class, authRequest);
         System.out.println(authRequest.authorize(AuthStateUtils.createState()));
     }
 
@@ -63,7 +63,7 @@ public class AuthRequestBuilderTest {
                         .redirectUri("https://www.justauth.cn")
                         .build())
                 .build();
-        Assert.assertTrue(authRequest instanceof AuthExtendRequest);
+        Assertions.assertInstanceOf(AuthExtendRequest.class, authRequest);
         System.out.println(authRequest.authorize(AuthStateUtils.createState()));
     }
 
