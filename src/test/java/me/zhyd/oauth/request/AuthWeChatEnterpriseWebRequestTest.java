@@ -4,8 +4,6 @@ import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.utils.AuthStateUtils;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 public class AuthWeChatEnterpriseWebRequestTest {
 
     @Test

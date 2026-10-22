@@ -2,7 +2,6 @@ package me.zhyd.oauth.request;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.google.common.net.HttpHeaders;
-import com.xkcoding.http.support.HttpHeader;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
@@ -10,6 +9,8 @@ import me.zhyd.oauth.constant.Keys;
 import me.zhyd.oauth.enums.AuthResponseStatus;
 import me.zhyd.oauth.enums.AuthUserGender;
 import me.zhyd.oauth.exception.AuthException;
+import me.zhyd.oauth.http.HttpHeader;
+import me.zhyd.oauth.http.UnifiedHttpClient;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
@@ -49,7 +50,7 @@ public class AuthElemeRequest extends AuthDefaultRequest {
         form.put(Keys.OAUTH2_GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
 
         HttpHeader httpHeader = this.buildHeader(CONTENT_TYPE_FORM, this.getRequestId(), true);
-        String response = new HttpUtils(config.getHttpConfig()).post(source.accessToken(), form, httpHeader, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), form, httpHeader, false).getBody();
         JSONObject object = JSONObject.parseObject(response);
 
         this.checkResponse(object);
@@ -88,7 +89,7 @@ public class AuthElemeRequest extends AuthDefaultRequest {
         paramsMap.put("signature", signature);
 
         HttpHeader httpHeader = this.buildHeader(CONTENT_TYPE_JSON, requestId, false);
-        String response = new HttpUtils(config.getHttpConfig()).post(source.userInfo(), JSONObject.toJSONString(paramsMap), httpHeader).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(source.userInfo(), JSONObject.toJSONString(paramsMap), httpHeader).getBody();
 
         JSONObject object = JSONObject.parseObject(response);
 
@@ -120,7 +121,7 @@ public class AuthElemeRequest extends AuthDefaultRequest {
         form.put(Keys.OAUTH2_GRANT_TYPE, Keys.OAUTH2_REFRESH_TOKEN);
 
         HttpHeader httpHeader = this.buildHeader(CONTENT_TYPE_FORM, this.getRequestId(), true);
-        String response = new HttpUtils(config.getHttpConfig()).post(source.refresh(), form, httpHeader, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(source.refresh(), form, httpHeader, false).getBody();
 
         JSONObject object = JSONObject.parseObject(response);
 

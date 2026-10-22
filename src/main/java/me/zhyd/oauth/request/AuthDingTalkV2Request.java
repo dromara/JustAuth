@@ -1,18 +1,18 @@
 package me.zhyd.oauth.request;
 
 import com.alibaba.fastjson2.JSONObject;
-import com.xkcoding.http.support.HttpHeader;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
 import me.zhyd.oauth.constant.Keys;
 import me.zhyd.oauth.enums.scope.AuthDingTalkScope;
 import me.zhyd.oauth.exception.AuthException;
+import me.zhyd.oauth.http.HttpHeader;
+import me.zhyd.oauth.http.UnifiedHttpClient;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
-import me.zhyd.oauth.utils.HttpUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
 
 import java.util.HashMap;
@@ -57,7 +57,7 @@ public class AuthDingTalkV2Request extends AuthDefaultRequest {
         params.put("clientId", config.getClientId());
         params.put("clientSecret", config.getClientSecret());
         params.put(Keys.OAUTH2_CODE, authCallback.getCode());
-        String response = new HttpUtils(config.getHttpConfig()).post(this.source.accessToken(), JSONObject.toJSONString(params)).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(this.source.accessToken(), JSONObject.toJSONString(params)).getBody();
         JSONObject accessTokenObject = JSONObject.parseObject(response);
         if (!accessTokenObject.containsKey("accessToken")) {
             throw new AuthException(JSONObject.toJSONString(response), source);
@@ -75,7 +75,7 @@ public class AuthDingTalkV2Request extends AuthDefaultRequest {
         HttpHeader header = new HttpHeader();
         header.add("x-acs-dingtalk-access-token", authToken.getAccessToken());
 
-        String response = new HttpUtils(config.getHttpConfig()).get(this.source.userInfo(), null, header, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().get(this.source.userInfo(), null, header, false).getBody();
         JSONObject object = JSONObject.parseObject(response);
 
         authToken.setOpenId(object.getString("openId"));
@@ -98,6 +98,7 @@ public class AuthDingTalkV2Request extends AuthDefaultRequest {
      * @param code 授权码
      * @return 返回获取accessToken的url
      */
+    @Override
     protected String accessTokenUrl(String code) {
         return UrlBuilder.fromBaseUrl(source.accessToken())
                 .queryParam(Keys.OAUTH2_CODE, code)

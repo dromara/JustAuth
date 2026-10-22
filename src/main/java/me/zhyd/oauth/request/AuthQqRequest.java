@@ -9,13 +9,18 @@ import me.zhyd.oauth.enums.AuthResponseStatus;
 import me.zhyd.oauth.enums.AuthUserGender;
 import me.zhyd.oauth.enums.scope.AuthQqScope;
 import me.zhyd.oauth.exception.AuthException;
+import me.zhyd.oauth.http.UnifiedHttpClient;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
-import me.zhyd.oauth.utils.*;
+import me.zhyd.oauth.utils.AuthScopeUtils;
+import me.zhyd.oauth.utils.GlobalAuthUtils;
+import me.zhyd.oauth.utils.UrlBuilder;
 
 import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * qq登录
@@ -41,7 +46,7 @@ public class AuthQqRequest extends AuthDefaultRequest {
 
     @Override
     public AuthResponse<AuthToken> refresh(AuthToken authToken) {
-        String response = new HttpUtils(config.getHttpConfig()).get(refreshTokenUrl(authToken.getRefreshToken())).getBody();
+        String response = UnifiedHttpClient.getAdapter().get(refreshTokenUrl(authToken.getRefreshToken())).getBody();
         return AuthResponse.<AuthToken>builder().code(AuthResponseStatus.SUCCESS.getCode()).data(getAuthToken(response)).build();
     }
 
@@ -80,7 +85,7 @@ public class AuthQqRequest extends AuthDefaultRequest {
      * @return openId
      */
     private String getOpenId(AuthToken authToken) {
-        String response = new HttpUtils(config.getHttpConfig()).get(UrlBuilder.fromBaseUrl("https://graph.qq.com/oauth2.0/me")
+        String response = UnifiedHttpClient.getAdapter().get(UrlBuilder.fromBaseUrl("https://graph.qq.com/oauth2.0/me")
                 .queryParam(Keys.OAUTH2_ACCESS_TOKEN, authToken.getAccessToken())
                 .queryParam(Keys.UNIONID, config.isUnionId() ? 1 : 0)
                 .build()).getBody();

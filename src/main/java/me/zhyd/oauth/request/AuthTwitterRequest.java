@@ -2,18 +2,18 @@ package me.zhyd.oauth.request;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.google.common.net.HttpHeaders;
-import com.xkcoding.http.constants.Constants;
-import com.xkcoding.http.support.HttpHeader;
-import com.xkcoding.http.util.MapUtil;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.constant.Keys;
 import me.zhyd.oauth.constant.MediaType;
+import me.zhyd.oauth.http.HttpConstants;
+import me.zhyd.oauth.http.HttpHeader;
+import me.zhyd.oauth.http.UnifiedHttpClient;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.GlobalAuthUtils;
-import me.zhyd.oauth.utils.HttpUtils;
+import me.zhyd.oauth.utils.MapUtil;
 import me.zhyd.oauth.utils.UrlBuilder;
 
 import java.util.HashMap;
@@ -32,6 +32,7 @@ import static me.zhyd.oauth.utils.GlobalAuthUtils.urlEncode;
 public class AuthTwitterRequest extends AuthDefaultRequest {
 
     private static final String PREAMBLE = "OAuth";
+    static final String OAUTH_SIGNATURE ="oauth_signature";
 
     public AuthTwitterRequest(AuthConfig config) {
         super(config, TWITTER);
@@ -67,13 +68,13 @@ public class AuthTwitterRequest extends AuthDefaultRequest {
 
         Map<String, String> oauthParams = buildOauthParams();
         oauthParams.put("oauth_callback", config.getRedirectUri());
-        oauthParams.put("oauth_signature", generateTwitterSignature(oauthParams, "POST", baseUrl, config.getClientSecret(), null));
+        oauthParams.put(OAUTH_SIGNATURE, generateTwitterSignature(oauthParams, "POST", baseUrl, config.getClientSecret(), null));
         String header = buildHeader(oauthParams);
 
         HttpHeader httpHeader = new HttpHeader();
         httpHeader.add(HttpHeaders.AUTHORIZATION, header);
         httpHeader.add(HttpHeaders.USER_AGENT, "'JustAuth' HTTP Client Simple-Http");
-        String requestToken = new HttpUtils(config.getHttpConfig()).post(baseUrl, null, httpHeader).getBody();
+        String requestToken = UnifiedHttpClient.getAdapter().post(baseUrl, null, httpHeader).getBody();
 
         Map<String, String> res = MapUtil.parseStringToMap(requestToken, false);
 
@@ -95,17 +96,17 @@ public class AuthTwitterRequest extends AuthDefaultRequest {
         Map<String, String> oauthParams = buildOauthParams();
         oauthParams.put("oauth_token", authCallback.getOauth_token());
         oauthParams.put("oauth_verifier", authCallback.getOauth_verifier());
-        oauthParams.put("oauth_signature", generateTwitterSignature(oauthParams, "POST", source.accessToken(), config.getClientSecret(), authCallback
+        oauthParams.put(OAUTH_SIGNATURE, generateTwitterSignature(oauthParams, "POST", source.accessToken(), config.getClientSecret(), authCallback
                 .getOauth_token()));
         String header = buildHeader(oauthParams);
 
         HttpHeader httpHeader = new HttpHeader();
         httpHeader.add(HttpHeaders.AUTHORIZATION, header);
-        httpHeader.add(Constants.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
+        httpHeader.add(HttpConstants.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
 
         Map<String, String> form = new HashMap<>(3);
         form.put("oauth_verifier", authCallback.getOauth_verifier());
-        String response = new HttpUtils(config.getHttpConfig()).post(source.accessToken(), form, httpHeader, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), form, httpHeader, false).getBody();
 
         Map<String, String> requestToken = MapUtil.parseStringToMap(response, false);
 
@@ -128,13 +129,12 @@ public class AuthTwitterRequest extends AuthDefaultRequest {
 
         Map<String, String> params = new HashMap<>(oauthParams);
         params.putAll(queryParams);
-        oauthParams.put("oauth_signature", generateTwitterSignature(params, "GET", source.userInfo(), config.getClientSecret(), authToken.getOauthTokenSecret()));
+        oauthParams.put(OAUTH_SIGNATURE, generateTwitterSignature(params, "GET", source.userInfo(), config.getClientSecret(), authToken.getOauthTokenSecret()));
         String header = buildHeader(oauthParams);
 
         HttpHeader httpHeader = new HttpHeader();
         httpHeader.add(HttpHeaders.AUTHORIZATION, header);
-        String response = new HttpUtils(config.getHttpConfig())
-                .get(userInfoUrl(authToken), null, httpHeader, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().get(userInfoUrl(authToken), null, httpHeader, false).getBody();
         JSONObject userInfo = JSONObject.parseObject(response);
 
         return AuthUser.builder()

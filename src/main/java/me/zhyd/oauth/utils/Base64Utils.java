@@ -93,7 +93,7 @@ public class Base64Utils {
      * @return 被加密后的字符串
      */
     public static String encode(CharSequence source, Charset charset) {
-        return encode(StringUtils.bytes(source, charset));
+        return encode(bytes(source, charset));
     }
 
     /**
@@ -105,7 +105,7 @@ public class Base64Utils {
      * @since 3.0.6
      */
     public static String encodeUrlSafe(CharSequence source, Charset charset) {
-        return encodeUrlSafe(StringUtils.bytes(source, charset));
+        return encodeUrlSafe(bytes(source, charset));
     }
 
     /**
@@ -115,7 +115,7 @@ public class Base64Utils {
      * @return 被加密后的字符串
      */
     public static String encode(byte[] source) {
-        return StringUtils.str(encode(source, false), DEFAULT_CHARSET);
+        return str(encode(source, false), DEFAULT_CHARSET);
     }
 
     /**
@@ -126,7 +126,7 @@ public class Base64Utils {
      * @since 3.0.6
      */
     public static String encodeUrlSafe(byte[] source) {
-        return StringUtils.str(encodeUrlSafe(source, false), DEFAULT_CHARSET);
+        return str(encodeUrlSafe(source, false), DEFAULT_CHARSET);
     }
 
     /**
@@ -193,5 +193,41 @@ public class Base64Utils {
             }
         }
         return dest;
+    }
+    
+    /**
+     * 编码字符串
+     *
+     * @param str     字符串
+     * @param charset 字符集，如果此字段为空，则解码的结果取决于平台
+     * @return 编码后的字节码
+     */
+    public static byte[] bytes(CharSequence str, Charset charset) {
+        if (str == null) {
+            return null;
+        }
+
+        if (null == charset) {
+            return str.toString().getBytes();
+        }
+        return str.toString().getBytes(charset);
+    }
+
+    /**
+     * 解码字节码
+     *
+     * @param data    字符串
+     * @param charset 字符集，如果此字段为空，则解码的结果取决于平台
+     * @return 解码后的字符串
+     */
+    public static String str(byte[] data, Charset charset) {
+        if (data == null) {
+            return null;
+        }
+
+        if (null == charset) {
+            return new String(data);
+        }
+        return new String(data, charset);
     }
 }

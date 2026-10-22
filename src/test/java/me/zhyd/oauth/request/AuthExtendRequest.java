@@ -74,7 +74,7 @@ public class AuthExtendRequest extends AuthDefaultRequest {
      * @return AuthResponse
      */
     @Override
-    public AuthResponse revoke(AuthToken authToken) {
+    public AuthResponse<?> revoke(AuthToken authToken) {
         return AuthResponse.builder()
             .code(AuthResponseStatus.SUCCESS.getCode())
             .msg(AuthResponseStatus.SUCCESS.getMsg())

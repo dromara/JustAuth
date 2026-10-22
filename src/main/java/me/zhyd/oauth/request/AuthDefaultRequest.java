@@ -1,6 +1,5 @@
 package me.zhyd.oauth.request;
 
-import com.xkcoding.http.util.UrlUtil;
 import me.zhyd.oauth.cache.AuthDefaultStateCache;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
@@ -8,14 +7,20 @@ import me.zhyd.oauth.config.AuthSource;
 import me.zhyd.oauth.constant.Keys;
 import me.zhyd.oauth.enums.AuthResponseStatus;
 import me.zhyd.oauth.exception.AuthException;
+import me.zhyd.oauth.http.HttpUrlEncoding;
+import me.zhyd.oauth.http.UnifiedHttpClient;
 import me.zhyd.oauth.log.Log;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
-import me.zhyd.oauth.utils.*;
+import me.zhyd.oauth.utils.AuthChecker;
+import me.zhyd.oauth.utils.UrlBuilder;
+import me.zhyd.oauth.utils.UuidUtils;
 
 import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * 默认的request处理类
@@ -29,11 +34,11 @@ public abstract class AuthDefaultRequest implements AuthRequest {
     protected AuthSource source;
     protected AuthStateCache authStateCache;
 
-    public AuthDefaultRequest(AuthConfig config, AuthSource source) {
+    protected AuthDefaultRequest(AuthConfig config, AuthSource source) {
         this(config, source, AuthDefaultStateCache.INSTANCE);
     }
 
-    public AuthDefaultRequest(AuthConfig config, AuthSource source, AuthStateCache authStateCache) {
+    protected AuthDefaultRequest(AuthConfig config, AuthSource source, AuthStateCache authStateCache) {
         this.config = config;
         this.source = source;
         this.authStateCache = authStateCache;
@@ -197,7 +202,7 @@ public abstract class AuthDefaultRequest implements AuthRequest {
      * @return Response
      */
     protected String doPostAuthorizationCode(String code) {
-        return new HttpUtils(config.getHttpConfig()).post(accessTokenUrl(code)).getBody();
+        return UnifiedHttpClient.getAdapter().post(accessTokenUrl(code)).getBody();
     }
 
     /**
@@ -207,7 +212,7 @@ public abstract class AuthDefaultRequest implements AuthRequest {
      * @return Response
      */
     protected String doGetAuthorizationCode(String code) {
-        return new HttpUtils(config.getHttpConfig()).get(accessTokenUrl(code)).getBody();
+        return UnifiedHttpClient.getAdapter().get(accessTokenUrl(code)).getBody();
     }
 
     /**
@@ -218,7 +223,7 @@ public abstract class AuthDefaultRequest implements AuthRequest {
      */
     @Deprecated
     protected String doPostUserInfo(AuthToken authToken) {
-        return new HttpUtils(config.getHttpConfig()).post(userInfoUrl(authToken)).getBody();
+        return UnifiedHttpClient.getAdapter().post(userInfoUrl(authToken)).getBody();
     }
 
     /**
@@ -228,7 +233,7 @@ public abstract class AuthDefaultRequest implements AuthRequest {
      * @return Response
      */
     protected String doGetUserInfo(AuthToken authToken) {
-        return new HttpUtils(config.getHttpConfig()).get(userInfoUrl(authToken)).getBody();
+        return UnifiedHttpClient.getAdapter().get(userInfoUrl(authToken)).getBody();
     }
 
     /**
@@ -239,7 +244,7 @@ public abstract class AuthDefaultRequest implements AuthRequest {
      */
     @Deprecated
     protected String doPostRevoke(AuthToken authToken) {
-        return new HttpUtils(config.getHttpConfig()).post(revokeUrl(authToken)).getBody();
+        return UnifiedHttpClient.getAdapter().post(revokeUrl(authToken)).getBody();
     }
 
     /**
@@ -249,7 +254,7 @@ public abstract class AuthDefaultRequest implements AuthRequest {
      * @return Response
      */
     protected String doGetRevoke(AuthToken authToken) {
-        return new HttpUtils(config.getHttpConfig()).get(revokeUrl(authToken)).getBody();
+        return UnifiedHttpClient.getAdapter().get(revokeUrl(authToken)).getBody();
     }
 
     /**
@@ -274,7 +279,7 @@ public abstract class AuthDefaultRequest implements AuthRequest {
             separator = " ";
         }
         String scopeStr = String.join(separator, scopes);
-        return encode ? UrlUtil.urlEncode(scopeStr) : scopeStr;
+        return encode ? HttpUrlEncoding.encode(scopeStr) : scopeStr;
     }
 
     protected void checkConfig(AuthConfig config) {

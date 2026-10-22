@@ -18,6 +18,11 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class AuthResponse<T> implements Serializable {
     /**
+	 * 
+	 */
+	private static final long serialVersionUID = 3706163729082056724L;
+
+	/**
      * 授权响应状态码
      */
     private int code;

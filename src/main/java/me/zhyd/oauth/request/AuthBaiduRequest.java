@@ -1,5 +1,7 @@
 package me.zhyd.oauth.request;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.alibaba.fastjson2.JSONObject;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
@@ -9,13 +11,12 @@ import me.zhyd.oauth.enums.AuthResponseStatus;
 import me.zhyd.oauth.enums.AuthUserGender;
 import me.zhyd.oauth.enums.scope.AuthBaiduScope;
 import me.zhyd.oauth.exception.AuthException;
+import me.zhyd.oauth.http.UnifiedHttpClient;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
-import me.zhyd.oauth.utils.HttpUtils;
-import me.zhyd.oauth.utils.StringUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
 
 /**
@@ -72,7 +73,7 @@ public class AuthBaiduRequest extends AuthDefaultRequest {
     }
 
     @Override
-    public AuthResponse revoke(AuthToken authToken) {
+    public AuthResponse<?> revoke(AuthToken authToken) {
         String response = doGetRevoke(authToken);
         JSONObject object = JSONObject.parseObject(response);
         this.checkResponse(object);
@@ -89,7 +90,7 @@ public class AuthBaiduRequest extends AuthDefaultRequest {
                 .queryParam(Keys.OAUTH2_CLIENT_ID, this.config.getClientId())
                 .queryParam(Keys.OAUTH2_CLIENT_SECRET, this.config.getClientSecret())
                 .build();
-        String response = new HttpUtils(config.getHttpConfig()).get(refreshUrl).getBody();
+        String response = UnifiedHttpClient.getAdapter().get(refreshUrl).getBody();
         return AuthResponse.<AuthToken>builder()
                 .code(AuthResponseStatus.SUCCESS.getCode())
                 .data(this.getAuthToken(response))

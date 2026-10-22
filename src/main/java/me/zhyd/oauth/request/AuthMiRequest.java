@@ -1,7 +1,6 @@
 package me.zhyd.oauth.request;
 
 import com.alibaba.fastjson2.JSONObject;
-import com.xkcoding.http.constants.Constants;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
@@ -10,13 +9,14 @@ import me.zhyd.oauth.enums.AuthResponseStatus;
 import me.zhyd.oauth.enums.AuthUserGender;
 import me.zhyd.oauth.enums.scope.AuthMiScope;
 import me.zhyd.oauth.exception.AuthException;
+import me.zhyd.oauth.http.HttpConstants;
+import me.zhyd.oauth.http.UnifiedHttpClient;
 import me.zhyd.oauth.log.Log;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
-import me.zhyd.oauth.utils.HttpUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
 
 import java.text.MessageFormat;
@@ -44,8 +44,8 @@ public class AuthMiRequest extends AuthDefaultRequest {
     }
 
     private AuthToken getToken(String accessTokenUrl) {
-        String response = new HttpUtils(config.getHttpConfig()).get(accessTokenUrl).getBody();
-        String jsonStr = response.replace(PREFIX, Constants.EMPTY);
+        String response = UnifiedHttpClient.getAdapter().get(accessTokenUrl).getBody();
+        String jsonStr = response.replace(PREFIX, HttpConstants.EMPTY);
         JSONObject accessTokenObject = JSONObject.parseObject(jsonStr);
 
         if (accessTokenObject.containsKey(Keys.ERROR)) {
@@ -92,7 +92,7 @@ public class AuthMiRequest extends AuthDefaultRequest {
         String emailPhoneUrl = MessageFormat.format("{0}?clientId={1}&token={2}", "https://open.account.xiaomi.com/user/phoneAndEmail", config
                 .getClientId(), authToken.getAccessToken());
 
-        String emailResponse = new HttpUtils(config.getHttpConfig()).get(emailPhoneUrl).getBody();
+        String emailResponse = UnifiedHttpClient.getAdapter().get(emailPhoneUrl).getBody();
         JSONObject userEmailPhone = JSONObject.parseObject(emailResponse);
         if (!Keys.ERROR.equalsIgnoreCase(userEmailPhone.getString(Keys.RESULT))) {
             JSONObject emailPhone = userEmailPhone.getJSONObject(Keys.DATA);

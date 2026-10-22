@@ -1,5 +1,7 @@
 package me.zhyd.oauth.request;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.alibaba.fastjson2.JSONObject;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
@@ -9,11 +11,14 @@ import me.zhyd.oauth.enums.AuthResponseStatus;
 import me.zhyd.oauth.enums.AuthUserGender;
 import me.zhyd.oauth.enums.scope.AuthWechatMpScope;
 import me.zhyd.oauth.exception.AuthException;
+import me.zhyd.oauth.http.UnifiedHttpClient;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
-import me.zhyd.oauth.utils.*;
+import me.zhyd.oauth.utils.AuthScopeUtils;
+import me.zhyd.oauth.utils.GlobalAuthUtils;
+import me.zhyd.oauth.utils.UrlBuilder;
 
 /**
  * 微信公众平台登录
@@ -105,7 +110,7 @@ public class AuthWeChatMpRequest extends AuthDefaultRequest {
      * @return token对象
      */
     private AuthToken getToken(String accessTokenUrl) {
-        String response = new HttpUtils(config.getHttpConfig()).get(accessTokenUrl).getBody();
+        String response = UnifiedHttpClient.getAdapter().get(accessTokenUrl).getBody();
         JSONObject accessTokenObject = JSONObject.parseObject(response);
 
         this.checkResponse(accessTokenObject);

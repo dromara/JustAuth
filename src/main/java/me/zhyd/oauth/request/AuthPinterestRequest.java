@@ -7,11 +7,11 @@ import me.zhyd.oauth.constant.Keys;
 import me.zhyd.oauth.enums.AuthUserGender;
 import me.zhyd.oauth.enums.scope.AuthPinterestScope;
 import me.zhyd.oauth.exception.AuthException;
+import me.zhyd.oauth.http.UnifiedHttpClient;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
-import me.zhyd.oauth.utils.HttpUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
 
 import java.util.Objects;
@@ -51,7 +51,7 @@ public class AuthPinterestRequest extends AuthDefaultRequest {
     public AuthUser getUserInfo(AuthToken authToken) {
         String userinfoUrl = userInfoUrl(authToken);
         // TODO: 是否需要 .setFollowRedirects(true)
-        String response = new HttpUtils(config.getHttpConfig()).get(userinfoUrl).getBody();
+        String response = UnifiedHttpClient.getAdapter().get(userinfoUrl).getBody();
         JSONObject object = JSONObject.parseObject(response);
         this.checkResponse(object);
         JSONObject userObj = object.getJSONObject(Keys.DATA);

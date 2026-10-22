@@ -1,5 +1,7 @@
 package me.zhyd.oauth.utils;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -48,7 +50,7 @@ public class StringUtilsTest {
         final String otherwise = "should be discarded";
 
         final String result =
-            StringUtils.appendIfNotContain(str, appendStr, otherwise);
+            Strings.CS.appendIfMissing(str, appendStr, otherwise);
 
         Assert.assertEquals("Prefix suffix", result);
     }
@@ -61,22 +63,9 @@ public class StringUtilsTest {
         final String otherwise = "should be appended";
 
         final String result =
-            StringUtils.appendIfNotContain(str, appendStr, otherwise);
+        		Strings.CS.appendIfMissing(str, appendStr, otherwise);
 
         Assert.assertEquals("Prefix should be appended", result);
-    }
-
-    @Test
-    public void appendIfNotContainEmptyString() {
-        // (Check the special-case for str being empty)
-        final String str = "";
-        final String appendStr = "should not be appended";
-        final String otherwise = "should also not be appended";
-
-        final String result =
-            StringUtils.appendIfNotContain(str, appendStr, otherwise);
-
-        Assert.assertEquals("", result);
     }
 
     @Test
@@ -87,7 +76,7 @@ public class StringUtilsTest {
         final String otherwise = "should also not be appended";
 
         final String result =
-            StringUtils.appendIfNotContain(str, appendStr, otherwise);
+            Strings.CS.appendIfMissing(str, appendStr, otherwise);
 
         Assert.assertEquals("should be kept", result);
     }

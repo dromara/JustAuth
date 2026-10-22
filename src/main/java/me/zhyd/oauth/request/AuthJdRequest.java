@@ -9,13 +9,13 @@ import me.zhyd.oauth.enums.AuthResponseStatus;
 import me.zhyd.oauth.enums.AuthUserGender;
 import me.zhyd.oauth.enums.scope.AuthJdScope;
 import me.zhyd.oauth.exception.AuthException;
+import me.zhyd.oauth.http.UnifiedHttpClient;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
 import me.zhyd.oauth.utils.GlobalAuthUtils;
-import me.zhyd.oauth.utils.HttpUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
 
 import java.time.LocalDateTime;
@@ -47,7 +47,7 @@ public class AuthJdRequest extends AuthDefaultRequest {
         params.put("app_secret", config.getClientSecret());
         params.put(Keys.OAUTH2_GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
         params.put(Keys.OAUTH2_CODE, authCallback.getCode());
-        String response = new HttpUtils(config.getHttpConfig()).post(source.accessToken(), params, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), params, false).getBody();
         JSONObject object = JSONObject.parseObject(response);
 
         this.checkResponse(object);
@@ -71,7 +71,7 @@ public class AuthJdRequest extends AuthDefaultRequest {
                 .queryParam("timestamp", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
                 .queryParam("v", "2.0");
         urlBuilder.queryParam("sign", GlobalAuthUtils.generateJdSignature(config.getClientSecret(), urlBuilder.getReadOnlyParams()));
-        String response = new HttpUtils(config.getHttpConfig()).post(urlBuilder.build(true)).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(urlBuilder.build(true)).getBody();
         JSONObject object = JSONObject.parseObject(response);
 
         this.checkResponse(object);
@@ -110,7 +110,7 @@ public class AuthJdRequest extends AuthDefaultRequest {
         params.put("app_secret", config.getClientSecret());
         params.put(Keys.OAUTH2_GRANT_TYPE, Keys.OAUTH2_REFRESH_TOKEN);
         params.put(Keys.OAUTH2_REFRESH_TOKEN, oldToken.getRefreshToken());
-        String response = new HttpUtils(config.getHttpConfig()).post(source.refresh(), params, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(source.refresh(), params, false).getBody();
         JSONObject object = JSONObject.parseObject(response);
 
         this.checkResponse(object);

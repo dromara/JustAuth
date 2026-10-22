@@ -2,7 +2,6 @@ package me.zhyd.oauth.request;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.google.common.net.HttpHeaders;
-import com.xkcoding.http.support.HttpHeader;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
@@ -12,12 +11,13 @@ import me.zhyd.oauth.enums.AuthResponseStatus;
 import me.zhyd.oauth.enums.AuthUserGender;
 import me.zhyd.oauth.enums.scope.AuthOktaScope;
 import me.zhyd.oauth.exception.AuthException;
+import me.zhyd.oauth.http.HttpHeader;
+import me.zhyd.oauth.http.UnifiedHttpClient;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
-import me.zhyd.oauth.utils.HttpUtils;
 import me.zhyd.oauth.utils.TokenUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
 
@@ -53,7 +53,7 @@ public class AuthOktaRequest extends AuthDefaultRequest {
                 .add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON)
                 .add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED)
                 .add(HttpHeaders.AUTHORIZATION, TokenUtils.basic(config.getClientId(), config.getClientSecret()));
-        String response = new HttpUtils(config.getHttpConfig()).post(tokenUrl, null, header, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(tokenUrl, null, header, false).getBody();
         JSONObject accessTokenObject = JSONObject.parseObject(response);
         this.checkResponse(accessTokenObject);
         return AuthToken.builder()
@@ -85,7 +85,7 @@ public class AuthOktaRequest extends AuthDefaultRequest {
     public AuthUser getUserInfo(AuthToken authToken) {
         HttpHeader header = new HttpHeader()
                 .add(HttpHeaders.AUTHORIZATION, TokenUtils.bearer(authToken.getAccessToken()));
-        String response = new HttpUtils(config.getHttpConfig()).post(userInfoUrl(authToken), null, header, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(userInfoUrl(authToken), null, header, false).getBody();
         JSONObject object = JSONObject.parseObject(response);
         this.checkResponse(object);
         JSONObject address = object.getJSONObject(Keys.OAUTH2_SCOPE__ADDRESS);
@@ -103,14 +103,14 @@ public class AuthOktaRequest extends AuthDefaultRequest {
     }
 
     @Override
-    public AuthResponse revoke(AuthToken authToken) {
+    public AuthResponse<?> revoke(AuthToken authToken) {
         Map<String, String> params = new HashMap<>(4);
         params.put("token", authToken.getAccessToken());
         params.put("token_type_hint", Keys.OAUTH2_ACCESS_TOKEN);
 
         HttpHeader header = new HttpHeader()
                 .add(HttpHeaders.AUTHORIZATION, TokenUtils.basic(config.getClientId(), config.getClientSecret()));
-        new HttpUtils(config.getHttpConfig()).post(revokeUrl(authToken), params, header, false);
+        UnifiedHttpClient.getAdapter().post(revokeUrl(authToken), params, header, false);
         AuthResponseStatus status = AuthResponseStatus.SUCCESS;
         return AuthResponse.builder().code(status.getCode()).msg(status.getMsg()).build();
     }

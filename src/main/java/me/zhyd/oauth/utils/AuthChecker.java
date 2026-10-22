@@ -1,5 +1,7 @@
 package me.zhyd.oauth.utils;
 
+import org.apache.commons.lang3.StringUtils;
+
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;

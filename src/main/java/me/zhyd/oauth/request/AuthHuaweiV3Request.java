@@ -1,8 +1,6 @@
 package me.zhyd.oauth.request;
 
 import com.alibaba.fastjson2.JSONObject;
-import com.xkcoding.http.constants.Constants;
-import com.xkcoding.http.support.HttpHeader;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
@@ -11,17 +9,24 @@ import me.zhyd.oauth.constant.MediaType;
 import me.zhyd.oauth.enums.AuthUserGender;
 import me.zhyd.oauth.enums.scope.AuthHuaweiV3Scope;
 import me.zhyd.oauth.exception.AuthException;
+import me.zhyd.oauth.http.HttpConstants;
+import me.zhyd.oauth.http.HttpHeader;
+import me.zhyd.oauth.http.UnifiedHttpClient;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
-import me.zhyd.oauth.utils.*;
+import me.zhyd.oauth.utils.AuthScopeUtils;
+import me.zhyd.oauth.utils.PkceUtil;
+import me.zhyd.oauth.utils.UrlBuilder;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.lang3.StringUtils;
 
 import static me.zhyd.oauth.enums.AuthResponseStatus.SUCCESS;
 
@@ -66,8 +71,8 @@ public class AuthHuaweiV3Request extends AuthDefaultRequest {
         }
 
         HttpHeader httpHeader = new HttpHeader();
-        httpHeader.add(Constants.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
-        String response = new HttpUtils(config.getHttpConfig()).post(source.accessToken(), form, httpHeader, false).getBody();
+        httpHeader.add(HttpConstants.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
+        String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), form, httpHeader, false).getBody();
         return getAuthToken(response);
     }
 
@@ -88,8 +93,8 @@ public class AuthHuaweiV3Request extends AuthDefaultRequest {
             form.put("nsp_svc", "GOpen.User.getInfo");
 
             HttpHeader httpHeader = new HttpHeader();
-            httpHeader.add(Constants.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
-            String response = new HttpUtils(config.getHttpConfig()).post(source.userInfo(), form, httpHeader, false).getBody();
+            httpHeader.add(HttpConstants.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
+            String response = UnifiedHttpClient.getAdapter().post(source.userInfo(), form, httpHeader, false).getBody();
             JSONObject object = JSONObject.parseObject(response);
 
             this.checkResponse(object);
@@ -135,8 +140,8 @@ public class AuthHuaweiV3Request extends AuthDefaultRequest {
         form.put(Keys.OAUTH2_GRANT_TYPE, Keys.OAUTH2_REFRESH_TOKEN);
 
         HttpHeader httpHeader = new HttpHeader();
-        httpHeader.add(Constants.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
-        String response = new HttpUtils(config.getHttpConfig()).post(source.refresh(), form, httpHeader, false).getBody();
+        httpHeader.add(HttpConstants.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
+        String response = UnifiedHttpClient.getAdapter().post(source.refresh(), form, httpHeader, false).getBody();
         return AuthResponse.<AuthToken>builder().code(SUCCESS.getCode()).data(getAuthToken(response)).build();
     }
 

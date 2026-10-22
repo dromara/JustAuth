@@ -2,7 +2,6 @@ package me.zhyd.oauth.request;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.google.common.net.HttpHeaders;
-import com.xkcoding.http.support.HttpHeader;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
@@ -10,11 +9,12 @@ import me.zhyd.oauth.constant.Keys;
 import me.zhyd.oauth.enums.AuthResponseStatus;
 import me.zhyd.oauth.enums.AuthUserGender;
 import me.zhyd.oauth.exception.AuthException;
+import me.zhyd.oauth.http.HttpHeader;
+import me.zhyd.oauth.http.UnifiedHttpClient;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
-import me.zhyd.oauth.utils.HttpUtils;
 import me.zhyd.oauth.utils.TokenUtils;
 
 import java.util.HashMap;
@@ -48,7 +48,7 @@ public class AuthTeambitionRequest extends AuthDefaultRequest {
         form.put(Keys.OAUTH2_CODE, authCallback.getCode());
         form.put(Keys.OAUTH2_GRANT_TYPE, Keys.OAUTH2_CODE);
 
-        String response = new HttpUtils(config.getHttpConfig()).post(source.accessToken(), form, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), form, false).getBody();
         JSONObject accessTokenObject = JSONObject.parseObject(response);
 
         this.checkResponse(accessTokenObject);
@@ -66,8 +66,7 @@ public class AuthTeambitionRequest extends AuthDefaultRequest {
         HttpHeader httpHeader = new HttpHeader();
         httpHeader.add(HttpHeaders.AUTHORIZATION, TokenUtils.oauth2(accessToken));
 
-        String response = new HttpUtils(config.getHttpConfig())
-                .get(source.userInfo(), null, httpHeader, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().get(source.userInfo(), null, httpHeader, false).getBody();
         JSONObject object = JSONObject.parseObject(response);
 
         this.checkResponse(object);
@@ -97,7 +96,7 @@ public class AuthTeambitionRequest extends AuthDefaultRequest {
         Map<String, String> form = new HashMap<>(4);
         form.put("_userId", uid);
         form.put(Keys.OAUTH2_REFRESH_TOKEN, refreshToken);
-        String response = new HttpUtils(config.getHttpConfig()).post(source.refresh(), form, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(source.refresh(), form, false).getBody();
         JSONObject refreshTokenObject = JSONObject.parseObject(response);
 
         this.checkResponse(refreshTokenObject);

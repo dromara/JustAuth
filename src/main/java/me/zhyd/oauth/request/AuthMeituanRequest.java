@@ -8,11 +8,11 @@ import me.zhyd.oauth.constant.Keys;
 import me.zhyd.oauth.enums.AuthResponseStatus;
 import me.zhyd.oauth.enums.AuthUserGender;
 import me.zhyd.oauth.exception.AuthException;
+import me.zhyd.oauth.http.UnifiedHttpClient;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
-import me.zhyd.oauth.utils.HttpUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
 
 import java.util.HashMap;
@@ -42,7 +42,7 @@ public class AuthMeituanRequest extends AuthDefaultRequest {
         form.put(Keys.OAUTH2_CODE, authCallback.getCode());
         form.put(Keys.OAUTH2_GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
 
-        String response = new HttpUtils(config.getHttpConfig()).post(source.accessToken(), form, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), form, false).getBody();
         JSONObject object = JSONObject.parseObject(response);
 
         this.checkResponse(object);
@@ -61,7 +61,7 @@ public class AuthMeituanRequest extends AuthDefaultRequest {
         form.put("secret", config.getClientSecret());
         form.put(Keys.OAUTH2_ACCESS_TOKEN, authToken.getAccessToken());
 
-        String response = new HttpUtils(config.getHttpConfig()).post(source.userInfo(), form, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(source.userInfo(), form, false).getBody();
         JSONObject object = JSONObject.parseObject(response);
 
         this.checkResponse(object);
@@ -86,7 +86,7 @@ public class AuthMeituanRequest extends AuthDefaultRequest {
         form.put(Keys.OAUTH2_REFRESH_TOKEN, oldToken.getRefreshToken());
         form.put(Keys.OAUTH2_GRANT_TYPE, Keys.OAUTH2_REFRESH_TOKEN);
 
-        String response = new HttpUtils(config.getHttpConfig()).post(source.refresh(), form, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(source.refresh(), form, false).getBody();
         JSONObject object = JSONObject.parseObject(response);
 
         this.checkResponse(object);

@@ -1,9 +1,10 @@
 package me.zhyd.oauth.request;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.google.common.net.HttpHeaders;
-import com.xkcoding.http.support.HttpHeader;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
@@ -12,11 +13,15 @@ import me.zhyd.oauth.constant.MediaType;
 import me.zhyd.oauth.enums.AuthResponseStatus;
 import me.zhyd.oauth.enums.AuthUserGender;
 import me.zhyd.oauth.exception.AuthException;
+import me.zhyd.oauth.http.HttpHeader;
+import me.zhyd.oauth.http.UnifiedHttpClient;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
-import me.zhyd.oauth.utils.*;
+import me.zhyd.oauth.utils.GlobalAuthUtils;
+import me.zhyd.oauth.utils.TokenUtils;
+import me.zhyd.oauth.utils.UrlBuilder;
 
 /**
  * 飞书平台，企业自建应用授权登录，原逻辑由 beacon 集成于 1.14.0 版，但最新的飞书 api 已修改，并且飞书平台一直为 {@code Deprecated} 状态
@@ -57,7 +62,7 @@ public class AuthFeishuRequest extends AuthDefaultRequest {
         JSONObject requestObject = new JSONObject();
         requestObject.put(Keys.VARIANT__APP_ID, config.getClientId());
         requestObject.put("app_secret", config.getClientSecret());
-        String response = new HttpUtils(config.getHttpConfig()).post(url, requestObject.toJSONString(), new HttpHeader()
+        String response = UnifiedHttpClient.getAdapter().post(url, requestObject.toJSONString(), new HttpHeader()
                 .add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)).getBody();
         JSONObject jsonObject = JSON.parseObject(response);
         this.checkResponse(jsonObject);
@@ -80,7 +85,7 @@ public class AuthFeishuRequest extends AuthDefaultRequest {
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
         String accessToken = authToken.getAccessToken();
-        String response = new HttpUtils(config.getHttpConfig()).get(source.userInfo(), null, new HttpHeader()
+        String response = UnifiedHttpClient.getAdapter().get(source.userInfo(), null, new HttpHeader()
                 .add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
                 .add(HttpHeaders.AUTHORIZATION, TokenUtils.bearer(accessToken)), false).getBody();
         JSONObject object = JSON.parseObject(response);
@@ -113,7 +118,7 @@ public class AuthFeishuRequest extends AuthDefaultRequest {
     }
 
     private AuthToken getToken(JSONObject param, String url) {
-        String response = new HttpUtils(config.getHttpConfig()).post(url, param.toJSONString(), new HttpHeader()
+        String response = UnifiedHttpClient.getAdapter().post(url, param.toJSONString(), new HttpHeader()
                 .add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)).getBody();
         JSONObject jsonObject = JSON.parseObject(response);
         this.checkResponse(jsonObject);

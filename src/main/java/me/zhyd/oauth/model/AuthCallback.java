@@ -1,9 +1,10 @@
 package me.zhyd.oauth.model;
 
 import lombok.*;
-import me.zhyd.oauth.utils.StringUtils;
 
 import java.io.Serializable;
+
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * 授权回调时的参数类
@@ -19,6 +20,11 @@ import java.io.Serializable;
 public class AuthCallback implements Serializable {
 
     /**
+	 * 
+	 */
+	private static final long serialVersionUID = -8113141379889141361L;
+
+	/**
      * 访问AuthorizeUrl后回调时带的参数code
      */
     private String code;

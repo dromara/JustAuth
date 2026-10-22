@@ -1,13 +1,13 @@
 package me.zhyd.oauth.request;
 
 import com.alibaba.fastjson2.JSONObject;
-import com.xkcoding.http.HttpUtil;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
 import me.zhyd.oauth.constant.Keys;
 import me.zhyd.oauth.enums.AuthUserGender;
 import me.zhyd.oauth.exception.AuthException;
+import me.zhyd.oauth.http.UnifiedHttpClient;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
@@ -51,7 +51,7 @@ public class AuthXmlyRequest extends AuthDefaultRequest {
         map.put("device_id", config.getDeviceId());
         map.put(Keys.OAUTH2_GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
         map.put(Keys.OAUTH2_REDIRECT_URI, config.getRedirectUri());
-        String response = HttpUtil.post(source.accessToken(), map, true).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), map, true).getBody();
         JSONObject accessTokenObject = JSONObject.parseObject(response);
         this.checkResponse(accessTokenObject);
 
@@ -98,7 +98,7 @@ public class AuthXmlyRequest extends AuthDefaultRequest {
         map.put("pack_id", config.getPackId());
         map.put(Keys.OAUTH2_ACCESS_TOKEN, authToken.getAccessToken());
         map.put("sig", GlobalAuthUtils.generateXmlySignature(map, config.getClientSecret()));
-        String rawUserInfo = HttpUtil.get(source.userInfo(), map, false).getBody();
+        String rawUserInfo = UnifiedHttpClient.getAdapter().get(source.userInfo(), map, false).getBody();
         JSONObject object = JSONObject.parseObject(rawUserInfo);
         checkResponse(object);
         return AuthUser.builder()

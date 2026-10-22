@@ -8,10 +8,11 @@ import me.zhyd.oauth.enums.AuthResponseStatus;
 import me.zhyd.oauth.exception.AuthException;
 import me.zhyd.oauth.request.AuthDefaultRequest;
 import me.zhyd.oauth.request.AuthRequest;
-import me.zhyd.oauth.utils.StringUtils;
 
 import java.util.Arrays;
 import java.util.function.Function;
+
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * 快捷的构建 AuthRequest

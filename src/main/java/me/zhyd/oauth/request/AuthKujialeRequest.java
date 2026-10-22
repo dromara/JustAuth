@@ -8,12 +8,12 @@ import me.zhyd.oauth.constant.Keys;
 import me.zhyd.oauth.enums.AuthResponseStatus;
 import me.zhyd.oauth.enums.scope.AuthKujialeScope;
 import me.zhyd.oauth.exception.AuthException;
+import me.zhyd.oauth.http.UnifiedHttpClient;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
-import me.zhyd.oauth.utils.HttpUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
 
 /**
@@ -74,7 +74,7 @@ public class AuthKujialeRequest extends AuthDefaultRequest {
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
         String openId = this.getOpenId(authToken);
-        String response = new HttpUtils(config.getHttpConfig()).get(UrlBuilder.fromBaseUrl(source.userInfo())
+        String response = UnifiedHttpClient.getAdapter().get(UrlBuilder.fromBaseUrl(source.userInfo())
                 .queryParam(Keys.OAUTH2_ACCESS_TOKEN, authToken.getAccessToken())
                 .queryParam(Keys.VARIANT__OPEN_ID, openId)
                 .build()).getBody();
@@ -102,7 +102,7 @@ public class AuthKujialeRequest extends AuthDefaultRequest {
      * @return openId
      */
     private String getOpenId(AuthToken authToken) {
-        String response = new HttpUtils(config.getHttpConfig()).get(UrlBuilder.fromBaseUrl("https://oauth.kujiale.com/oauth2/auth/user")
+        String response = UnifiedHttpClient.getAdapter().get(UrlBuilder.fromBaseUrl("https://oauth.kujiale.com/oauth2/auth/user")
                 .queryParam(Keys.OAUTH2_ACCESS_TOKEN, authToken.getAccessToken())
                 .build()).getBody();
         JSONObject accessTokenObject = checkResponse(response);
@@ -111,7 +111,7 @@ public class AuthKujialeRequest extends AuthDefaultRequest {
 
     @Override
     public AuthResponse<AuthToken> refresh(AuthToken authToken) {
-        String response = new HttpUtils(config.getHttpConfig()).post(refreshTokenUrl(authToken.getRefreshToken())).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(refreshTokenUrl(authToken.getRefreshToken())).getBody();
         return AuthResponse.<AuthToken>builder().code(AuthResponseStatus.SUCCESS.getCode()).data(getAuthToken(response)).build();
     }
 }

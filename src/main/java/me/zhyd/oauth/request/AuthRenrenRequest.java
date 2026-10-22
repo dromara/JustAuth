@@ -2,19 +2,19 @@ package me.zhyd.oauth.request;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
-import com.xkcoding.http.util.UrlUtil;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.constant.Keys;
 import me.zhyd.oauth.enums.AuthUserGender;
 import me.zhyd.oauth.enums.scope.AuthRenrenScope;
 import me.zhyd.oauth.exception.AuthException;
+import me.zhyd.oauth.http.HttpUrlEncoding;
+import me.zhyd.oauth.http.UnifiedHttpClient;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
-import me.zhyd.oauth.utils.HttpUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
 
 import java.util.Objects;
@@ -69,7 +69,7 @@ public class AuthRenrenRequest extends AuthDefaultRequest {
     }
 
     private AuthToken getToken(String url) {
-        String response = new HttpUtils(config.getHttpConfig()).post(url).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(url).getBody();
         JSONObject jsonObject = JSONObject.parseObject(response);
         if (jsonObject.containsKey(Keys.ERROR)) {
             throw new AuthException("Failed to get token from Renren: " + jsonObject);
@@ -78,8 +78,8 @@ public class AuthRenrenRequest extends AuthDefaultRequest {
         return AuthToken.builder()
                 .tokenType(jsonObject.getString(Keys.OAUTH2_TOKEN_TYPE))
                 .expireIn(jsonObject.getIntValue(Keys.OAUTH2_EXPIRES_IN))
-                .accessToken(UrlUtil.urlEncode(jsonObject.getString(Keys.OAUTH2_ACCESS_TOKEN)))
-                .refreshToken(UrlUtil.urlEncode(jsonObject.getString(Keys.OAUTH2_REFRESH_TOKEN)))
+                .accessToken(HttpUrlEncoding.encode(jsonObject.getString(Keys.OAUTH2_ACCESS_TOKEN)))
+                .refreshToken(HttpUrlEncoding.encode(jsonObject.getString(Keys.OAUTH2_REFRESH_TOKEN)))
                 .openId(jsonObject.getJSONObject("user").getString(Keys.ID))
                 .build();
     }

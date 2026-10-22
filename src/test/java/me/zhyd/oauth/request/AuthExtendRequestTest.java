@@ -62,7 +62,7 @@ public class AuthExtendRequestTest {
             .redirectUri("http://redirectUri")
             .build());
 
-        AuthResponse response = request.revoke(AuthToken.builder().build());
+        AuthResponse<?> response = request.revoke(AuthToken.builder().build());
         Assert.assertNotNull(response);
         System.out.println(JSON.toJSONString(response));
     }

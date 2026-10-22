@@ -2,8 +2,6 @@ package me.zhyd.oauth.request;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.google.common.net.HttpHeaders;
-import com.xkcoding.http.support.HttpHeader;
-import com.xkcoding.http.util.MapUtil;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthSource;
@@ -12,16 +10,19 @@ import me.zhyd.oauth.enums.AuthResponseStatus;
 import me.zhyd.oauth.enums.AuthUserGender;
 import me.zhyd.oauth.enums.scope.AuthMicrosoftScope;
 import me.zhyd.oauth.exception.AuthException;
+import me.zhyd.oauth.http.HttpHeader;
+import me.zhyd.oauth.http.UnifiedHttpClient;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
-import me.zhyd.oauth.utils.HttpUtils;
-import me.zhyd.oauth.utils.StringUtils;
+import me.zhyd.oauth.utils.MapUtil;
 import me.zhyd.oauth.utils.UrlBuilder;
 
 import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * 微软登录抽象类,负责处理使用微软国际和微软中国账号登录第三方网站的登录方式
@@ -31,12 +32,12 @@ import java.util.Map;
  */
 public abstract class AbstractAuthMicrosoftRequest extends AuthDefaultRequest {
 
-    public AbstractAuthMicrosoftRequest(AuthConfig config, AuthSource source) {
+	protected AbstractAuthMicrosoftRequest(AuthConfig config, AuthSource source) {
         super(config, source);
     }
 
 
-    public AbstractAuthMicrosoftRequest(AuthConfig config, AuthSource source, AuthStateCache authStateCache) {
+	protected AbstractAuthMicrosoftRequest(AuthConfig config, AuthSource source, AuthStateCache authStateCache) {
         super(config, source, authStateCache);
     }
 
@@ -56,7 +57,7 @@ public abstract class AbstractAuthMicrosoftRequest extends AuthDefaultRequest {
 
         Map<String, String> form = MapUtil.parseStringToMap(accessTokenUrl, false);
 
-        String response = new HttpUtils(config.getHttpConfig()).post(accessTokenUrl, form, httpHeader, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(accessTokenUrl, form, httpHeader, false).getBody();
         JSONObject accessTokenObject = JSONObject.parseObject(response);
 
         this.checkResponse(accessTokenObject);
@@ -90,7 +91,7 @@ public abstract class AbstractAuthMicrosoftRequest extends AuthDefaultRequest {
         HttpHeader httpHeader = new HttpHeader();
         httpHeader.add(HttpHeaders.AUTHORIZATION, jwt);
 
-        String userInfo = new HttpUtils(config.getHttpConfig()).get(userInfoUrl(authToken), null, httpHeader, false).getBody();
+        String userInfo = UnifiedHttpClient.getAdapter().get(userInfoUrl(authToken), null, httpHeader, false).getBody();
         JSONObject object = JSONObject.parseObject(userInfo);
         this.checkResponse(object);
         return AuthUser.builder()

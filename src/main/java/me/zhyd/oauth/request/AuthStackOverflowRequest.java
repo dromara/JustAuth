@@ -1,9 +1,6 @@
 package me.zhyd.oauth.request;
 
 import com.alibaba.fastjson2.JSONObject;
-import com.xkcoding.http.constants.Constants;
-import com.xkcoding.http.support.HttpHeader;
-import com.xkcoding.http.util.MapUtil;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.constant.Keys;
@@ -11,11 +8,14 @@ import me.zhyd.oauth.constant.MediaType;
 import me.zhyd.oauth.enums.AuthUserGender;
 import me.zhyd.oauth.enums.scope.AuthStackoverflowScope;
 import me.zhyd.oauth.exception.AuthException;
+import me.zhyd.oauth.http.HttpConstants;
+import me.zhyd.oauth.http.HttpHeader;
+import me.zhyd.oauth.http.UnifiedHttpClient;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
-import me.zhyd.oauth.utils.HttpUtils;
+import me.zhyd.oauth.utils.MapUtil;
 import me.zhyd.oauth.utils.UrlBuilder;
 
 import java.util.Map;
@@ -43,8 +43,8 @@ public class AuthStackOverflowRequest extends AuthDefaultRequest {
         String accessTokenUrl = accessTokenUrl(authCallback.getCode());
         Map<String, String> form = MapUtil.parseStringToMap(accessTokenUrl, false);
         HttpHeader httpHeader = new HttpHeader();
-        httpHeader.add(Constants.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
-        String response = new HttpUtils(config.getHttpConfig()).post(accessTokenUrl, form, httpHeader, false).getBody();
+        httpHeader.add(HttpConstants.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
+        String response = UnifiedHttpClient.getAdapter().post(accessTokenUrl, form, httpHeader, false).getBody();
 
         JSONObject accessTokenObject = JSONObject.parseObject(response);
         this.checkResponse(accessTokenObject);
@@ -62,7 +62,7 @@ public class AuthStackOverflowRequest extends AuthDefaultRequest {
                 .queryParam("site", "stackoverflow")
                 .queryParam("key", this.config.getStackOverflowKey())
                 .build();
-        String response = new HttpUtils(config.getHttpConfig()).get(userInfoUrl).getBody();
+        String response = UnifiedHttpClient.getAdapter().get(userInfoUrl).getBody();
         JSONObject object = JSONObject.parseObject(response);
         this.checkResponse(object);
         JSONObject userObj = object.getJSONArray("items").getJSONObject(0);

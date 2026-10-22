@@ -2,9 +2,6 @@ package me.zhyd.oauth.request;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.google.common.net.HttpHeaders;
-import com.xkcoding.http.constants.Constants;
-import com.xkcoding.http.support.HttpHeader;
-import com.xkcoding.http.util.UrlUtil;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
@@ -13,6 +10,10 @@ import me.zhyd.oauth.enums.AuthResponseStatus;
 import me.zhyd.oauth.enums.AuthUserGender;
 import me.zhyd.oauth.enums.scope.AuthAmazonScope;
 import me.zhyd.oauth.exception.AuthException;
+import me.zhyd.oauth.http.HttpConstants;
+import me.zhyd.oauth.http.HttpHeader;
+import me.zhyd.oauth.http.HttpUrlEncoding;
+import me.zhyd.oauth.http.UnifiedHttpClient;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
@@ -110,8 +111,8 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
     private AuthToken getToken(Map<String, String> param, String url) {
         HttpHeader httpHeader = new HttpHeader();
         httpHeader.add(HttpHeaders.HOST, "api.amazon.com");
-        httpHeader.add(Constants.CONTENT_TYPE, "application/x-www-form-urlencoded;charset=UTF-8");
-        String response = new HttpUtils(config.getHttpConfig()).post(url, param, httpHeader, false).getBody();
+        httpHeader.add(HttpConstants.CONTENT_TYPE, "application/x-www-form-urlencoded;charset=UTF-8");
+        String response = UnifiedHttpClient.getAdapter().post(url, param, httpHeader, false).getBody();
         JSONObject jsonObject = JSONObject.parseObject(response);
         this.checkResponse(jsonObject);
         return AuthToken.builder()
@@ -147,7 +148,7 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
         HttpHeader httpHeader = new HttpHeader();
         httpHeader.add(HttpHeaders.HOST, "api.amazon.com");
         httpHeader.add(HttpHeaders.AUTHORIZATION, TokenUtils.bearer(accessToken));
-        String userInfo = new HttpUtils(config.getHttpConfig()).get(this.source.userInfo(), new HashMap<>(0), httpHeader, false).getBody();
+        String userInfo = UnifiedHttpClient.getAdapter().get(this.source.userInfo(), new HashMap<>(0), httpHeader, false).getBody();
         JSONObject jsonObject = JSONObject.parseObject(userInfo);
         this.checkResponse(jsonObject);
 
@@ -164,7 +165,7 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
     }
 
     private void checkToken(String accessToken) {
-        String tokenInfo = new HttpUtils(config.getHttpConfig()).get("https://api.amazon.com/auth/o2/tokeninfo?access_token=" + UrlUtil.urlEncode(accessToken)).getBody();
+        String tokenInfo = UnifiedHttpClient.getAdapter().get("https://api.amazon.com/auth/o2/tokeninfo?access_token=" + HttpUrlEncoding.encode(accessToken)).getBody();
         JSONObject jsonObject = JSONObject.parseObject(tokenInfo);
         if (!config.getClientId().equals(jsonObject.getString("aud"))) {
             throw new AuthException(AuthResponseStatus.ILLEGAL_TOKEN);

@@ -8,11 +8,11 @@ import me.zhyd.oauth.config.AuthSource;
 import me.zhyd.oauth.constant.Keys;
 import me.zhyd.oauth.enums.AuthUserGender;
 import me.zhyd.oauth.exception.AuthException;
+import me.zhyd.oauth.http.UnifiedHttpClient;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.GlobalAuthUtils;
-import me.zhyd.oauth.utils.HttpUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
 
 /**
@@ -25,12 +25,12 @@ import me.zhyd.oauth.utils.UrlBuilder;
  */
 public abstract class AbstractAuthDingtalkRequest extends AuthDefaultRequest {
 
-    public AbstractAuthDingtalkRequest(AuthConfig config, AuthSource source) {
+    protected AbstractAuthDingtalkRequest(AuthConfig config, AuthSource source) {
         super(config, source);
     }
 
 
-    public AbstractAuthDingtalkRequest(AuthConfig config, AuthSource source, AuthStateCache authStateCache) {
+    protected AbstractAuthDingtalkRequest(AuthConfig config, AuthSource source, AuthStateCache authStateCache) {
         super(config, source, authStateCache);
     }
 
@@ -44,7 +44,7 @@ public abstract class AbstractAuthDingtalkRequest extends AuthDefaultRequest {
         String code = authToken.getAccessCode();
         JSONObject param = new JSONObject();
         param.put("tmp_auth_code", code);
-        String response = new HttpUtils(config.getHttpConfig()).post(userInfoUrl(authToken), param.toJSONString()).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(userInfoUrl(authToken), param.toJSONString()).getBody();
         JSONObject object = JSON.parseObject(response);
         if (object.getIntValue(Keys.VARIANT__ERRCODE) != 0) {
             throw new AuthException(object.getString(Keys.VARIANT__ERRMSG));

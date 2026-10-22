@@ -1,8 +1,9 @@
 package me.zhyd.oauth.request;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.alibaba.fastjson2.JSONObject;
 import com.google.common.net.HttpHeaders;
-import com.xkcoding.http.support.HttpHeader;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
@@ -11,11 +12,16 @@ import me.zhyd.oauth.enums.AuthResponseStatus;
 import me.zhyd.oauth.enums.AuthUserGender;
 import me.zhyd.oauth.enums.scope.AuthWeiboScope;
 import me.zhyd.oauth.exception.AuthException;
+import me.zhyd.oauth.http.HttpHeader;
+import me.zhyd.oauth.http.UnifiedHttpClient;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
-import me.zhyd.oauth.utils.*;
+import me.zhyd.oauth.utils.AuthScopeUtils;
+import me.zhyd.oauth.utils.IpUtils;
+import me.zhyd.oauth.utils.TokenUtils;
+import me.zhyd.oauth.utils.UrlBuilder;
 
 
 /**
@@ -58,8 +64,7 @@ public class AuthWeiboRequest extends AuthDefaultRequest {
         HttpHeader httpHeader = new HttpHeader();
         httpHeader.add(HttpHeaders.AUTHORIZATION, TokenUtils.oauth2(oauthParam));
         httpHeader.add("API-RemoteIP", IpUtils.getLocalIp());
-        String userInfo = new HttpUtils(config.getHttpConfig())
-                .get(userInfoUrl(authToken), null, httpHeader, false).getBody();
+        String userInfo = UnifiedHttpClient.getAdapter().get(userInfoUrl(authToken), null, httpHeader, false).getBody();
         JSONObject object = JSONObject.parseObject(userInfo);
         if (object.containsKey(Keys.ERROR)) {
             throw new AuthException(object.getString(Keys.ERROR));
@@ -102,7 +107,7 @@ public class AuthWeiboRequest extends AuthDefaultRequest {
     }
 
     @Override
-    public AuthResponse revoke(AuthToken authToken) {
+    public AuthResponse<?> revoke(AuthToken authToken) {
         String response = doGetRevoke(authToken);
         JSONObject object = JSONObject.parseObject(response);
         if (object.containsKey(Keys.ERROR)) {

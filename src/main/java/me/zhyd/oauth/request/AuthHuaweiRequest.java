@@ -8,12 +8,12 @@ import me.zhyd.oauth.constant.Keys;
 import me.zhyd.oauth.enums.AuthUserGender;
 import me.zhyd.oauth.enums.scope.AuthHuaweiScope;
 import me.zhyd.oauth.exception.AuthException;
+import me.zhyd.oauth.http.UnifiedHttpClient;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
-import me.zhyd.oauth.utils.HttpUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
 
 import java.util.HashMap;
@@ -58,7 +58,7 @@ public class AuthHuaweiRequest extends AuthDefaultRequest {
         form.put(Keys.OAUTH2_CLIENT_SECRET, config.getClientSecret());
         form.put(Keys.OAUTH2_REDIRECT_URI, config.getRedirectUri());
 
-        String response = new HttpUtils(config.getHttpConfig()).post(source.accessToken(), form, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), form, false).getBody();
         return getAuthToken(response);
     }
 
@@ -79,7 +79,7 @@ public class AuthHuaweiRequest extends AuthDefaultRequest {
         // form.put("nsp_svc", "OpenUP.User.getInfo");
         form.put("nsp_svc", "huawei.oauth2.user.getTokenInfo");
 
-        String response = new HttpUtils(config.getHttpConfig()).post(source.userInfo(), form, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(source.userInfo(), form, false).getBody();
         JSONObject object = JSONObject.parseObject(response);
 
         this.checkResponse(object);
@@ -112,7 +112,7 @@ public class AuthHuaweiRequest extends AuthDefaultRequest {
         form.put(Keys.OAUTH2_REFRESH_TOKEN, authToken.getRefreshToken());
         form.put(Keys.OAUTH2_GRANT_TYPE, Keys.OAUTH2_REFRESH_TOKEN);
 
-        String response = new HttpUtils(config.getHttpConfig()).post(source.refresh(), form, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(source.refresh(), form, false).getBody();
         return AuthResponse.<AuthToken>builder().code(SUCCESS.getCode()).data(getAuthToken(response)).build();
     }
 

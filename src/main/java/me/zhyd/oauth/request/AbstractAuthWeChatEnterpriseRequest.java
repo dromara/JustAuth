@@ -1,5 +1,7 @@
 package me.zhyd.oauth.request;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.alibaba.fastjson2.JSONObject;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
@@ -8,11 +10,10 @@ import me.zhyd.oauth.constant.Keys;
 import me.zhyd.oauth.enums.AuthResponseStatus;
 import me.zhyd.oauth.enums.AuthUserGender;
 import me.zhyd.oauth.exception.AuthException;
+import me.zhyd.oauth.http.UnifiedHttpClient;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
-import me.zhyd.oauth.utils.HttpUtils;
-import me.zhyd.oauth.utils.StringUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
 
 /**
@@ -25,12 +26,12 @@ import me.zhyd.oauth.utils.UrlBuilder;
  */
 public abstract class AbstractAuthWeChatEnterpriseRequest extends AuthDefaultRequest {
 
-    public AbstractAuthWeChatEnterpriseRequest(AuthConfig config, AuthSource source) {
+	protected AbstractAuthWeChatEnterpriseRequest(AuthConfig config, AuthSource source) {
         super(config, source);
     }
 
 
-    public AbstractAuthWeChatEnterpriseRequest(AuthConfig config, AuthSource source, AuthStateCache authStateCache) {
+	protected AbstractAuthWeChatEnterpriseRequest(AuthConfig config, AuthSource source, AuthStateCache authStateCache) {
         super(config, source, authStateCache);
     }
 
@@ -133,7 +134,7 @@ public abstract class AbstractAuthWeChatEnterpriseRequest extends AuthDefaultReq
                 .queryParam(Keys.OAUTH2_ACCESS_TOKEN, accessToken)
                 .queryParam(Keys.USERID, userId)
                 .build();
-        String userInfoResponse = new HttpUtils(config.getHttpConfig()).get(userInfoUrl).getBody();
+        String userInfoResponse = UnifiedHttpClient.getAdapter().get(userInfoUrl).getBody();
         JSONObject userInfo = checkResponse(userInfoResponse);
 
         // 用户敏感信息
@@ -143,7 +144,7 @@ public abstract class AbstractAuthWeChatEnterpriseRequest extends AuthDefaultReq
                     .build();
             JSONObject param = new JSONObject();
             param.put("user_ticket", userTicket);
-            String userDetailResponse = new HttpUtils(config.getHttpConfig()).post(userDetailUrl, param.toJSONString()).getBody();
+            String userDetailResponse = UnifiedHttpClient.getAdapter().post(userDetailUrl, param.toJSONString()).getBody();
             JSONObject userDetail = checkResponse(userDetailResponse);
 
             userInfo.putAll(userDetail);

@@ -2,7 +2,6 @@ package me.zhyd.oauth.request;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.google.common.net.HttpHeaders;
-import com.xkcoding.http.support.HttpHeader;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
@@ -10,6 +9,8 @@ import me.zhyd.oauth.constant.Keys;
 import me.zhyd.oauth.enums.AuthUserGender;
 import me.zhyd.oauth.enums.scope.AuthGithubScope;
 import me.zhyd.oauth.exception.AuthException;
+import me.zhyd.oauth.http.HttpHeader;
+import me.zhyd.oauth.http.UnifiedHttpClient;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
@@ -51,7 +52,7 @@ public class AuthGithubRequest extends AuthDefaultRequest {
     public AuthUser getUserInfo(AuthToken authToken) {
         HttpHeader header = new HttpHeader();
         header.add(HttpHeaders.AUTHORIZATION, TokenUtils.token(authToken.getAccessToken()));
-        String response = new HttpUtils(config.getHttpConfig()).get(UrlBuilder.fromBaseUrl(source.userInfo()).build(), null, header, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().get(UrlBuilder.fromBaseUrl(source.userInfo()).build(), null, header, false).getBody();
         JSONObject object = JSONObject.parseObject(response);
 
         this.checkResponse(object.containsKey(Keys.ERROR), object.getString(Keys.ERROR_DESCRIPTION));

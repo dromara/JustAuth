@@ -8,17 +8,8 @@
 	<a target="_blank" href="https://search.maven.org/search?q=JustAuth">
 		<img src="https://img.shields.io/github/v/release/justauth/JustAuth?style=flat-square" ></img>
 	</a>
-	<a target="_blank" href="https://oss.sonatype.org/content/repositories/snapshots/me/zhyd/oauth/JustAuth/">
-		<img src="https://img.shields.io/nexus/s/https/oss.sonatype.org/me.zhyd.oauth/JustAuth.svg?style=flat-square" ></img>
-	</a>
-	<a target="_blank" href="https://gitee.com/yadong.zhang/JustAuth/blob/master/LICENSE">
-		<img src="https://img.shields.io/apm/l/vim-mode.svg?color=yellow" ></img>
-	</a>
 	<a target="_blank" href="https://www.oracle.com/technetwork/java/javase/downloads/index.html">
-		<img src="https://img.shields.io/badge/JDK-1.8+-green.svg" ></img>
-	</a>
-	<a target="_blank" href="https://www.justauth.cn" title="参考文档">
-		<img src="https://img.shields.io/badge/Docs-latest-blueviolet.svg" ></img>
+		<img src="https://img.shields.io/badge/JDK-17+-green.svg" ></img>
 	</a>
 	<a href="https://codecov.io/gh/justauth/JustAuth">
 		<img src="https://codecov.io/gh/justauth/JustAuth/branch/master/graph/badge.svg?token=zYiAqd9aFz" />
@@ -38,8 +29,6 @@
 
 -------------------------------------------------------------------------------
 
-QQ 群：230017570    
-微信群：justauth （备注`justauth`或者`ja`）    
 帮助文档：[www.justauth.cn](https://www.justauth.cn)    
 
 ## 什么是 JustAuth？
@@ -63,6 +52,9 @@ JustAuth 集成了诸如：Github、Gitee、支付宝、新浪微博、微信、
 - 更多...<a href="https://www.justauth.cn" target="_blank">参考文档</a>
 
 ## 快速开始
+
+
+### JDK 版本要求 >= 17
 
 ### 引入依赖
 ```xml
@@ -107,38 +99,7 @@ JustAuth 集成了诸如：Github、Gitee、支付宝、新浪微博、微信、
 > 
 > </details>
 
-如下**任选一种** HTTP 工具 依赖，_项目内如果已有，请忽略。另外需要特别注意，如果项目中已经引入了低版本的依赖，请先排除低版本依赖后，再引入高版本或者最新版本的依赖_
 
-- hutool-http
-
-  ```xml
-  <dependency>
-      <groupId>cn.hutool</groupId>
-      <artifactId>hutool-http</artifactId>
-      <version>5.7.7</version>
-  </dependency>
-  ```
-
-- httpclient
-
-  ```xml
-  <dependency>
-  	<groupId>org.apache.httpcomponents</groupId>
-    	<artifactId>httpclient</artifactId>
-    	<version>4.5.13</version>
-  </dependency>
-  ```
-
-- okhttp
-
-  ```xml
-  <dependency>
-    <groupId>com.squareup.okhttp3</groupId>
-    <artifactId>okhttp</artifactId>
-    <version>4.9.1</version>
-  </dependency>
-  ```
-  
 ### 调用api
 
 #### 普通方式
@@ -210,60 +171,6 @@ AuthRequest authRequest = AuthRequestBuilder.builder()
     .build();
 ```
 
-## 赞助和支持
+## 更新日志
 
-感谢以下赞助商的支持：
-
-[我要赞助](https://www.justauth.cn/sponsor.html)
-
-## JustAuth 的用户
-有很多公司、组织和个人把 JustAuth 用于学习、研究、生产环境和商业产品中，包括（但不限于）：
-
-[![](docs/users/col.png)](https://www.mochiwang.com "给作者提供云写作的一个工具")![](docs/users/bjgyol.png)![](docs/users/foresealife.png)![](docs/users/sevnce.png)
-
-![](docs/users/bladex.png)![](docs/users/gun.png)![](docs/users/sika.jpg)![](docs/users/maxkey.png)![](docs/users/shiroaction.png)![](docs/users/xkcoding.png)
-
-
-
-怎么没有我？[登记](https://gitee.com/yadong.zhang/JustAuth/issues/IZ2T7)
-
-## 开源推荐
-
-- `JAP` 开源的登录认证中间件: [https://gitee.com/fujieid/jap](https://gitee.com/fujieid/jap)
-- `spring-boot-demo` 深度学习并实战 spring boot 的项目: [https://github.com/xkcoding/spring-boot-demo](https://github.com/xkcoding/spring-boot-demo)
-- `mica` SpringBoot 微服务高效开发工具集: [https://github.com/lets-mica/mica](https://github.com/lets-mica/mica)
-- `sureness` 面向restful api的高性能认证鉴权框架：[sureness](https://github.com/usthe/sureness)
-  
-更多推荐，请参考：[JustAuth - 开源推荐](https://www.justauth.cn)
-
-## 鸣谢
-
-- 感谢 JetBrains 提供的免费开源 License：
-
-<p>
-<img src="https://images.gitee.com/uploads/images/2020/0406/220236_f5275c90_5531506.png" alt="图片引用自lets-mica" style="float:left;">
-</p>
-
-## 其他
-
-- [CONTRIBUTORS](https://www.justauth.cn/contributors.html)
-- [CHANGELOGS](https://www.justauth.cn/update.html)
-- [PLAN](https://gitee.com/yadong.zhang/JustAuth/issues/IUGRK)
-
-## 贡献者列表
-
-[![contributors](https://whnb.wang/contributors/yadong.zhang/JustAuth)](https://whnb.wang)
-
-## Stars 趋势
-
-### Gitee
-
-[![Stargazers over time](https://whnb.wang/img/yadong.zhang/JustAuth?e=604800)](https://whnb.wang/yadong.zhang/JustAuth?e=604800)
-
-### Github
-
-[![Stargazers over time](https://starchart.cc/justauth/JustAuth.svg)](https://starchart.cc/justauth/JustAuth)
-
-### ProductHunt
-
-<a href="https://www.producthunt.com/posts/justauth?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-justauth" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=196886&theme=dark" alt="JustAuth - Login, so easy! | Product Hunt Embed" style="width: 250px; height: 54px;" width="250px" height="54px" /></a>
+- [CHANGELOGS](https://gitee.com/dromara/JustAuth/blob/master/CHANGELOGS.md)

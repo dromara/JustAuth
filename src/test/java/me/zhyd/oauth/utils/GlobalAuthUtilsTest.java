@@ -32,7 +32,7 @@ public class GlobalAuthUtilsTest {
 
     @Test
     public void parseStringToMap() {
-        Map expected = new HashMap();
+        Map<String,String> expected = new HashMap<>();
         expected.put("bar", "baz");
         assertEquals(expected, GlobalAuthUtils.parseStringToMap("foo&bar=baz"));
     }

@@ -8,17 +8,8 @@
 	<a target="_blank" href="https://search.maven.org/search?q=JustAuth">
 		<img src="https://img.shields.io/github/v/release/justauth/JustAuth?style=flat-square" ></img>
 	</a>
-	<a target="_blank" href="https://oss.sonatype.org/content/repositories/snapshots/me/zhyd/oauth/JustAuth/">
-		<img src="https://img.shields.io/nexus/s/https/oss.sonatype.org/me.zhyd.oauth/JustAuth.svg?style=flat-square" ></img>
-	</a>
-	<a target="_blank" href="https://gitee.com/yadong.zhang/JustAuth/blob/master/LICENSE">
-		<img src="https://img.shields.io/apm/l/vim-mode.svg?color=yellow" ></img>
-	</a>
 	<a target="_blank" href="https://www.oracle.com/technetwork/java/javase/downloads/index.html">
-		<img src="https://img.shields.io/badge/JDK-1.8+-green.svg" ></img>
-	</a>
-	<a target="_blank" href="https://www.justauth.cn" title="参考文档">
-		<img src="https://img.shields.io/badge/Docs-latest-blueviolet.svg" ></img>
+		<img src="https://img.shields.io/badge/JDK-17+-green.svg" ></img>
 	</a>
 	<a href="https://codecov.io/gh/justauth/JustAuth">
 		<img src="https://codecov.io/gh/justauth/JustAuth/branch/master/graph/badge.svg?token=zYiAqd9aFz" />
@@ -38,8 +29,6 @@
 
 -------------------------------------------------------------------------------
 
-
-
 `JustAuth`, as you see, It is just a Java library of third-party authorized login, It's smaller and easier to use. JustAuth is the best third-party login tool written in JAVA.
 
 Source Code：[gitee](https://gitee.com/yadong.zhang/JustAuth) | [github](https://github.com/zhangyd-c/JustAuth)    
@@ -52,6 +41,8 @@ Docs：[Reference Doc](https://www.justauth.cn)
 
 ## Quick start
 
+### JDK Minimum version >= 17
+
 ### Add maven dependency
 
 - Add JustAuth dependency
@@ -61,49 +52,13 @@ These artifacts are available from Maven Central:
 <dependency>
     <groupId>me.zhyd.oauth</groupId>
     <artifactId>JustAuth</artifactId>
-  <version>{latest-version}</version>
+    <version>{latest-version}</version>
 </dependency>
 ```
 
 > **latest-version** ：
 > - CURRENT: ![](https://img.shields.io/github/v/release/justauth/JustAuth?style=flat-square)
 > - SNAPSHOT: ![](https://img.shields.io/nexus/s/https/oss.sonatype.org/me.zhyd.oauth/JustAuth.svg?style=flat-square)
-
-
-- Add http dependency（Only need one）
-  
-> If there is already in the project, please ignore it. In addition, you need to pay special attention. If the low version of the dependency has been introduced in the project, please exclude the low version of the dependency first, and then introduce the high version or the latest version of the dependency
-
-- hutool-http
-
-  ```xml
-  <dependency>
-      <groupId>cn.hutool</groupId>
-      <artifactId>hutool-http</artifactId>
-      <version>5.2.5</version>
-  </dependency>
-  ```
-
-- httpclient
-
-  ```xml
-  <dependency>
-  	<groupId>org.apache.httpcomponents</groupId>
-    	<artifactId>httpclient</artifactId>
-    	<version>4.5.12</version>
-  </dependency>
-  ```
-
-- okhttp
-
-  ```xml
-  <dependency>
-    <groupId>com.squareup.okhttp3</groupId>
-    <artifactId>okhttp</artifactId>
-    <version>4.4.1</version>
-  </dependency>
-  ```
-
 
 ### Using JustAuth API
 
@@ -178,20 +133,9 @@ AuthRequest authRequest = AuthRequestBuilder.builder()
 I look forward to your joining us.
 
 
-## Contributors
-
-[contributors](https://www.justauth.cn/contributors.html)
-
 ## Change Logs
 
-[CHANGELOGS](https://www.justauth.cn/update.html)
-
-## Recommend
-
-- `spring-boot-demo` In-depth study and actual combat of spring boot projects: [https://github.com/xkcoding/spring-boot-demo](https://github.com/xkcoding/spring-boot-demo)
-- `mica` Efficient Development of scaffolding by Spring Cloud: [https://github.com/lets-mica/mica](https://github.com/lets-mica/mica)
-- `pig` Cosmic strongest Micro Services Certified authorized scaffolding (essential for Architects): [https://gitee.com/log4j/pig](https://gitee.com/log4j/pig)
-- `SpringBlade` Complete online solution (necessary for enterprise development): https://gitee.com/smallc/SpringBlade
+[CHANGELOGS](https://gitee.com/dromara/JustAuth/blob/master/CHANGELOGS.md)
 
 ## References
 

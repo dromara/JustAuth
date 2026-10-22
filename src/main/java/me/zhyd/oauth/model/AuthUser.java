@@ -19,6 +19,10 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class AuthUser implements Serializable {
     /**
+	 * 
+	 */
+	private static final long serialVersionUID = -2874839945348913098L;
+	/**
      * 用户第三方系统的唯一id。在调用方集成该组件时，可以用uuid + source唯一确定一个用户
      *
      * @since 1.3.3

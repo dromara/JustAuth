@@ -3,7 +3,6 @@ package me.zhyd.oauth.request;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.google.common.net.HttpHeaders;
-import com.xkcoding.http.support.HttpHeader;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
@@ -13,12 +12,13 @@ import me.zhyd.oauth.enums.AuthResponseStatus;
 import me.zhyd.oauth.enums.AuthUserGender;
 import me.zhyd.oauth.enums.scope.AuthSlackScope;
 import me.zhyd.oauth.exception.AuthException;
+import me.zhyd.oauth.http.HttpHeader;
+import me.zhyd.oauth.http.UnifiedHttpClient;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
-import me.zhyd.oauth.utils.HttpUtils;
 import me.zhyd.oauth.utils.TokenUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
 
@@ -42,7 +42,7 @@ public class AuthSlackRequest extends AuthDefaultRequest {
     public AuthToken getAccessToken(AuthCallback authCallback) {
         HttpHeader header = new HttpHeader()
                 .add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
-        String response = new HttpUtils(config.getHttpConfig())
+        String response = UnifiedHttpClient.getAdapter()
                 .get(accessTokenUrl(authCallback.getCode()), null, header, false).getBody();
         JSONObject accessTokenObject = JSONObject.parseObject(response);
         this.checkResponse(accessTokenObject);
@@ -59,7 +59,7 @@ public class AuthSlackRequest extends AuthDefaultRequest {
         HttpHeader header = new HttpHeader()
                 .add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED)
                 .add(HttpHeaders.AUTHORIZATION, TokenUtils.bearer(authToken.getAccessToken()));
-        String userInfo = new HttpUtils(config.getHttpConfig())
+        String userInfo = UnifiedHttpClient.getAdapter()
                 .get(userInfoUrl(authToken), null, header, false).getBody();
         JSONObject object = JSONObject.parseObject(userInfo);
         this.checkResponse(object);
@@ -79,11 +79,11 @@ public class AuthSlackRequest extends AuthDefaultRequest {
     }
 
     @Override
-    public AuthResponse revoke(AuthToken authToken) {
+    public AuthResponse<?> revoke(AuthToken authToken) {
         HttpHeader header = new HttpHeader()
                 .add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED)
                 .add(HttpHeaders.AUTHORIZATION, TokenUtils.bearer(authToken.getAccessToken()));
-        String userInfo = new HttpUtils(config.getHttpConfig())
+        String userInfo = UnifiedHttpClient.getAdapter()
                 .get(source.revoke(), null, header, false).getBody();
         JSONObject object = JSONObject.parseObject(userInfo);
         this.checkResponse(object);

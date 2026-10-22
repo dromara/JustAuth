@@ -16,7 +16,12 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AuthToken implements Serializable {
-    private String accessToken;
+	
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -6369956181409868606L;
+	private String accessToken;
     private int expireIn;
     private String refreshToken;
     private int refreshTokenExpireIn;

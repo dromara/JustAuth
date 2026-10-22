@@ -79,7 +79,7 @@ public interface AuthRequest {
      * @param authToken 登录成功后返回的Token信息
      * @return AuthResponse
      */
-    default AuthResponse revoke(AuthToken authToken) {
+    default AuthResponse<?> revoke(AuthToken authToken) {
         throw new AuthException(AuthResponseStatus.NOT_IMPLEMENTED);
     }
 

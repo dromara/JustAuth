@@ -8,10 +8,10 @@ import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
 import me.zhyd.oauth.constant.Keys;
 import me.zhyd.oauth.exception.AuthException;
+import me.zhyd.oauth.http.UnifiedHttpClient;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
-import me.zhyd.oauth.utils.HttpUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
 
 /**
@@ -35,7 +35,7 @@ public class AuthQQMiniProgramRequest extends AuthDefaultRequest {
     public AuthToken getAccessToken(AuthCallback authCallback) {
         // 参见 https://q.qq.com/wiki/develop/miniprogram/server/open_port/port_login.html#code2session 文档
         // 使用 code 获取对应的 openId、unionId 等字段
-        String response = new HttpUtils(config.getHttpConfig()).get(accessTokenUrl(authCallback.getCode())).getBody();
+        String response = UnifiedHttpClient.getAdapter().get(accessTokenUrl(authCallback.getCode())).getBody();
         JSCode2SessionResponse accessTokenObject = JSONObject.parseObject(response, JSCode2SessionResponse.class);
         assert accessTokenObject != null;
         checkResponse(accessTokenObject);
