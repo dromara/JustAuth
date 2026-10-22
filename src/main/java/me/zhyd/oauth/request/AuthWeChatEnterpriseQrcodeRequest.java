@@ -4,7 +4,7 @@ import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
 import me.zhyd.oauth.constant.Keys;
-import me.zhyd.oauth.utils.UrlBuilder;
+import me.zhyd.oauth.http.UrlBuilder;
 
 /**
  * <p>

@@ -5,9 +5,9 @@ import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
 import me.zhyd.oauth.constant.Keys;
 import me.zhyd.oauth.enums.scope.AuthWeChatEnterpriseWebScope;
+import me.zhyd.oauth.http.UrlBuilder;
 import me.zhyd.oauth.utils.AuthScopeUtils;
 import me.zhyd.oauth.utils.GlobalAuthUtils;
-import me.zhyd.oauth.utils.UrlBuilder;
 
 /**
  * <p>
