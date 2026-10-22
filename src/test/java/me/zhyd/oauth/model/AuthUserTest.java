@@ -13,37 +13,37 @@ public class AuthUserTest {
     public void serialize() {
 
         AuthUser user = AuthUser.builder()
-            .nickname("test")
-            .build();
+                .nickname("test")
+                .build();
         String json = JSON.toJSONString(user);
-        Assert.assertEquals(json, "{\"nickname\":\"test\",\"snapshotUser\":false}");
+        Assert.assertEquals("{\"nickname\":\"test\",\"snapshotUser\":false}", json);
 
     }
 
     @Test
     public void deserialize() {
         AuthUser user = AuthUser.builder()
-            .nickname("test")
-            .build();
+                .nickname("test")
+                .build();
         String json = JSON.toJSONString(user);
 
         AuthUser deserializeUser = JSON.parseObject(json, AuthUser.class);
-        Assert.assertEquals(deserializeUser.getNickname(), "test");
+        Assert.assertEquals("test", deserializeUser.getNickname());
     }
 
     @Test
     public void source() {
         AuthSource source = AuthDefaultSource.HUAWEI;
         AuthUser user = AuthUser.builder()
-            .source(source.toString())
-            .build();
-        Assert.assertEquals(user.getSource(), "HUAWEI");
+                .source(source.toString())
+                .build();
+        Assert.assertEquals("HUAWEI", user.getSource());
 
         source = AuthExtendSource.OTHER;
         user = AuthUser.builder()
-            .source(source.toString())
-            .build();
-        Assert.assertEquals(user.getSource(), "OTHER");
+                .source(source.toString())
+                .build();
+        Assert.assertEquals("OTHER", user.getSource());
 
         source = AuthDefaultSource.HUAWEI;
         Assert.assertEquals(source, AuthDefaultSource.HUAWEI);

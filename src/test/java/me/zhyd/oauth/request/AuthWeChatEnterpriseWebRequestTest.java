@@ -9,10 +9,10 @@ public class AuthWeChatEnterpriseWebRequestTest {
     @Test
     public void authorize() {
         AuthRequest request = new AuthWeChatEnterpriseWebRequest(AuthConfig.builder()
-            .clientId("a")
-            .clientSecret("a")
-            .redirectUri("https://www.justauth.cn")
-            .build());
+                .clientId("a")
+                .clientSecret("a")
+                .redirectUri("https://www.justauth.cn")
+                .build());
         System.out.println(request.authorize(AuthStateUtils.createState()));
     }
 }

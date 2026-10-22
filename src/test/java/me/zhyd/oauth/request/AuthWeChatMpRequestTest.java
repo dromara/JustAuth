@@ -10,10 +10,10 @@ public class AuthWeChatMpRequestTest {
     public void authorize() {
 
         AuthRequest request = new AuthWeChatMpRequest(AuthConfig.builder()
-            .clientId("a")
-            .clientSecret("a")
-            .redirectUri("https://www.justauth.cn")
-            .build());
+                .clientId("a")
+                .clientSecret("a")
+                .redirectUri("https://www.justauth.cn")
+                .build());
         System.out.println(request.authorize(AuthStateUtils.createState()));
     }
 }

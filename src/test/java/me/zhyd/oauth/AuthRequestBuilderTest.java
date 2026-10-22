@@ -16,13 +16,13 @@ public class AuthRequestBuilderTest {
     @Test
     public void build2() {
         AuthRequest authRequest = AuthRequestBuilder.builder()
-            .source("github")
-            .authConfig(AuthConfig.builder()
-                .clientId("a")
-                .clientSecret("a")
-                .redirectUri("https://www.justauth.cn")
-                .build())
-            .build();
+                .source("github")
+                .authConfig(AuthConfig.builder()
+                        .clientId("a")
+                        .clientSecret("a")
+                        .redirectUri("https://www.justauth.cn")
+                        .build())
+                .build();
         Assert.assertTrue(authRequest instanceof AuthGithubRequest);
         System.out.println(authRequest.authorize(AuthStateUtils.createState()));
     }
@@ -33,17 +33,17 @@ public class AuthRequestBuilderTest {
     @Test
     public void build() {
         AuthRequest authRequest = AuthRequestBuilder.builder()
-            .source("gitee")
-            .authConfig((source) -> {
-                // 通过 source 动态获取 AuthConfig
-                // 此处可以灵活的从 sql 中取配置也可以从配置文件中取配置
-                return AuthConfig.builder()
-                    .clientId(source)
-                    .clientSecret(source)
-                    .redirectUri("https://www.justauth.cn/" + source)
-                    .build();
-            })
-            .build();
+                .source("gitee")
+                .authConfig((source) -> {
+                    // 通过 source 动态获取 AuthConfig
+                    // 此处可以灵活的从 sql 中取配置也可以从配置文件中取配置
+                    return AuthConfig.builder()
+                            .clientId(source)
+                            .clientSecret(source)
+                            .redirectUri("https://www.justauth.cn/" + source)
+                            .build();
+                })
+                .build();
         Assert.assertTrue(authRequest instanceof AuthGiteeRequest);
         System.out.println(authRequest.authorize(AuthStateUtils.createState()));
     }
@@ -54,15 +54,15 @@ public class AuthRequestBuilderTest {
     @Test
     public void build3() {
         AuthRequest authRequest = AuthRequestBuilder.builder()
-            // 关键点：将自定义的 AuthSource 配置上
-            .extendSource(AuthExtendSource.values())
-            .source("other")
-            .authConfig(AuthConfig.builder()
-                .clientId("a")
-                .clientSecret("a")
-                .redirectUri("https://www.justauth.cn")
-                .build())
-            .build();
+                // 关键点：将自定义的 AuthSource 配置上
+                .extendSource(AuthExtendSource.values())
+                .source("other")
+                .authConfig(AuthConfig.builder()
+                        .clientId("a")
+                        .clientSecret("a")
+                        .redirectUri("https://www.justauth.cn")
+                        .build())
+                .build();
         Assert.assertTrue(authRequest instanceof AuthExtendRequest);
         System.out.println(authRequest.authorize(AuthStateUtils.createState()));
     }
@@ -73,20 +73,20 @@ public class AuthRequestBuilderTest {
     @Test
     public void build4() {
         AuthConfig config = AuthConfig.builder()
-            .clientId("a")
-            .clientSecret("a")
-            .redirectUri("https://www.justauth.cn")
-            .authServerId("asd")
-            .agentId("asd")
-            .domainPrefix("asd")
-            .stackOverflowKey("asd")
-            .deviceId("asd")
-            .clientOsType(3)
-            .kid("kid")
-            .teamId("teamid")
-            .ignoreCheckState(true)
-            .ignoreCheckRedirectUri(true)
-            .build();
+                .clientId("a")
+                .clientSecret("a")
+                .redirectUri("https://www.justauth.cn")
+                .authServerId("asd")
+                .agentId("asd")
+                .domainPrefix("asd")
+                .stackOverflowKey("asd")
+                .deviceId("asd")
+                .clientOsType(3)
+                .kid("kid")
+                .teamId("teamid")
+                .ignoreCheckState(true)
+                .ignoreCheckRedirectUri(true)
+                .build();
 
         for (AuthDefaultSource value : AuthDefaultSource.values()) {
             switch (value) {
@@ -115,9 +115,9 @@ public class AuthRequestBuilderTest {
                 }
                 default:
                     AuthRequest authRequest = AuthRequestBuilder.builder()
-                        .source(value.getName())
-                        .authConfig(config)
-                        .build();
+                            .source(value.getName())
+                            .authConfig(config)
+                            .build();
                     System.out.println(value.getTargetClass());
                     System.out.println(authRequest.authorize(AuthStateUtils.createState()));
             }

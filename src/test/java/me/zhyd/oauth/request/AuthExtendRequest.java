@@ -39,14 +39,14 @@ public class AuthExtendRequest extends AuthDefaultRequest {
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
         return AuthToken.builder()
-            .openId("openId")
-            .expireIn(1000)
-            .idToken("idToken")
-            .scope(Keys.OAUTH2_SCOPE)
-            .refreshToken("refreshToken")
-            .accessToken("accessToken")
-            .code(Keys.OAUTH2_CODE)
-            .build();
+                .openId("openId")
+                .expireIn(1000)
+                .idToken("idToken")
+                .scope(Keys.OAUTH2_SCOPE)
+                .refreshToken("refreshToken")
+                .accessToken("accessToken")
+                .code(Keys.OAUTH2_CODE)
+                .build();
     }
 
     /**
@@ -59,12 +59,12 @@ public class AuthExtendRequest extends AuthDefaultRequest {
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
         return AuthUser.builder()
-            .username("test")
-            .nickname("test")
-            .gender(AuthUserGender.MALE)
-            .token(authToken)
-            .source(this.source.toString())
-            .build();
+                .username("test")
+                .nickname("test")
+                .gender(AuthUserGender.MALE)
+                .token(authToken)
+                .source(this.source.toString())
+                .build();
     }
 
     /**
@@ -76,9 +76,9 @@ public class AuthExtendRequest extends AuthDefaultRequest {
     @Override
     public AuthResponse<?> revoke(AuthToken authToken) {
         return AuthResponse.builder()
-            .code(AuthResponseStatus.SUCCESS.getCode())
-            .msg(AuthResponseStatus.SUCCESS.getMsg())
-            .build();
+                .code(AuthResponseStatus.SUCCESS.getCode())
+                .msg(AuthResponseStatus.SUCCESS.getMsg())
+                .build();
     }
 
     /**
@@ -90,16 +90,16 @@ public class AuthExtendRequest extends AuthDefaultRequest {
     @Override
     public AuthResponse<AuthToken> refresh(AuthToken authToken) {
         return AuthResponse.<AuthToken>builder()
-            .code(AuthResponseStatus.SUCCESS.getCode())
-            .data(AuthToken.builder()
-                .openId("openId")
-                .expireIn(1000)
-                .idToken("idToken")
-                .scope(Keys.OAUTH2_SCOPE)
-                .refreshToken("refreshToken")
-                .accessToken("accessToken")
-                .code(Keys.OAUTH2_CODE)
-                .build())
-            .build();
+                .code(AuthResponseStatus.SUCCESS.getCode())
+                .data(AuthToken.builder()
+                        .openId("openId")
+                        .expireIn(1000)
+                        .idToken("idToken")
+                        .scope(Keys.OAUTH2_SCOPE)
+                        .refreshToken("refreshToken")
+                        .accessToken("accessToken")
+                        .code(Keys.OAUTH2_CODE)
+                        .build())
+                .build();
     }
 }
