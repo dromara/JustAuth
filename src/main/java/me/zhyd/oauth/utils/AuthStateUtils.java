@@ -1,5 +1,7 @@
 package me.zhyd.oauth.utils;
 
+import java.util.UUID;
+
 /**
  * AuthState工具类，默认只提供一个创建随机uuid的方法
  *
@@ -15,5 +17,13 @@ public class AuthStateUtils {
      */
     public static String createState() {
         return UuidUtils.getUUID();
+    }
+    
+    /**
+     * UUID.randomUUID()
+     * @return
+     */
+    public static String createRandomState() {
+        return UUID.randomUUID().toString().toLowerCase().replace("-", "");
     }
 }
