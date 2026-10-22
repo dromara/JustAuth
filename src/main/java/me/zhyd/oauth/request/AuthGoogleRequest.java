@@ -37,15 +37,16 @@ public class AuthGoogleRequest extends AuthDefaultRequest {
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
         String response = doPostAuthorizationCode(authCallback.getCode());
-        JsonNode accessTokenObject = toNode(response);
 
+        JsonNode accessTokenObject = toNode(response);
         this.checkResponse(accessTokenObject);
+
         return AuthToken.builder()
                 .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
                 .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
                 .scope(getStringValue(accessTokenObject, Keys.OAUTH2__SCOPE))
-                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
                 .idToken(getStringValue(accessTokenObject, Keys.OIDC__ID_TOKEN))
+                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
                 .build();
     }
 
@@ -53,17 +54,20 @@ public class AuthGoogleRequest extends AuthDefaultRequest {
     public AuthUser getUserInfo(AuthToken authToken) {
         HttpHeader httpHeader = new HttpHeader();
         httpHeader.add(HttpHeaders.AUTHORIZATION, TokenUtils.bearer(authToken.getAccessToken()));
-        String userInfo = UnifiedHttpClient.getAdapter().post(userInfoUrl(authToken), null, httpHeader).getBody();
-        JsonNode object = toNode(userInfo);
-        this.checkResponse(object);
+
+        String response = UnifiedHttpClient.getAdapter().post(userInfoUrl(authToken), null, httpHeader).getBody();
+
+        JsonNode userInfoObject = toNode(response);
+        this.checkResponse(userInfoObject);
+
         return AuthUser.builder()
-                .rawUserInfo(object)
-                .uuid(getStringValue(object, "sub"))
-                .username(getStringValue(object, Keys.OAUTH2_SCOPE__EMAIL))
-                .avatar(getStringValue(object, "picture"))
-                .nickname(getStringValue(object, Keys.NAME))
-                .location(getStringValue(object, "locale"))
-                .email(getStringValue(object, Keys.OAUTH2_SCOPE__EMAIL))
+                .rawUserInfo(userInfoObject)
+                .uuid(getStringValue(userInfoObject, "sub"))
+                .username(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
+                .avatar(getStringValue(userInfoObject, "picture"))
+                .nickname(getStringValue(userInfoObject, Keys.NAME))
+                .location(getStringValue(userInfoObject, "locale"))
+                .email(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
                 .gender(AuthUserGender.UNKNOWN)
                 .token(authToken)
                 .source(source.toString())

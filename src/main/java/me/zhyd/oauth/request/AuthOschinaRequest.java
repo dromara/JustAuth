@@ -31,31 +31,35 @@ public class AuthOschinaRequest extends AuthDefaultRequest {
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
         String response = doPostAuthorizationCode(authCallback.getCode());
+
         JsonNode accessTokenObject = toNode(response);
         this.checkResponse(accessTokenObject);
+
         return AuthToken.builder()
                 .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
                 .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
                 .uid(getStringValue(accessTokenObject, Keys.UID))
-                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
                 .build();
     }
 
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
         String response = doGetUserInfo(authToken);
-        JsonNode object = toNode(response);
-        this.checkResponse(object);
+
+        JsonNode userInfoObject = toNode(response);
+        this.checkResponse(userInfoObject);
+
         return AuthUser.builder()
-                .rawUserInfo(object)
-                .uuid(getStringValue(object, Keys.ID))
-                .username(getStringValue(object, Keys.NAME))
-                .nickname(getStringValue(object, Keys.NAME))
-                .avatar(getStringValue(object, Keys.AVATAR))
-                .blog(getStringValue(object, Keys.URL))
-                .location(getStringValue(object, Keys.LOCATION))
-                .gender(AuthUserGender.getRealGender(getStringValue(object, Keys.GENDER)))
-                .email(getStringValue(object, Keys.OAUTH2_SCOPE__EMAIL))
+                .rawUserInfo(userInfoObject)
+                .uuid(getStringValue(userInfoObject, Keys.ID))
+                .username(getStringValue(userInfoObject, Keys.NAME))
+                .nickname(getStringValue(userInfoObject, Keys.NAME))
+                .avatar(getStringValue(userInfoObject, Keys.AVATAR))
+                .blog(getStringValue(userInfoObject, Keys.URL))
+                .location(getStringValue(userInfoObject, Keys.LOCATION))
+                .gender(AuthUserGender.getRealGender(getStringValue(userInfoObject, Keys.GENDER)))
+                .email(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
                 .token(authToken)
                 .source(source.toString())
                 .build();

@@ -94,7 +94,7 @@ public abstract class AbstractAuthMicrosoftRequest extends AuthDefaultRequest {
 
         JsonNode userInfoObject = toNode(response);
         this.checkResponse(userInfoObject);
-        
+
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
                 .uuid(getStringValue(userInfoObject, Keys.ID))

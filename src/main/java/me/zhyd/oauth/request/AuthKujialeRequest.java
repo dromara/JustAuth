@@ -58,8 +58,8 @@ public class AuthKujialeRequest extends AuthDefaultRequest {
         JsonNode resultObject = getObjectNode(accessTokenObject, "d");
         return AuthToken.builder()
                 .accessToken(getStringValue(resultObject, "accessToken"))
-                .refreshToken(getStringValue(resultObject, "refreshToken"))
                 .expireIn(getIntValue(resultObject, "expiresIn"))
+                .refreshToken(getStringValue(resultObject, "refreshToken"))
                 .build();
     }
 
@@ -74,15 +74,17 @@ public class AuthKujialeRequest extends AuthDefaultRequest {
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
         String openId = this.getOpenId(authToken);
+
         String response = UnifiedHttpClient.getAdapter().get(UrlBuilder.fromBaseUrl(source.userInfo())
                 .queryParam(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken())
                 .queryParam(Keys.VARIANT__OPEN_ID, openId)
                 .build()).getBody();
-        JsonNode object = toNode(response);
-        if (!"0".equals(getStringValue(object, "c"))) {
-            throw new AuthException(getStringValue(object, "m"));
+
+        JsonNode responseObject = toNode(response);
+        if (!"0".equals(getStringValue(responseObject, "c"))) {
+            throw new AuthException(getStringValue(responseObject, "m"));
         }
-        JsonNode userInfoObject = getObjectNode(object, "d");
+        JsonNode userInfoObject = getObjectNode(responseObject, "d");
 
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
@@ -105,13 +107,16 @@ public class AuthKujialeRequest extends AuthDefaultRequest {
         String response = UnifiedHttpClient.getAdapter().get(UrlBuilder.fromBaseUrl("https://oauth.kujiale.com/oauth2/auth/user")
                 .queryParam(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken())
                 .build()).getBody();
+
         JsonNode accessTokenObject = checkResponse(response);
+
         return getStringValue(accessTokenObject, "d");
     }
 
     @Override
     public AuthResponse<AuthToken> refresh(AuthToken authToken) {
         String response = UnifiedHttpClient.getAdapter().post(refreshTokenUrl(authToken.getRefreshToken())).getBody();
+
         return AuthResponse.<AuthToken>builder().code(AuthResponseStatus.SUCCESS.getCode()).data(getAuthToken(response)).build();
     }
 }

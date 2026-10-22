@@ -36,6 +36,7 @@ public class AuthWechatMiniProgramRequest extends AuthDefaultRequest {
         // 参见 https://developers.weixin.qq.com/miniprogram/dev/api-backend/open-api/login/auth.code2Session.html 文档
         // 使用 code 获取对应的 openId、unionId 等字段
         String response = UnifiedHttpClient.getAdapter().get(accessTokenUrl(authCallback.getCode())).getBody();
+
         JSCode2SessionResponse accessTokenObject = JsonUtils.toObject(response, JSCode2SessionResponse.class);
         assert accessTokenObject != null;
         checkResponse(accessTokenObject);

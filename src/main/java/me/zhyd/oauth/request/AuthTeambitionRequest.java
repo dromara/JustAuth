@@ -42,15 +42,16 @@ public class AuthTeambitionRequest extends AuthDefaultRequest {
      */
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
-        Map<String, String> form = new HashMap<>(7);
-        form.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
-        form.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
-        form.put(Keys.OAUTH2__CODE, authCallback.getCode());
-        form.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__CODE);
 
-        String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), form, false).getBody();
+        Map<String, String> params = new HashMap<>(7);
+        params.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
+        params.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
+        params.put(Keys.OAUTH2__CODE, authCallback.getCode());
+        params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__CODE);
+
+        String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), params, false).getBody();
+
         JsonNode accessTokenObject = toNode(response);
-
         this.checkResponse(accessTokenObject);
 
         return AuthToken.builder()
@@ -93,10 +94,11 @@ public class AuthTeambitionRequest extends AuthDefaultRequest {
         String uid = oldToken.getUid();
         String refreshToken = oldToken.getRefreshToken();
 
-        Map<String, String> form = new HashMap<>(4);
-        form.put("_userId", uid);
-        form.put(Keys.OAUTH2__REFRESH_TOKEN, refreshToken);
-        String response = UnifiedHttpClient.getAdapter().post(source.refresh(), form, false).getBody();
+        Map<String, String> params = new HashMap<>(4);
+        params.put("_userId", uid);
+        params.put(Keys.OAUTH2__REFRESH_TOKEN, refreshToken);
+
+        String response = UnifiedHttpClient.getAdapter().post(source.refresh(), params, false).getBody();
 
         JsonNode refreshTokenObject = toNode(response);
         this.checkResponse(refreshTokenObject);

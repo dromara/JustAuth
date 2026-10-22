@@ -48,7 +48,6 @@ public class AuthWeChatOpenRequest extends AuthDefaultRequest {
         String response = doGetUserInfo(authToken);
 
         JsonNode userInfoObject = toNode(response);
-
         this.checkResponse(userInfoObject);
 
         String location = String.format("%s-%s-%s", getStringValue(userInfoObject, "country"), getStringValue(userInfoObject, "province"), getStringValue(userInfoObject, "city"));
@@ -103,8 +102,8 @@ public class AuthWeChatOpenRequest extends AuthDefaultRequest {
 
         return AuthToken.builder()
                 .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
-                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
                 .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
                 .openId(getStringValue(accessTokenObject, Keys.OAUTH2_SCOPE__OPENID))
                 .build();
     }

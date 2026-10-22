@@ -65,8 +65,9 @@ public class AuthAppleRequest extends AuthDefaultRequest {
                 .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
                 .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
                 .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
-                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
-                .idToken(getStringValue(accessTokenObject, Keys.OIDC__ID_TOKEN));
+                .idToken(getStringValue(accessTokenObject, Keys.OIDC__ID_TOKEN))
+                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE));
+
         if (!StringUtils.isEmpty(authCallback.getUser())) {
             try {
                 AppleUserInfo userInfo = JsonUtils.toObject(authCallback.getUser(), AppleUserInfo.class);
@@ -82,12 +83,13 @@ public class AuthAppleRequest extends AuthDefaultRequest {
         Base64.Decoder urlDecoder = Base64.getUrlDecoder();
         String[] idToken = authToken.getIdToken().split("\\.");
         String payload = new String(urlDecoder.decode(idToken[1]));
-        JsonNode object = toNode(payload);
+
+        JsonNode userInfoObject = toNode(payload);
         // https://developer.apple.com/documentation/sign_in_with_apple/sign_in_with_apple_rest_api/authenticating_users_with_sign_in_with_apple#3383773
         return AuthUser.builder()
-                .rawUserInfo(object)
-                .uuid(getStringValue(object, "sub"))
-                .email(getStringValue(object, Keys.OAUTH2_SCOPE__EMAIL))
+                .rawUserInfo(userInfoObject)
+                .uuid(getStringValue(userInfoObject, "sub"))
+                .email(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
                 .username(authToken.getUsername())
                 .token(authToken)
                 .source(source.toString())

@@ -65,10 +65,11 @@ public class AuthDingTalkV2Request extends AuthDefaultRequest {
         if (!containsKey(accessTokenObject, "accessToken")) {
             throw new AuthException(JsonUtils.toJson(response), source);
         }
+
         return AuthToken.builder()
                 .accessToken(getStringValue(accessTokenObject, "accessToken"))
-                .refreshToken(getStringValue(accessTokenObject, "refreshToken"))
                 .expireIn(getIntValue(accessTokenObject, "expireIn"))
+                .refreshToken(getStringValue(accessTokenObject, "refreshToken"))
                 .corpId(getStringValue(accessTokenObject, "corpId"))
                 .build();
     }

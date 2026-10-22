@@ -82,31 +82,32 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
      */
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
-        Map<String, String> form = new HashMap<>(9);
-        form.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
-        form.put(Keys.OAUTH2__CODE, authCallback.getCode());
-        form.put(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri());
-        form.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
-        form.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
+        Map<String, String> params = new HashMap<>(9);
+        params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
+        params.put(Keys.OAUTH2__CODE, authCallback.getCode());
+        params.put(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri());
+        params.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
+        params.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
 
         if (config.isPkce()) {
             String cacheKey = this.source.getName().concat(":code_verifier:").concat(authCallback.getState());
             String codeVerifier = this.authStateCache.get(cacheKey);
-            form.put("code_verifier", codeVerifier);
+            params.put("code_verifier", codeVerifier);
         }
-        return getToken(form, this.source.accessToken());
+        return getToken(params, this.source.accessToken());
     }
 
     @Override
     public AuthResponse<AuthToken> refresh(AuthToken authToken) {
-        Map<String, String> form = new HashMap<>(7);
-        form.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__REFRESH_TOKEN);
-        form.put(Keys.OAUTH2__REFRESH_TOKEN, authToken.getRefreshToken());
-        form.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
-        form.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
+        Map<String, String> params = new HashMap<>(7);
+        params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__REFRESH_TOKEN);
+        params.put(Keys.OAUTH2__REFRESH_TOKEN, authToken.getRefreshToken());
+        params.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
+        params.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
+
         return AuthResponse.<AuthToken>builder()
                 .code(AuthResponseStatus.SUCCESS.getCode())
-                .data(getToken(form, this.source.refresh()))
+                .data(getToken(params, this.source.refresh()))
                 .build();
 
     }

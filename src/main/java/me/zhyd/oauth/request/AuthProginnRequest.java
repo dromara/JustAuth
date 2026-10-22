@@ -36,30 +36,35 @@ public class AuthProginnRequest extends AuthDefaultRequest {
 
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
+
         Map<String, String> params = new HashMap<>();
         params.put(Keys.OAUTH2__CODE, authCallback.getCode());
         params.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
         params.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
         params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
         params.put(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri());
+
         String response = UnifiedHttpClient.getAdapter().post(AuthDefaultSource.PROGINN.accessToken(), params, false).getBody();
 
         JsonNode accessTokenObject = toNode(response);
         this.checkResponse(accessTokenObject);
+
         return AuthToken.builder()
                 .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
                 .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
                 .uid(getStringValue(accessTokenObject, Keys.UID))
                 .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
-                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
                 .build();
     }
 
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
         String userInfo = doGetUserInfo(authToken);
+
         JsonNode userInfoObject = toNode(userInfo);
         this.checkResponse(userInfoObject);
+
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
                 .uuid(getStringValue(userInfoObject, Keys.UID))

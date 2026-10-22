@@ -44,11 +44,11 @@ public class AuthTaobaoRequest extends AuthDefaultRequest {
         return AuthToken.builder()
                 .accessToken(getStringValue(object, Keys.OAUTH2__ACCESS_TOKEN))
                 .expireIn(getIntValue(object, Keys.OAUTH2__EXPIRES_IN))
-                .tokenType(getStringValue(object, Keys.OAUTH2__TOKEN_TYPE))
-                .idToken(getStringValue(object, Keys.OIDC__ID_TOKEN))
                 .refreshToken(getStringValue(object, Keys.OAUTH2__REFRESH_TOKEN))
-                .uid(getStringValue(object, "taobao_user_id"))
+                .idToken(getStringValue(object, Keys.OIDC__ID_TOKEN))
                 .openId(getStringValue(object, "taobao_open_uid"))
+                .uid(getStringValue(object, "taobao_user_id"))
+                .tokenType(getStringValue(object, Keys.OAUTH2__TOKEN_TYPE))
                 .build();
     }
 

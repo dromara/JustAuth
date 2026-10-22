@@ -84,7 +84,6 @@ public class AuthQQMiniProgramRequest extends AuthDefaultRequest {
     }
 
     @Data
-    @SuppressWarnings("SpellCheckingInspection")
     private static class JSCode2SessionResponse {
 
         @JsonProperty(Keys.VARIANT__ERRCODE)

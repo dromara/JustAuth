@@ -47,8 +47,11 @@ public class AuthLineRequest extends AuthDefaultRequest {
         params.put(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri());
         params.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
         params.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
+
         String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), params, false).getBody();
+
         JsonNode accessTokenObject = toNode(response);
+
         return AuthToken.builder()
                 .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
                 .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
@@ -61,17 +64,19 @@ public class AuthLineRequest extends AuthDefaultRequest {
 
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
-        String userInfo = UnifiedHttpClient.getAdapter().get(source.userInfo(), null, new HttpHeader()
+        String response = UnifiedHttpClient.getAdapter().get(source.userInfo(), null, new HttpHeader()
                 .add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED)
                 .add(HttpHeaders.AUTHORIZATION, TokenUtils.bearer(authToken.getAccessToken())), false).getBody();
-        JsonNode object = toNode(userInfo);
+
+        JsonNode userInfoObject = toNode(response);
+
         return AuthUser.builder()
-                .rawUserInfo(object)
-                .uuid(getStringValue(object, "userId"))
-                .username(getStringValue(object, "displayName"))
-                .nickname(getStringValue(object, "displayName"))
-                .avatar(getStringValue(object, "pictureUrl"))
-                .remark(getStringValue(object, "statusMessage"))
+                .rawUserInfo(userInfoObject)
+                .uuid(getStringValue(userInfoObject, "userId"))
+                .username(getStringValue(userInfoObject, "displayName"))
+                .nickname(getStringValue(userInfoObject, "displayName"))
+                .avatar(getStringValue(userInfoObject, "pictureUrl"))
+                .remark(getStringValue(userInfoObject, "statusMessage"))
                 .gender(AuthUserGender.UNKNOWN)
                 .token(authToken)
                 .source(source.toString())
@@ -84,8 +89,10 @@ public class AuthLineRequest extends AuthDefaultRequest {
         params.put(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken());
         params.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
         params.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
-        String userInfo = UnifiedHttpClient.getAdapter().post(source.revoke(), params, false).getBody();
-        JsonNode object = toNode(userInfo);
+
+        String response = UnifiedHttpClient.getAdapter().post(source.revoke(), params, false).getBody();
+        
+        JsonNode object = toNode(response);
         // 返回1表示取消授权成功，否则失败
         AuthResponseStatus status = getBooleanValue(object, "revoked") ? AuthResponseStatus.SUCCESS : AuthResponseStatus.FAILURE;
         return AuthResponse.builder().code(status.getCode()).msg(status.getMsg()).build();
@@ -98,16 +105,18 @@ public class AuthLineRequest extends AuthDefaultRequest {
         params.put(Keys.OAUTH2__REFRESH_TOKEN, oldToken.getRefreshToken());
         params.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
         params.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
+
         String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), params, false).getBody();
+
         JsonNode accessTokenObject = toNode(response);
         return AuthResponse.<AuthToken>builder()
                 .code(AuthResponseStatus.SUCCESS.getCode())
                 .data(AuthToken.builder()
                         .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
-                        .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
                         .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
-                        .idToken(getStringValue(accessTokenObject, Keys.OIDC__ID_TOKEN))
+                        .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
                         .scope(getStringValue(accessTokenObject, Keys.OAUTH2__SCOPE))
+                        .idToken(getStringValue(accessTokenObject, Keys.OIDC__ID_TOKEN))
                         .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
                         .build())
                 .build();

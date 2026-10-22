@@ -59,7 +59,7 @@ public class AuthTwitterRequest extends AuthDefaultRequest {
 
     /**
      * Obtaining a request token
-     * https://developer.twitter.com/en/docs/twitter-for-websites/log-in-with-twitter/guides/implementing-sign-in-with-twitter
+     * <a href="https://developer.twitter.com/en/docs/twitter-for-websites/log-in-with-twitter/guides/implementing-sign-in-with-twitter">...</a>
      *
      * @return request token
      */
@@ -93,6 +93,7 @@ public class AuthTwitterRequest extends AuthDefaultRequest {
      */
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
+
         Map<String, String> oauthParams = buildOauthParams();
         oauthParams.put("oauth_token", authCallback.getOauth_token());
         oauthParams.put("oauth_verifier", authCallback.getOauth_verifier());
@@ -104,9 +105,10 @@ public class AuthTwitterRequest extends AuthDefaultRequest {
         httpHeader.add(HttpHeaders.AUTHORIZATION, header);
         httpHeader.add(HttpConstants.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
 
-        Map<String, String> form = new HashMap<>(3);
-        form.put("oauth_verifier", authCallback.getOauth_verifier());
-        String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), form, httpHeader, false).getBody();
+        Map<String, String> params = new HashMap<>(3);
+        params.put("oauth_verifier", authCallback.getOauth_verifier());
+
+        String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), params, httpHeader, false).getBody();
 
         Map<String, String> requestToken = MapUtil.parseStringToMap(response, false);
 

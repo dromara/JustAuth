@@ -44,10 +44,13 @@ public class AuthSlackRequest extends AuthDefaultRequest {
     public AuthToken getAccessToken(AuthCallback authCallback) {
         HttpHeader header = new HttpHeader()
                 .add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
+
         String response = UnifiedHttpClient.getAdapter()
                 .get(accessTokenUrl(authCallback.getCode()), null, header, false).getBody();
+
         JsonNode accessTokenObject = toNode(response);
         this.checkResponse(accessTokenObject);
+
         JsonNode userObject = getObjectNode(accessTokenObject, "authed_user");
         return AuthToken.builder()
                 .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
@@ -62,6 +65,7 @@ public class AuthSlackRequest extends AuthDefaultRequest {
         HttpHeader header = new HttpHeader()
                 .add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED)
                 .add(HttpHeaders.AUTHORIZATION, TokenUtils.bearer(authToken.getAccessToken()));
+
         String userInfo = UnifiedHttpClient.getAdapter()
                 .get(userInfoUrl(authToken), null, header, false).getBody();
         JsonNode object = toNode(userInfo);
@@ -88,6 +92,7 @@ public class AuthSlackRequest extends AuthDefaultRequest {
                 .add(HttpHeaders.AUTHORIZATION, TokenUtils.bearer(authToken.getAccessToken()));
         String userInfo = UnifiedHttpClient.getAdapter()
                 .get(source.revoke(), null, header, false).getBody();
+
         JsonNode object = toNode(userInfo);
         this.checkResponse(object);
         // 返回1表示取消授权成功，否则失败

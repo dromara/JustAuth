@@ -33,33 +33,37 @@ public class AuthGiteeRequest extends AuthDefaultRequest {
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
         String response = doPostAuthorizationCode(authCallback.getCode());
+
         JsonNode accessTokenObject = toNode(response);
         this.checkResponse(accessTokenObject);
+
         return AuthToken.builder()
                 .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
                 .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
                 .scope(getStringValue(accessTokenObject, Keys.OAUTH2__SCOPE))
                 .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
-                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
                 .build();
     }
 
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
         String userInfo = doGetUserInfo(authToken);
-        JsonNode object = toNode(userInfo);
-        this.checkResponse(object);
+
+        JsonNode userInfoObject = toNode(userInfo);
+        this.checkResponse(userInfoObject);
+
         return AuthUser.builder()
-                .rawUserInfo(object)
-                .uuid(getStringValue(object, Keys.ID))
-                .username(getStringValue(object, "login"))
-                .avatar(getStringValue(object, Keys.AVATAR_URL))
-                .blog(getStringValue(object, "blog"))
-                .nickname(getStringValue(object, Keys.NAME))
-                .company(getStringValue(object, Keys.COMPANY))
-                .location(getStringValue(object, Keys.OAUTH2_SCOPE__ADDRESS))
-                .email(getStringValue(object, Keys.OAUTH2_SCOPE__EMAIL))
-                .remark(getStringValue(object, "bio"))
+                .rawUserInfo(userInfoObject)
+                .uuid(getStringValue(userInfoObject, Keys.ID))
+                .username(getStringValue(userInfoObject, "login"))
+                .avatar(getStringValue(userInfoObject, Keys.AVATAR_URL))
+                .blog(getStringValue(userInfoObject, "blog"))
+                .nickname(getStringValue(userInfoObject, Keys.NAME))
+                .company(getStringValue(userInfoObject, Keys.COMPANY))
+                .location(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__ADDRESS))
+                .email(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
+                .remark(getStringValue(userInfoObject, "bio"))
                 .gender(AuthUserGender.UNKNOWN)
                 .token(authToken)
                 .source(source.toString())

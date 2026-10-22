@@ -11,7 +11,6 @@ import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
-import me.zhyd.oauth.utils.JsonNodeUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
 import tools.jackson.databind.JsonNode;
 
@@ -34,8 +33,10 @@ public class AuthCodingRequest extends AuthDefaultRequest {
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
         String response = doGetAuthorizationCode(authCallback.getCode());
+
         JsonNode accessTokenObject = toNode(response);
         this.checkResponse(accessTokenObject);
+
         return AuthToken.builder()
                 .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
                 .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
@@ -46,22 +47,24 @@ public class AuthCodingRequest extends AuthDefaultRequest {
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
         String response = doGetUserInfo(authToken);
-        JsonNode object = toNode(response);
-        this.checkResponse(object);
 
-        object = JsonNodeUtils.findObjectNode(object, Keys.DATA);
+        JsonNode responseObject = toNode(response);
+        this.checkResponse(responseObject);
+
+        JsonNode userInfoObject = getDataNode(responseObject);
+
         return AuthUser.builder()
-                .rawUserInfo(object)
-                .uuid(getStringValue(object, Keys.ID))
-                .username(getStringValue(object, Keys.NAME))
-                .avatar("https://coding.net" + getStringValue(object, Keys.AVATAR))
-                .blog("https://coding.net" + getStringValue(object, "path"))
-                .nickname(getStringValue(object, Keys.NAME))
-                .company(getStringValue(object, Keys.COMPANY))
-                .location(getStringValue(object, Keys.LOCATION))
-                .gender(AuthUserGender.getRealGender(getStringValue(object, "sex")))
-                .email(getStringValue(object, Keys.OAUTH2_SCOPE__EMAIL))
-                .remark(getStringValue(object, "slogan"))
+                .rawUserInfo(userInfoObject)
+                .uuid(getStringValue(userInfoObject, Keys.ID))
+                .username(getStringValue(userInfoObject, Keys.NAME))
+                .avatar("https://coding.net" + getStringValue(userInfoObject, Keys.AVATAR))
+                .blog("https://coding.net" + getStringValue(userInfoObject, "path"))
+                .nickname(getStringValue(userInfoObject, Keys.NAME))
+                .company(getStringValue(userInfoObject, Keys.COMPANY))
+                .location(getStringValue(userInfoObject, Keys.LOCATION))
+                .gender(AuthUserGender.getRealGender(getStringValue(userInfoObject, "sex")))
+                .email(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
+                .remark(getStringValue(userInfoObject, "slogan"))
                 .token(authToken)
                 .source(source.toString())
                 .build();

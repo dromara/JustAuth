@@ -72,12 +72,13 @@ public class AuthJdRequest extends AuthDefaultRequest {
                 .queryParam("timestamp", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
                 .queryParam("v", "2.0");
         urlBuilder.queryParam("sign", GlobalAuthUtils.generateJdSignature(config.getClientSecret(), urlBuilder.getReadOnlyParams()));
+
         String response = UnifiedHttpClient.getAdapter().post(urlBuilder.build(true)).getBody();
-        JsonNode object = toNode(response);
 
-        this.checkResponse(object);
+        JsonNode responseObject = toNode(response);
+        this.checkResponse(responseObject);
 
-        JsonNode userInfoObject = this.getUserDataJsonObject(object);
+        JsonNode userInfoObject = this.getUserDataJsonObject(responseObject);
 
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
@@ -112,18 +113,18 @@ public class AuthJdRequest extends AuthDefaultRequest {
         params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__REFRESH_TOKEN);
         params.put(Keys.OAUTH2__REFRESH_TOKEN, oldToken.getRefreshToken());
         String response = UnifiedHttpClient.getAdapter().post(source.refresh(), params, false).getBody();
-        JsonNode object = toNode(response);
 
-        this.checkResponse(object);
+        JsonNode refreshTokenObject = toNode(response);
+        this.checkResponse(refreshTokenObject);
 
         return AuthResponse.<AuthToken>builder()
                 .code(AuthResponseStatus.SUCCESS.getCode())
                 .data(AuthToken.builder()
-                        .accessToken(getStringValue(object, Keys.OAUTH2__ACCESS_TOKEN))
-                        .expireIn(getIntValue(object, Keys.OAUTH2__EXPIRES_IN))
-                        .refreshToken(getStringValue(object, Keys.OAUTH2__REFRESH_TOKEN))
-                        .scope(getStringValue(object, Keys.OAUTH2__SCOPE))
-                        .openId(getStringValue(object, Keys.VARIANT__OPEN_ID))
+                        .accessToken(getStringValue(refreshTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
+                        .expireIn(getIntValue(refreshTokenObject, Keys.OAUTH2__EXPIRES_IN))
+                        .refreshToken(getStringValue(refreshTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
+                        .scope(getStringValue(refreshTokenObject, Keys.OAUTH2__SCOPE))
+                        .openId(getStringValue(refreshTokenObject, Keys.VARIANT__OPEN_ID))
                         .build())
                 .build();
     }

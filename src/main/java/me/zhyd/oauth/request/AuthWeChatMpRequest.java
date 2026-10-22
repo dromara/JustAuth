@@ -64,7 +64,6 @@ public class AuthWeChatMpRequest extends AuthDefaultRequest {
         String response = doGetUserInfo(authToken);
 
         JsonNode userInfoObject = toNode(response);
-
         this.checkResponse(userInfoObject);
         String location = String.format("%s-%s-%s", getStringValue(userInfoObject, "country"), getStringValue(userInfoObject, "province"), getStringValue(userInfoObject, "city"));
 

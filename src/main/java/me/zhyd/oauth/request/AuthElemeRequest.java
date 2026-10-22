@@ -134,9 +134,9 @@ public class AuthElemeRequest extends AuthDefaultRequest {
                 .code(AuthResponseStatus.SUCCESS.getCode())
                 .data(AuthToken.builder()
                         .accessToken(getStringValue(refreshTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
+                        .expireIn(getIntValue(refreshTokenObject, Keys.OAUTH2__EXPIRES_IN))
                         .refreshToken(getStringValue(refreshTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
                         .tokenType(getStringValue(refreshTokenObject, Keys.OAUTH2__TOKEN_TYPE))
-                        .expireIn(getIntValue(refreshTokenObject, Keys.OAUTH2__EXPIRES_IN))
                         .build())
                 .build();
     }
