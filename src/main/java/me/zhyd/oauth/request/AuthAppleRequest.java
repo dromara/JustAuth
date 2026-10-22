@@ -1,6 +1,5 @@
 package me.zhyd.oauth.request;
 
-import com.alibaba.fastjson2.JSONObject;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.impl.security.AbstractJwk;
 import lombok.Data;
@@ -15,6 +14,7 @@ import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
+import me.zhyd.oauth.utils.JsonUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
@@ -69,7 +69,7 @@ public class AuthAppleRequest extends AuthDefaultRequest {
                 .idToken(getStringValue(accessTokenObject, Keys.OIDC__ID_TOKEN));
         if (!StringUtils.isEmpty(authCallback.getUser())) {
             try {
-                AppleUserInfo userInfo = JSONObject.parseObject(authCallback.getUser(), AppleUserInfo.class);
+                AppleUserInfo userInfo = JsonUtils.toObject(authCallback.getUser(), AppleUserInfo.class);
                 builder.username(userInfo.getName().getFirstName() + " " + userInfo.getName().getLastName());
             } catch (Exception ignored) {
             }

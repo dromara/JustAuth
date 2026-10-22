@@ -1,6 +1,5 @@
 package me.zhyd.oauth.request;
 
-import com.alibaba.fastjson2.JSONPath;
 import com.google.common.net.HttpHeaders;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
@@ -45,23 +44,24 @@ public class AuthLinkedinRequest extends AuthDefaultRequest {
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
         String accessToken = authToken.getAccessToken();
+
         HttpHeader httpHeader = new HttpHeader();
         httpHeader.add(HttpHeaders.HOST, "api.linkedin.com");
         httpHeader.add(HttpHeaders.CONNECTION, "Keep-Alive");
         httpHeader.add(HttpHeaders.AUTHORIZATION, TokenUtils.bearer(accessToken));
 
         String response = UnifiedHttpClient.getAdapter().get(userInfoUrl(authToken), null, httpHeader, false).getBody();
+
         JsonNode userInfoObject = toNode(response);
 
         this.checkResponse(userInfoObject);
 
         String userName = getUserName(userInfoObject);
-
         // 获取用户头像
         String avatar = this.getAvatar(userInfoObject);
-
         // 获取用户邮箱地址
         String email = this.getUserEmail(accessToken);
+
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
                 .uuid(getStringValue(userInfoObject, Keys.ID))
@@ -147,8 +147,15 @@ public class AuthLinkedinRequest extends AuthDefaultRequest {
 
         this.checkResponse(emailObj);
 
-        Object obj = JSONPath.eval(emailObj, "$['elements'][0]['handle~']['emailAddress']");
-        return null == obj ? null : (String) obj;
+        JsonNode elements = getArrayNode(emailObj, "elements");
+        if (elements == null || elements.isEmpty()) {
+            return null;
+        }
+
+        JsonNode element = elements.get(0);
+
+        JsonNode handle = element == null ? null : getObjectNode(element, "handle~");
+        return null == handle ? null : getStringValue(handle, "emailAddress");
     }
 
     private String getUserName(JsonNode userInfoObject, String nameKey) {

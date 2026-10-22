@@ -32,7 +32,7 @@ import java.net.InetSocketAddress;
  * @author yadong.zhang (yadong.zhang0415(a)gmail.com)
  * @since 1.0.1
  */
-public class AuthAlipayRequest extends AuthDefaultRequest {
+public class AuthAlipayRequest extends AbstractAuthAlipayRequest {
 
     /**
      * 支付宝公钥：当选择支付宝登录时，该值可用
@@ -161,12 +161,8 @@ public class AuthAlipayRequest extends AuthDefaultRequest {
         if (!response.isSuccess()) {
             throw new AuthException(response.getSubMsg());
         }
-        return AuthToken.builder()
-                .accessToken(response.getAccessToken())
-                .uid(response.getUserId())
-                .expireIn(Integer.parseInt(response.getExpiresIn()))
-                .refreshToken(response.getRefreshToken())
-                .build();
+
+        return getAccessToken(response);
     }
 
     /**
@@ -180,7 +176,7 @@ public class AuthAlipayRequest extends AuthDefaultRequest {
         AlipaySystemOauthTokenRequest request = new AlipaySystemOauthTokenRequest();
         request.setGrantType(Keys.OAUTH2__REFRESH_TOKEN);
         request.setRefreshToken(authToken.getRefreshToken());
-        AlipaySystemOauthTokenResponse response = null;
+        AlipaySystemOauthTokenResponse response;
         try {
             response = this.alipayClient.execute(request);
         } catch (Exception e) {
@@ -191,12 +187,7 @@ public class AuthAlipayRequest extends AuthDefaultRequest {
         }
         return AuthResponse.<AuthToken>builder()
                 .code(AuthResponseStatus.SUCCESS.getCode())
-                .data(AuthToken.builder()
-                        .accessToken(response.getAccessToken())
-                        .uid(response.getUserId())
-                        .expireIn(Integer.parseInt(response.getExpiresIn()))
-                        .refreshToken(response.getRefreshToken())
-                        .build())
+                .data(getAccessToken(response))
                 .build();
     }
 

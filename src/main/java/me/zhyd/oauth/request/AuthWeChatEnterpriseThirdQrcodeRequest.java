@@ -1,6 +1,5 @@
 package me.zhyd.oauth.request;
 
-import com.alibaba.fastjson2.JSONObject;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
@@ -106,9 +105,10 @@ public class AuthWeChatEnterpriseThirdQrcodeRequest extends AbstractAuthWeChatEn
 
     @Override
     protected String doGetUserInfo(AuthToken authToken) {
-        JSONObject data = new JSONObject();
-        data.put("auth_code", authToken.getCode());
-        return UnifiedHttpClient.getAdapter().post(userInfoUrl(authToken), data.toJSONString()).getBody();
+        Map<String, Object> params = new HashMap<>();
+        params.put("auth_code", authToken.getCode());
+
+        return UnifiedHttpClient.getAdapter().post(userInfoUrl(authToken), JsonUtils.toJson(params)).getBody();
     }
 
     @Override

@@ -64,9 +64,9 @@ public abstract class AbstractAuthMicrosoftRequest extends AuthDefaultRequest {
         return AuthToken.builder()
                 .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
                 .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
                 .scope(getStringValue(accessTokenObject, Keys.OAUTH2__SCOPE))
                 .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
-                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
                 .build();
     }
 
@@ -90,16 +90,18 @@ public abstract class AbstractAuthMicrosoftRequest extends AuthDefaultRequest {
         HttpHeader httpHeader = new HttpHeader();
         httpHeader.add(HttpHeaders.AUTHORIZATION, jwt);
 
-        String userInfo = UnifiedHttpClient.getAdapter().get(userInfoUrl(authToken), null, httpHeader, false).getBody();
-        JsonNode object = toNode(userInfo);
-        this.checkResponse(object);
+        String response = UnifiedHttpClient.getAdapter().get(userInfoUrl(authToken), null, httpHeader, false).getBody();
+
+        JsonNode userInfoObject = toNode(response);
+        this.checkResponse(userInfoObject);
+        
         return AuthUser.builder()
-                .rawUserInfo(object)
-                .uuid(getStringValue(object, Keys.ID))
-                .username(getStringValue(object, "userPrincipalName"))
-                .nickname(getStringValue(object, "displayName"))
-                .location(getStringValue(object, "officeLocation"))
-                .email(getStringValue(object, "mail"))
+                .rawUserInfo(userInfoObject)
+                .uuid(getStringValue(userInfoObject, Keys.ID))
+                .username(getStringValue(userInfoObject, "userPrincipalName"))
+                .nickname(getStringValue(userInfoObject, "displayName"))
+                .location(getStringValue(userInfoObject, "officeLocation"))
+                .email(getStringValue(userInfoObject, "mail"))
                 .gender(AuthUserGender.UNKNOWN)
                 .token(authToken)
                 .source(source.toString())

@@ -9,7 +9,6 @@ import me.zhyd.oauth.http.UnifiedHttpClient;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
-import me.zhyd.oauth.utils.JsonNodeUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
 import tools.jackson.databind.JsonNode;
 
@@ -39,12 +38,14 @@ public class AuthAfDianRequest extends AuthDefaultRequest {
         params.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
         params.put(Keys.OAUTH2__CODE, authCallback.getCode());
         params.put(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri());
+
         String response = UnifiedHttpClient.getAdapter().post(AuthDefaultSource.AFDIAN.accessToken(), params, false).getBody();
+
         JsonNode accessTokenObject = toNode(response);
 
-        JsonNode data = JsonNodeUtils.findObjectNode(accessTokenObject, Keys.DATA);
-
+        JsonNode data = getObjectNode(accessTokenObject, Keys.DATA);
         String userId = getStringValue(data, Keys.VARIANT__USER_ID);
+
         return AuthToken.builder().userId(userId).build();
     }
 

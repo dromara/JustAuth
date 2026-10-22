@@ -1,6 +1,5 @@
 package me.zhyd.oauth.utils;
 
-import com.alibaba.fastjson2.JSON;
 import me.zhyd.oauth.constant.Keys;
 import me.zhyd.oauth.exception.AuthException;
 import org.apache.commons.lang3.StringUtils;
@@ -219,7 +218,7 @@ public class GlobalAuthUtils {
 
     /**
      * Generate Twitter signature
-     * https://developer.twitter.com/en/docs/basics/authentication/guides/creating-a-signature
+     * <a href="https://developer.twitter.com/en/docs/basics/authentication/guides/creating-a-signature">...</a>
      *
      * @param params      parameters including: oauth headers, query params, body params
      * @param method      HTTP method
@@ -269,7 +268,7 @@ public class GlobalAuthUtils {
     /**
      * 生成饿了么请求的Signature
      * <p>
-     * 代码copy并修改自：https://coding.net/u/napos_openapi/p/eleme-openapi-java-sdk/git/blob/master/src/main/java/eleme/openapi/sdk/utils/SignatureUtil.java
+     * 代码copy并修改自：<a href="https://coding.net/u/napos_openapi/p/eleme-openapi-java-sdk/git/blob/master/src/main/java/eleme/openapi/sdk/utils/SignatureUtil.java">...</a>
      *
      * @param appKey     平台应用的授权key
      * @param secret     平台应用的授权密钥
@@ -283,9 +282,10 @@ public class GlobalAuthUtils {
         final Map<String, Object> sorted = new TreeMap<>(parameters);
         sorted.put(Keys.VARIANT__APP_KEY, appKey);
         sorted.put("timestamp", timestamp);
-        StringBuffer string = new StringBuffer();
+
+        StringBuilder string = new StringBuilder();
         for (Map.Entry<String, Object> entry : sorted.entrySet()) {
-            string.append(entry.getKey()).append("=").append(JSON.toJSONString(entry.getValue()));
+            string.append(entry.getKey()).append("=").append(JsonUtils.toJson(entry.getValue()));
         }
         String splice = String.format("%s%s%s%s", action, token, string, secret);
         String calculatedSignature = md5(splice);
@@ -295,7 +295,7 @@ public class GlobalAuthUtils {
     /**
      * MD5加密
      * <p>
-     * 代码copy并修改自：https://coding.net/u/napos_openapi/p/eleme-openapi-java-sdk/git/blob/master/src/main/java/eleme/openapi/sdk/utils/SignatureUtil.java
+     * 代码copy并修改自：<a href="https://coding.net/u/napos_openapi/p/eleme-openapi-java-sdk/git/blob/master/src/main/java/eleme/openapi/sdk/utils/SignatureUtil.java">...</a>
      *
      * @param str 待加密的字符串
      * @return md5 str
@@ -324,8 +324,8 @@ public class GlobalAuthUtils {
      * 1.把所有参数名和参数值进行拼接，例如：access_tokenxxxapp_keyxxxmethodxxxxxxtimestampxxxxxxvx
      * 2.把appSecret夹在字符串的两端，例如：appSecret+XXXX+appSecret
      * 3.使用MD5进行加密，再转化成大写
-     * link: http://open.jd.com/home/home#/doc/common?listId=890
-     * link: https://github.com/pingjiang/jd-open-api-sdk-src/blob/master/src/main/java/com/jd/open/api/sdk/DefaultJdClient.java
+     * link: <a href="http://open.jd.com/home/home#/doc/common?listId=890">...</a>
+     * link: <a href="https://github.com/pingjiang/jd-open-api-sdk-src/blob/master/src/main/java/com/jd/open/api/sdk/DefaultJdClient.java">...</a>
      *
      * @param appSecret 京东应用密钥
      * @param params    签名参数

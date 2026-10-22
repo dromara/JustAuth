@@ -1,10 +1,8 @@
 package me.zhyd.oauth.utils;
 
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONObject;
-import com.alibaba.fastjson2.JSONPath;
 import org.junit.Assert;
 import org.junit.Test;
+import tools.jackson.databind.JsonNode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,8 +29,19 @@ public class JsonPathTest {
 
         Map<String, Object> master = new HashMap<>();
         master.put("elements", list);
-        JSONObject emailObj = JSONObject.parseObject(JSON.toJSONString(master));
-        Object object = JSONPath.eval(emailObj, "$['elements'][0]['handle~']['emailAddress']");
-        Assert.assertEquals("xxxx", object);
+
+        JsonNode emailObj = JsonUtils.toNode(JsonUtils.toJson(master));
+
+        JsonNode elements = JsonNodeUtils.findArrayNode(emailObj, "elements");
+
+        Assert.assertFalse("elements is null", elements == null || elements.isEmpty());
+
+        JsonNode element = elements.get(0);
+        Assert.assertNotNull("element is null", element);
+
+        JsonNode handle = JsonNodeUtils.findObjectNode(element, "handle~");
+        Assert.assertNotNull("handle is null", handle);
+        String address =  JsonNodeUtils.findStringValue(handle, "emailAddress");
+        Assert.assertEquals("xxxx", address);
     }
 }

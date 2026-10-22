@@ -29,25 +29,27 @@ public class AuthAliyunRequest extends AuthDefaultRequest {
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
         String response = doPostAuthorizationCode(authCallback.getCode());
+
         JsonNode accessTokenObject = toNode(response);
         return AuthToken.builder()
                 .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
                 .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
                 .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
                 .idToken(getStringValue(accessTokenObject, Keys.OIDC__ID_TOKEN))
-                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
                 .build();
     }
 
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
         String userInfo = doGetUserInfo(authToken);
-        JsonNode object = toNode(userInfo);
+
+        JsonNode userInfoObject = toNode(userInfo);
         return AuthUser.builder()
-                .rawUserInfo(object)
-                .uuid(getStringValue(object, "sub"))
-                .username(getStringValue(object, "login_name"))
-                .nickname(getStringValue(object, Keys.NAME))
+                .rawUserInfo(userInfoObject)
+                .uuid(getStringValue(userInfoObject, "sub"))
+                .username(getStringValue(userInfoObject, "login_name"))
+                .nickname(getStringValue(userInfoObject, Keys.NAME))
                 .gender(AuthUserGender.UNKNOWN)
                 .token(authToken)
                 .source(source.toString())

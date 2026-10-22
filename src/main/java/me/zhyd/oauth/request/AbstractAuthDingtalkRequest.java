@@ -50,12 +50,13 @@ public abstract class AbstractAuthDingtalkRequest extends AuthDefaultRequest {
         param.put("tmp_auth_code", code);
 
         String response = UnifiedHttpClient.getAdapter().post(userInfoUrl(authToken), JsonUtils.toJson(param)).getBody();
-        JsonNode object = toNode(response);
-        if (getIntValue(object, Keys.VARIANT__ERRCODE) != 0) {
-            throw new AuthException(getStringValue(object, Keys.VARIANT__ERRMSG));
+
+        JsonNode responseObject = toNode(response);
+        if (getIntValue(responseObject, Keys.VARIANT__ERRCODE) != 0) {
+            throw new AuthException(getStringValue(responseObject, Keys.VARIANT__ERRMSG));
         }
 
-        JsonNode userInfoObject = getObjectNode(object, "user_info");
+        JsonNode userInfoObject = getObjectNode(responseObject, "user_info");
         AuthToken token = AuthToken.builder()
                 .openId(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__OPENID))
                 .unionId(getStringValue(userInfoObject, Keys.UNIONID))
