@@ -32,7 +32,7 @@ import static me.zhyd.oauth.utils.GlobalAuthUtils.urlEncode;
 public class AuthTwitterRequest extends AuthDefaultRequest {
 
     private static final String PREAMBLE = "OAuth";
-    static final String OAUTH_SIGNATURE ="oauth_signature";
+    static final String OAUTH_SIGNATURE = "oauth_signature";
 
     public AuthTwitterRequest(AuthConfig config) {
         super(config, TWITTER);

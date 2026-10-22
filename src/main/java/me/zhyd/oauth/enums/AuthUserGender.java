@@ -2,10 +2,9 @@ package me.zhyd.oauth.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
-
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * 用户性别
@@ -52,7 +51,7 @@ public enum AuthUserGender {
      * @since 1.13.2
      */
     public static AuthUserGender getWechatRealGender(String originalGender) {
-        if (StringUtils.isEmpty(originalGender) || "0".equals(originalGender)) {
+        if (StringUtils.isEmpty(originalGender) || "0" .equals(originalGender)) {
             return AuthUserGender.UNKNOWN;
         }
         return getRealGender(originalGender);

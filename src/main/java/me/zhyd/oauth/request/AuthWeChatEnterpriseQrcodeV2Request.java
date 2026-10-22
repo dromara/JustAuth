@@ -1,7 +1,5 @@
 package me.zhyd.oauth.request;
 
-import org.apache.commons.lang3.StringUtils;
-
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
@@ -10,6 +8,7 @@ import me.zhyd.oauth.enums.AuthResponseStatus;
 import me.zhyd.oauth.exception.AuthException;
 import me.zhyd.oauth.utils.GlobalAuthUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * <p>
@@ -46,7 +45,7 @@ public class AuthWeChatEnterpriseQrcodeV2Request extends AbstractAuthWeChatEnter
     @Override
     protected void checkConfig(AuthConfig config) {
         super.checkConfig(config);
-        if ("CorpApp".equals(config.getLoginType()) && StringUtils.isEmpty(config.getAgentId())) {
+        if ("CorpApp" .equals(config.getLoginType()) && StringUtils.isEmpty(config.getAgentId())) {
             throw new AuthException(AuthResponseStatus.ILLEGAL_WECHAT_AGENT_ID, source);
         }
     }

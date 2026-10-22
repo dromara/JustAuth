@@ -1,7 +1,5 @@
 package me.zhyd.oauth.request;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.alibaba.fastjson2.JSONObject;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
@@ -15,6 +13,7 @@ import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.UrlBuilder;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * <p>
@@ -26,12 +25,12 @@ import me.zhyd.oauth.utils.UrlBuilder;
  */
 public abstract class AbstractAuthWeChatEnterpriseRequest extends AuthDefaultRequest {
 
-	protected AbstractAuthWeChatEnterpriseRequest(AuthConfig config, AuthSource source) {
+    protected AbstractAuthWeChatEnterpriseRequest(AuthConfig config, AuthSource source) {
         super(config, source);
     }
 
 
-	protected AbstractAuthWeChatEnterpriseRequest(AuthConfig config, AuthSource source, AuthStateCache authStateCache) {
+    protected AbstractAuthWeChatEnterpriseRequest(AuthConfig config, AuthSource source, AuthStateCache authStateCache) {
         super(config, source, authStateCache);
     }
 

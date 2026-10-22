@@ -65,7 +65,7 @@ public class AuthKujialeRequest extends AuthDefaultRequest {
 
     private JSONObject checkResponse(String response) {
         JSONObject accessTokenObject = JSONObject.parseObject(response);
-        if (!"0".equals(accessTokenObject.getString("c"))) {
+        if (!"0" .equals(accessTokenObject.getString("c"))) {
             throw new AuthException(accessTokenObject.getString("m"));
         }
         return accessTokenObject;
@@ -79,7 +79,7 @@ public class AuthKujialeRequest extends AuthDefaultRequest {
                 .queryParam(Keys.VARIANT__OPEN_ID, openId)
                 .build()).getBody();
         JSONObject object = JSONObject.parseObject(response);
-        if (!"0".equals(object.getString("c"))) {
+        if (!"0" .equals(object.getString("c"))) {
             throw new AuthException(object.getString("m"));
         }
         JSONObject resultObject = object.getJSONObject("d");

@@ -24,7 +24,7 @@ public class PkceUtil {
      * @return code challenge
      */
     public static String generateCodeChallenge(String codeChallengeMethod, String codeVerifier) {
-        if ("S256".equalsIgnoreCase(codeChallengeMethod)) {
+        if ("S256" .equalsIgnoreCase(codeChallengeMethod)) {
             // https://tools.ietf.org/html/rfc7636#section-4.2
             // code_challenge = BASE64URL-ENCODE(SHA256(ASCII(code_verifier)))
             return newStringUsAscii(Base64Utils.encodeUrlSafe(Sha256.digest(codeVerifier), true));

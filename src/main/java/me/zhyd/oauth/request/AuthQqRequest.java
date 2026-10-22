@@ -17,10 +17,9 @@ import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
 import me.zhyd.oauth.utils.GlobalAuthUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * qq登录

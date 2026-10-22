@@ -3,12 +3,10 @@ package me.zhyd.oauth.utils;
 import com.alibaba.fastjson2.JSON;
 import me.zhyd.oauth.constant.Keys;
 import me.zhyd.oauth.exception.AuthException;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-
-import org.apache.commons.lang3.StringUtils;
-
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;

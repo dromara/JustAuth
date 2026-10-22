@@ -20,10 +20,9 @@ import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.UrlBuilder;
+import org.apache.commons.lang3.StringUtils;
 
 import static me.zhyd.oauth.config.AuthDefaultSource.ALIPAY;
-
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * 支付宝证书模式登录

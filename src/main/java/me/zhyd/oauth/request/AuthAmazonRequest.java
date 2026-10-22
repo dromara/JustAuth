@@ -18,7 +18,10 @@ import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
-import me.zhyd.oauth.utils.*;
+import me.zhyd.oauth.utils.AuthScopeUtils;
+import me.zhyd.oauth.utils.PkceUtil;
+import me.zhyd.oauth.utils.TokenUtils;
+import me.zhyd.oauth.utils.UrlBuilder;
 
 import java.util.HashMap;
 import java.util.Map;

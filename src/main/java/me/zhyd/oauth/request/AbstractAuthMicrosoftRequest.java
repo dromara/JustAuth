@@ -19,10 +19,9 @@ import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
 import me.zhyd.oauth.utils.MapUtil;
 import me.zhyd.oauth.utils.UrlBuilder;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * 微软登录抽象类,负责处理使用微软国际和微软中国账号登录第三方网站的登录方式
@@ -32,12 +31,12 @@ import org.apache.commons.lang3.StringUtils;
  */
 public abstract class AbstractAuthMicrosoftRequest extends AuthDefaultRequest {
 
-	protected AbstractAuthMicrosoftRequest(AuthConfig config, AuthSource source) {
+    protected AbstractAuthMicrosoftRequest(AuthConfig config, AuthSource source) {
         super(config, source);
     }
 
 
-	protected AbstractAuthMicrosoftRequest(AuthConfig config, AuthSource source, AuthStateCache authStateCache) {
+    protected AbstractAuthMicrosoftRequest(AuthConfig config, AuthSource source, AuthStateCache authStateCache) {
         super(config, source, authStateCache);
     }
 

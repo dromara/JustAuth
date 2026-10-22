@@ -194,7 +194,7 @@ public class Base64Utils {
         }
         return dest;
     }
-    
+
     /**
      * 编码字符串
      *

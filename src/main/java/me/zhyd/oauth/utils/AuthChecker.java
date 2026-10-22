@@ -1,7 +1,5 @@
 package me.zhyd.oauth.utils;
 
-import org.apache.commons.lang3.StringUtils;
-
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
@@ -9,6 +7,7 @@ import me.zhyd.oauth.config.AuthSource;
 import me.zhyd.oauth.enums.AuthResponseStatus;
 import me.zhyd.oauth.exception.AuthException;
 import me.zhyd.oauth.model.AuthCallback;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * 授权配置类的校验器

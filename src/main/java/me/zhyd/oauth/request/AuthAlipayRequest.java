@@ -22,10 +22,9 @@ import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthChecker;
 import me.zhyd.oauth.utils.GlobalAuthUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
+import org.apache.commons.lang3.StringUtils;
 
 import java.net.InetSocketAddress;
-
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * 支付宝公钥模式登录
