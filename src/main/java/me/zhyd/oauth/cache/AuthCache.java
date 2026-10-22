@@ -17,15 +17,6 @@ public interface AuthCache {
     void set(String key, String value);
 
     /**
-     * 设置缓存，指定过期时间
-     *
-     * @param key     缓存KEY
-     * @param value   缓存内容
-     * @param timeout 指定缓存过期时间（毫秒）
-     */
-    void set(String key, String value, long timeout);
-
-    /**
      * 获取缓存
      *
      * @param key 缓存KEY
@@ -42,9 +33,9 @@ public interface AuthCache {
     boolean containsKey(String key);
 
     /**
-     * 清理过期的缓存
+     * 设置过期
+     * @param key
      */
-    default void pruneCache() {
-    }
+    void expire(String key);
 
 }

@@ -19,7 +19,7 @@ public class AuthStateCacheTest {
 
     @Test
     public void cache2() throws InterruptedException {
-        AuthDefaultStateCache.INSTANCE.cache("key", "value", 10);
+        AuthDefaultStateCache.INSTANCE.cache("key", "value");
         Assertions.assertEquals("value", AuthDefaultStateCache.INSTANCE.get("key"));
 
         // 没过期

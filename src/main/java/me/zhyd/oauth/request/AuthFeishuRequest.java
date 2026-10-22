@@ -74,7 +74,7 @@ public class AuthFeishuRequest extends AuthDefaultRequest {
         this.checkResponse(accessTokenObject);
         String appAccessToken = getStringValue(accessTokenObject, APP_ACCESS_TOKEN);
         // 缓存 app access token
-        this.authStateCache.cache(cacheKey, appAccessToken, getLongValue(accessTokenObject, "expire") * 1000);
+        this.authStateCache.cache(cacheKey, appAccessToken);
         return appAccessToken;
     }
 

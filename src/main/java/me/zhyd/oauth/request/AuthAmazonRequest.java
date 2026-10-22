@@ -25,7 +25,6 @@ import tools.jackson.databind.JsonNode;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Amazon登录
@@ -68,8 +67,8 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
             String codeChallenge = PkceUtil.generateCodeChallenge(codeChallengeMethod, codeVerifier);
             builder.queryParam("code_challenge", codeChallenge)
                     .queryParam("code_challenge_method", codeChallengeMethod);
-            // 缓存 codeVerifier 十分钟
-            this.authStateCache.cache(cacheKey, codeVerifier, TimeUnit.MINUTES.toMillis(10));
+            // 缓存 codeVerifier
+            this.authStateCache.cache(cacheKey, codeVerifier);
         }
 
         return builder.build();

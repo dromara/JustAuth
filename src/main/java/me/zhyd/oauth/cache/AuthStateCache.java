@@ -18,15 +18,6 @@ public interface AuthStateCache {
     void cache(String key, String value);
 
     /**
-     * 存入缓存
-     *
-     * @param key     缓存key
-     * @param value   缓存内容
-     * @param timeout 指定缓存过期时间（毫秒）
-     */
-    void cache(String key, String value, long timeout);
-
-    /**
      * 获取缓存内容
      *
      * @param key 缓存key
@@ -41,4 +32,10 @@ public interface AuthStateCache {
      * @return true：存在key，并且value没过期；false：key不存在或者已过期
      */
     boolean containsKey(String key);
+    
+    /**
+     * 设置过期
+     * @param key
+     */
+    void expire(String key);
 }

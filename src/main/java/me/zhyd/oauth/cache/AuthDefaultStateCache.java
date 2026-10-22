@@ -31,18 +31,6 @@ public enum AuthDefaultStateCache implements AuthStateCache {
     }
 
     /**
-     * 存入缓存
-     *
-     * @param key     缓存key
-     * @param value   缓存内容
-     * @param timeout 指定缓存过期时间（毫秒）
-     */
-    @Override
-    public void cache(String key, String value, long timeout) {
-        authCache.set(key, value, timeout);
-    }
-
-    /**
      * 获取缓存内容
      *
      * @param key 缓存key
@@ -63,4 +51,9 @@ public enum AuthDefaultStateCache implements AuthStateCache {
     public boolean containsKey(String key) {
         return authCache.containsKey(key);
     }
+
+	@Override
+	public void expire(String key) {
+		authCache.expire(key);
+	}
 }
