@@ -39,7 +39,7 @@ public class AuthMeituanRequest extends AuthDefaultRequest {
 
         Map<String, String> params = new HashMap<>(7);
         params.put(Keys.VARIANT__APP_ID, config.getClientId());
-        params.put("secret", config.getClientSecret());
+        params.put(Keys.PARAM__SECRET, config.getClientSecret());
         params.put(Keys.OAUTH2__CODE, authCallback.getCode());
         params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
 
@@ -60,7 +60,7 @@ public class AuthMeituanRequest extends AuthDefaultRequest {
 
         Map<String, String> params = new HashMap<>(5);
         params.put(Keys.VARIANT__APP_ID, config.getClientId());
-        params.put("secret", config.getClientSecret());
+        params.put(Keys.PARAM__SECRET, config.getClientSecret());
         params.put(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken());
 
         String response = UnifiedHttpClient.getAdapter().post(source.userInfo(), params, false).getBody();
@@ -85,7 +85,7 @@ public class AuthMeituanRequest extends AuthDefaultRequest {
 
         Map<String, String> params = new HashMap<>(7);
         params.put(Keys.VARIANT__APP_ID, config.getClientId());
-        params.put("secret", config.getClientSecret());
+        params.put(Keys.PARAM__SECRET, config.getClientSecret());
         params.put(Keys.OAUTH2__REFRESH_TOKEN, oldToken.getRefreshToken());
         params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__REFRESH_TOKEN);
 

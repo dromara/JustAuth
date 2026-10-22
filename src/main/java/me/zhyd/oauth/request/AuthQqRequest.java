@@ -63,7 +63,7 @@ public class AuthQqRequest extends AuthDefaultRequest {
             avatar = getStringValue(object, "figureurl_qq_1");
         }
 
-        String location = String.format("%s-%s", getStringValue(object, "province"), getStringValue(object, "city"));
+        String location = String.format("%s-%s", getStringValue(object, Keys.PROVINCE), getStringValue(object, Keys.CITY));
         return AuthUser.builder()
                 .rawUserInfo(object)
                 .username(getStringValue(object, Keys.NICKNAME))

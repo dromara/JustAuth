@@ -18,9 +18,10 @@ public class AuthStateUtils {
     public static String createState() {
         return UuidUtils.getUUID();
     }
-    
+
     /**
      * UUID.randomUUID()
+     *
      * @return
      */
     public static String createRandomState() {

@@ -63,7 +63,7 @@ public class AuthBaiduRequest extends AuthDefaultRequest {
                 .nickname(getStringValue(userInfoObject, Keys.USERNAME))
                 .avatar(getAvatar(userInfoObject))
                 .remark(getStringValue(userInfoObject, "userdetail"))
-                .gender(AuthUserGender.getRealGender(getStringValue(userInfoObject, "sex")))
+                .gender(AuthUserGender.getRealGender(getStringValue(userInfoObject, Keys.SEX)))
                 .token(authToken)
                 .source(source.toString())
                 .build();

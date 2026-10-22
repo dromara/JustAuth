@@ -77,7 +77,7 @@ public class AuthWeiboRequest extends AuthDefaultRequest {
                 .avatar(getStringValue(userInfoObject, "profile_image_url"))
                 .blog(containsKey(userInfoObject, Keys.URL) ? "https://weibo.com/" + getStringValue(userInfoObject, "profile_url") : getStringValue(userInfoObject
                         , Keys.URL))
-                .nickname(getStringValue(userInfoObject, "screen_name"))
+                .nickname(getStringValue(userInfoObject, Keys.SCREENNAME))
                 .location(getStringValue(userInfoObject, Keys.LOCATION))
                 .remark(getStringValue(userInfoObject, Keys.DESCRIPTION))
                 .gender(AuthUserGender.getRealGender(getStringValue(userInfoObject, Keys.GENDER)))

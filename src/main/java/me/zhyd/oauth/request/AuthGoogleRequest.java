@@ -64,7 +64,7 @@ public class AuthGoogleRequest extends AuthDefaultRequest {
                 .rawUserInfo(userInfoObject)
                 .uuid(getStringValue(userInfoObject, "sub"))
                 .username(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
-                .avatar(getStringValue(userInfoObject, "picture"))
+                .avatar(getStringValue(userInfoObject, Keys.PICTURE))
                 .nickname(getStringValue(userInfoObject, Keys.NAME))
                 .location(getStringValue(userInfoObject, "locale"))
                 .email(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))

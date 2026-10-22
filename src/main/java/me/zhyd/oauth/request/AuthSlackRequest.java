@@ -71,7 +71,7 @@ public class AuthSlackRequest extends AuthDefaultRequest {
                 .get(userInfoUrl(authToken), null, header, false).getBody();
         JsonNode object = toNode(userInfo);
         this.checkResponse(object);
-        JsonNode user = getObjectNode(object, "user");
+        JsonNode user = getObjectNode(object, Keys.USER);
         JsonNode profile = getObjectNode(user, Keys.OAUTH2_SCOPE__PROFILE);
         return AuthUser.builder()
                 .rawUserInfo(user)
@@ -124,7 +124,7 @@ public class AuthSlackRequest extends AuthDefaultRequest {
     @Override
     public String userInfoUrl(AuthToken authToken) {
         return UrlBuilder.fromBaseUrl(source.userInfo())
-                .queryParam("user", authToken.getUid())
+                .queryParam(Keys.USER, authToken.getUid())
                 .build();
     }
 

@@ -34,6 +34,7 @@ public interface AuthCache {
 
     /**
      * 设置过期
+     *
      * @param key
      */
     void expire(String key);

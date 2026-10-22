@@ -1,11 +1,10 @@
 package me.zhyd.oauth.cache;
 
-import java.time.Duration;
-
-import org.apache.commons.lang3.StringUtils;
-
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import org.apache.commons.lang3.StringUtils;
+
+import java.time.Duration;
 
 /**
  * 默认的缓存实现
@@ -21,10 +20,10 @@ public class AuthDefaultCache implements AuthCache {
     private static Cache<String, String> stateCache = null;
 
     public AuthDefaultCache() {
-    		stateCache = Caffeine.newBuilder()
-    				.maximumSize(10_000)
-    				.expireAfterWrite(Duration.ofMinutes(AuthCacheConfig.timeout))
-    				.build();
+        stateCache = Caffeine.newBuilder()
+                .maximumSize(10_000)
+                .expireAfterWrite(Duration.ofMinutes(AuthCacheConfig.timeout))
+                .build();
     }
 
     /**
@@ -35,7 +34,7 @@ public class AuthDefaultCache implements AuthCache {
      */
     @Override
     public void set(String key, String value) {
-    		stateCache.put(key, value);
+        stateCache.put(key, value);
     }
 
     /**
@@ -46,7 +45,7 @@ public class AuthDefaultCache implements AuthCache {
      */
     @Override
     public String get(String key) {
-    		return stateCache.getIfPresent(key);
+        return stateCache.getIfPresent(key);
     }
 
     /**
@@ -57,16 +56,16 @@ public class AuthDefaultCache implements AuthCache {
      */
     @Override
     public boolean containsKey(String key) {
-    		String value = stateCache.getIfPresent(key);
-    		return StringUtils.isNotBlank(value);
+        String value = stateCache.getIfPresent(key);
+        return StringUtils.isNotBlank(value);
     }
 
     /**
      * Discards any cached value for the key
      */
-	@Override
-	public void expire(String key) {
-		stateCache.invalidate(key);
-	}
+    @Override
+    public void expire(String key) {
+        stateCache.invalidate(key);
+    }
 
 }

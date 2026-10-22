@@ -15,7 +15,10 @@ import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
-import me.zhyd.oauth.utils.*;
+import me.zhyd.oauth.utils.AuthChecker;
+import me.zhyd.oauth.utils.JsonNodeUtils;
+import me.zhyd.oauth.utils.JsonUtils;
+import me.zhyd.oauth.utils.UuidUtils;
 import org.apache.commons.lang3.StringUtils;
 import tools.jackson.databind.JsonNode;
 

@@ -77,7 +77,7 @@ public class AuthQQMiniProgramRequest extends AuthDefaultRequest {
     protected String accessTokenUrl(String code) {
         return UrlBuilder.fromBaseUrl(source.accessToken())
                 .queryParam(Keys.APPID, config.getClientId())
-                .queryParam("secret", config.getClientSecret())
+                .queryParam(Keys.PARAM__SECRET, config.getClientSecret())
                 .queryParam("js_code", code)
                 .queryParam(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE)
                 .build();

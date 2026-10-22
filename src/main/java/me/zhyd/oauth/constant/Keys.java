@@ -30,23 +30,32 @@ public interface Keys {
     String OAUTH2_SCOPE__PHONE = "phone";
     String OAUTH2_SCOPE__PROFILE = "profile";
 
+    String DATA = "data";
+    String RESULT = "result";
 
     String AVATAR = "avatar";
     String AVATAR_URL = "avatar_url";
-    String COMPANY = "company";
-    String DATA = "data";
     String DESCRIPTION = "description";
     String ERROR = "error";
     String ERROR_CODE = "error_code";
     String ERROR_DESCRIPTION = "error_description";
     String GENDER = "gender";
-    String LOCATION = "location";
+    String LANG = "lang";
     String MESSAGE = "message";
     String NAME = "name";
     String NICKNAME = "nickname";
-    String RESULT = "result";
+    String PICTURE = "picture";
+    String SCREENNAME = "screen_name";
+    String SEX = "sex";
     String URL = "url";
+    String USER = "user";
     String USERNAME = "username";
+
+    String CITY = "city";
+    String COMPANY = "company";
+    String COUNTRY = "country";
+    String LOCATION = "location";
+    String PROVINCE = "province";
 
     String APPID = "appid";
     String ID = "id";
@@ -58,7 +67,14 @@ public interface Keys {
     String VARIANT__APP_KEY = "app_key";
     String VARIANT__OPEN_ID = "open_id";
     String VARIANT__UNION_ID = "union_id";
+    String VARIANT__DISPLAY_NAME = "displayName";
     String VARIANT__USER_ID = "user_id";
     String VARIANT__ERRCODE = "errcode";
     String VARIANT__ERRMSG = "errmsg";
+    String VARIANT__ERR_NO = "error_no";
+    String VARIANT__ERR_DESC = "error_desc";
+
+    String PARAM__CLIENT_ID = "clientId";
+    String PARAM__CLIENT_SECRET = "clientSecret";
+    String PARAM__SECRET = "secret";
 }

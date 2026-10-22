@@ -143,7 +143,7 @@ public class AuthMiRequest extends AuthDefaultRequest {
     @Override
     protected String userInfoUrl(AuthToken authToken) {
         return UrlBuilder.fromBaseUrl(source.userInfo())
-                .queryParam("clientId", config.getClientId())
+                .queryParam(Keys.PARAM__CLIENT_ID, config.getClientId())
                 .queryParam("token", authToken.getAccessToken())
                 .build();
     }

@@ -100,7 +100,7 @@ public abstract class AbstractAuthMicrosoftRequest extends AuthDefaultRequest {
                 .rawUserInfo(userInfoObject)
                 .uuid(getStringValue(userInfoObject, Keys.ID))
                 .username(getStringValue(userInfoObject, "userPrincipalName"))
-                .nickname(getStringValue(userInfoObject, "displayName"))
+                .nickname(getStringValue(userInfoObject, Keys.VARIANT__DISPLAY_NAME))
                 .location(getStringValue(userInfoObject, "officeLocation"))
                 .email(getStringValue(userInfoObject, "mail"))
                 .gender(AuthUserGender.UNKNOWN)

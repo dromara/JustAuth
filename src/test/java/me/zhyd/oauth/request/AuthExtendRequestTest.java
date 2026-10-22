@@ -23,8 +23,8 @@ public class AuthExtendRequestTest {
     @Test
     public void authorize() {
         AuthRequest request = new AuthExtendRequest(AuthConfig.builder()
-                .clientId("clientId")
-                .clientSecret("clientSecret")
+                .clientId(Keys.PARAM__CLIENT_ID)
+                .clientSecret(Keys.PARAM__CLIENT_SECRET)
                 .redirectUri("http://redirectUri")
                 .build());
         String authorize = request.authorize(AuthStateUtils.createState());
@@ -35,8 +35,8 @@ public class AuthExtendRequestTest {
     @Test
     public void login() {
         AuthRequest request = new AuthExtendRequest(AuthConfig.builder()
-                .clientId("clientId")
-                .clientSecret("clientSecret")
+                .clientId(Keys.PARAM__CLIENT_ID)
+                .clientSecret(Keys.PARAM__CLIENT_SECRET)
                 .redirectUri("http://redirectUri")
                 .build());
 
@@ -57,8 +57,8 @@ public class AuthExtendRequestTest {
     @Test
     public void revoke() {
         AuthRequest request = new AuthExtendRequest(AuthConfig.builder()
-                .clientId("clientId")
-                .clientSecret("clientSecret")
+                .clientId(Keys.PARAM__CLIENT_ID)
+                .clientSecret(Keys.PARAM__CLIENT_SECRET)
                 .redirectUri("http://redirectUri")
                 .build());
 
@@ -70,8 +70,8 @@ public class AuthExtendRequestTest {
     @Test
     public void refresh() {
         AuthRequest request = new AuthExtendRequest(AuthConfig.builder()
-                .clientId("clientId")
-                .clientSecret("clientSecret")
+                .clientId(Keys.PARAM__CLIENT_ID)
+                .clientSecret(Keys.PARAM__CLIENT_SECRET)
                 .redirectUri("http://redirectUri")
                 .build());
 

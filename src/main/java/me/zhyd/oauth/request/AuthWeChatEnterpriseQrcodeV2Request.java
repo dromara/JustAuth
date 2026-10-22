@@ -38,7 +38,7 @@ public class AuthWeChatEnterpriseQrcodeV2Request extends AbstractAuthWeChatEnter
                 .queryParam("agentid", config.getAgentId())
                 .queryParam(Keys.OAUTH2__REDIRECT_URI, GlobalAuthUtils.urlEncode(config.getRedirectUri()))
                 .queryParam(Keys.OAUTH2__STATE, getRealState(state))
-                .queryParam("lang", config.getLang())
+                .queryParam(Keys.LANG, config.getLang())
                 .build()
                 .concat("#wechat_redirect");
     }

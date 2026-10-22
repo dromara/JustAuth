@@ -134,7 +134,7 @@ public class GlobalAuthUtilsTest {
 
         Map<String, String> queryParams = new HashMap<>();
         queryParams.put(Keys.VARIANT__USER_ID, authToken.getUserId());
-        queryParams.put("screen_name", authToken.getScreenName());
+        queryParams.put(Keys.SCREENNAME, authToken.getScreenName());
         queryParams.put("include_entities", Boolean.toString(true));
 
         Map<String, String> params = new HashMap<>(queryParams);
@@ -157,7 +157,7 @@ public class GlobalAuthUtilsTest {
     public void treemap() {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put(Keys.VARIANT__USER_ID, "1");
-        parameters.put("screen_name", "222");
+        parameters.put(Keys.SCREENNAME, "222");
         parameters.put("a", "222");
         parameters.put("include_entities", Boolean.toString(true));
         final Map<String, Object> sorted = new TreeMap<>(parameters);
@@ -175,7 +175,7 @@ public class GlobalAuthUtilsTest {
     public void parseMapToString() {
         Map<String, String> parameters = new HashMap<>();
         parameters.put(Keys.VARIANT__USER_ID, "1");
-        parameters.put("screen_name", "史上最全的第三方授权登录库");
+        parameters.put(Keys.SCREENNAME, "史上最全的第三方授权登录库");
         parameters.put("include_entities", Boolean.toString(true));
         Assertions.assertEquals("user_id=1&screen_name=史上最全的第三方授权登录库&include_entities=true", GlobalAuthUtils.parseMapToString(parameters, false));
         Assertions.assertEquals("user_id=1&screen_name=%E5%8F%B2%E4%B8%8A%E6%9C%80%E5%85%A8%E7%9A%84%E7%AC%AC%E4%B8%89%E6%96%B9%E6%8E%88%E6%9D%83%E7%99%BB%E5%BD%95%E5%BA%93&include_entities=true", GlobalAuthUtils.parseMapToString(parameters, true));

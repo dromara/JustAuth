@@ -9,11 +9,7 @@ import me.zhyd.oauth.enums.AuthResponseStatus;
 import me.zhyd.oauth.enums.AuthUserGender;
 import me.zhyd.oauth.enums.scope.AuthAmazonScope;
 import me.zhyd.oauth.exception.AuthException;
-import me.zhyd.oauth.http.HttpConstants;
-import me.zhyd.oauth.http.HttpHeader;
-import me.zhyd.oauth.http.HttpUrlEncoding;
-import me.zhyd.oauth.http.UnifiedHttpClient;
-import me.zhyd.oauth.http.UrlBuilder;
+import me.zhyd.oauth.http.*;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
@@ -184,7 +180,7 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
     protected String userInfoUrl(AuthToken authToken) {
         return UrlBuilder.fromBaseUrl(source.userInfo())
                 .queryParam(Keys.VARIANT__USER_ID, authToken.getUserId())
-                .queryParam("screen_name", authToken.getScreenName())
+                .queryParam(Keys.SCREENNAME, authToken.getScreenName())
                 .queryParam("include_entities", true)
                 .build();
     }

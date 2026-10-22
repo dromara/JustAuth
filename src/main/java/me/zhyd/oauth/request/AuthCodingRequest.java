@@ -62,7 +62,7 @@ public class AuthCodingRequest extends AuthDefaultRequest {
                 .nickname(getStringValue(userInfoObject, Keys.NAME))
                 .company(getStringValue(userInfoObject, Keys.COMPANY))
                 .location(getStringValue(userInfoObject, Keys.LOCATION))
-                .gender(AuthUserGender.getRealGender(getStringValue(userInfoObject, "sex")))
+                .gender(AuthUserGender.getRealGender(getStringValue(userInfoObject, Keys.SEX)))
                 .email(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
                 .remark(getStringValue(userInfoObject, "slogan"))
                 .token(authToken)

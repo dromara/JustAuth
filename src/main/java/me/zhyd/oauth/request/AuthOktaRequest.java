@@ -102,7 +102,7 @@ public class AuthOktaRequest extends AuthDefaultRequest {
                 .nickname(getStringValue(userInfoObject, Keys.NICKNAME))
                 .email(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
                 .location(null == address ? null : getStringValue(address, "street_address"))
-                .gender(AuthUserGender.getRealGender(getStringValue(userInfoObject, "sex")))
+                .gender(AuthUserGender.getRealGender(getStringValue(userInfoObject, Keys.SEX)))
                 .token(authToken)
                 .source(source.toString())
                 .build();

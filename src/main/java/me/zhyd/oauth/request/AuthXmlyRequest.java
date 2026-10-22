@@ -27,6 +27,8 @@ import java.util.TreeMap;
  */
 public class AuthXmlyRequest extends AuthDefaultRequest {
 
+    private static final String DEVICE_ID = "device_id";
+
     public AuthXmlyRequest(AuthConfig config) {
         super(config, AuthDefaultSource.XMLY);
     }
@@ -49,7 +51,7 @@ public class AuthXmlyRequest extends AuthDefaultRequest {
         params.put(Keys.OAUTH2__CODE, authCallback.getCode());
         params.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
         params.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
-        params.put("device_id", config.getDeviceId());
+        params.put(DEVICE_ID, config.getDeviceId());
         params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
         params.put(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri());
         String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), params, true).getBody();
@@ -80,7 +82,7 @@ public class AuthXmlyRequest extends AuthDefaultRequest {
                 .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
                 .queryParam(Keys.OAUTH2__STATE, getRealState(state))
                 .queryParam("client_os_type", "3")
-                .queryParam("device_id", config.getDeviceId())
+                .queryParam(DEVICE_ID, config.getDeviceId())
                 .build();
     }
 
@@ -97,7 +99,7 @@ public class AuthXmlyRequest extends AuthDefaultRequest {
         Map<String, String> params = new TreeMap<>();
         params.put(Keys.VARIANT__APP_KEY, config.getClientId());
         params.put("client_os_type", Optional.ofNullable(config.getClientOsType()).orElse(3).toString());
-        params.put("device_id", config.getDeviceId());
+        params.put(DEVICE_ID, config.getDeviceId());
         params.put("pack_id", config.getPackId());
         params.put(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken());
         params.put("sig", GlobalAuthUtils.generateXmlySignature(params, config.getClientSecret()));
@@ -124,7 +126,7 @@ public class AuthXmlyRequest extends AuthDefaultRequest {
      */
     private void checkResponse(JsonNode jsonNode) {
         if (containsKey(jsonNode, Keys.VARIANT__ERRCODE)) {
-            throw new AuthException(getIntValue(jsonNode, "error_no"), getStringValue(jsonNode, "error_desc"));
+            throw new AuthException(getIntValue(jsonNode, Keys.VARIANT__ERR_NO), getStringValue(jsonNode, Keys.VARIANT__ERR_DESC));
         }
     }
 }

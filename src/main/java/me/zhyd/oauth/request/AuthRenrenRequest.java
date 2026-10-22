@@ -76,7 +76,7 @@ public class AuthRenrenRequest extends AuthDefaultRequest {
             throw new AuthException("Failed to get token from Renren: " + accessTokenObject.toString());
         }
 
-        JsonNode userObject = getObjectNode(accessTokenObject, "user");
+        JsonNode userObject = getObjectNode(accessTokenObject, Keys.USER);
 
         return AuthToken.builder()
                 .accessToken(HttpUrlEncoding.encode(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN)))
@@ -100,7 +100,7 @@ public class AuthRenrenRequest extends AuthDefaultRequest {
         if (Objects.isNull(basicInformation)) {
             return AuthUserGender.UNKNOWN;
         }
-        return AuthUserGender.getRealGender(getStringValue(basicInformation, "sex"));
+        return AuthUserGender.getRealGender(getStringValue(basicInformation, Keys.SEX));
     }
 
     private String getCompany(JsonNode userObj) {

@@ -52,8 +52,8 @@ public enum AuthDefaultStateCache implements AuthStateCache {
         return authCache.containsKey(key);
     }
 
-	@Override
-	public void expire(String key) {
-		authCache.expire(key);
-	}
+    @Override
+    public void expire(String key) {
+        authCache.expire(key);
+    }
 }

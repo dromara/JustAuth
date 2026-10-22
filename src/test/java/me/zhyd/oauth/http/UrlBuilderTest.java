@@ -1,9 +1,8 @@
-package me.zhyd.oauth.utils;
+package me.zhyd.oauth.http;
 
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
 import me.zhyd.oauth.constant.Keys;
-import me.zhyd.oauth.http.UrlBuilder;
 import me.zhyd.oauth.request.AuthWeChatOpenRequest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

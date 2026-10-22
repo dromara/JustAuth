@@ -70,8 +70,8 @@ public class AuthFacebookRequest extends AuthDefaultRequest {
 
     private String getUserPicture(JsonNode object) {
         String picture = null;
-        if (containsKey(object, "picture")) {
-            JsonNode pictureObj = getObjectNode(object, "picture");
+        if (containsKey(object, Keys.PICTURE)) {
+            JsonNode pictureObj = getObjectNode(object, Keys.PICTURE);
             JsonNode dataObject = getDataNode(pictureObj);
             if (null != dataObject) {
                 picture = getStringValue(dataObject, Keys.URL);

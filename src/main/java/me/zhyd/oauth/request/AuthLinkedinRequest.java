@@ -163,7 +163,7 @@ public class AuthLinkedinRequest extends AuthDefaultRequest {
         JsonNode firstNameObj = getObjectNode(userInfoObject, nameKey);
         JsonNode localizedObj = getObjectNode(firstNameObj, "localized");
         JsonNode preferredLocaleObj = getObjectNode(firstNameObj, "preferredLocale");
-        firstName = getStringValue(localizedObj, getStringValue(preferredLocaleObj, "language") + "_" + getStringValue(preferredLocaleObj, "country"));
+        firstName = getStringValue(localizedObj, getStringValue(preferredLocaleObj, "language") + "_" + getStringValue(preferredLocaleObj, Keys.COUNTRY));
         return firstName;
     }
 
