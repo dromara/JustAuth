@@ -54,7 +54,7 @@
 
         <maven.test.skip>false</maven.test.skip>
 
-        <central-publishing-maven-plugin.version>0.10.0</central-publishing-maven-plugin.version>
+        <central-publishing-maven-plugin.version>0.12.0</central-publishing-maven-plugin.version>
         <maven-compiler-plugin.version>3.14.1</maven-compiler-plugin.version>
         <maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
         <maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
@@ -321,6 +321,8 @@
                         <!-- 注意 Github Action 中的 server-id 也要与此保持一致 -->
                         <publishingServerId>sonatype-nexus-staging</publishingServerId>
                         <autoPublish>true</autoPublish>
+                        <!-- 发布时仅生成 MD5, SHA1，SHA256和SHA512将不会生成 -->
+                        <checksums>required</checksums>
                     </configuration>
                 </plugin>
             </plugins>
