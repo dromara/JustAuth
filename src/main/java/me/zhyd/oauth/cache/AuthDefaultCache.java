@@ -125,10 +125,10 @@ public class AuthDefaultCache implements AuthCache {
     @Setter
     private class CacheState implements Serializable {
         /**
-		 * 
-		 */
-		private static final long serialVersionUID = -6321264028875186684L;
-		private String state;
+         *
+         */
+        private static final long serialVersionUID = -6321264028875186684L;
+        private String state;
         private long expire;
 
         CacheState(String state, long expire) {

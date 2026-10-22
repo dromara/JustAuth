@@ -1,7 +1,5 @@
 package me.zhyd.oauth.request;
 
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONObject;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthSource;
@@ -13,7 +11,12 @@ import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.GlobalAuthUtils;
+import me.zhyd.oauth.utils.JsonUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
+import tools.jackson.databind.JsonNode;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * <p>
@@ -42,23 +45,26 @@ public abstract class AbstractAuthDingtalkRequest extends AuthDefaultRequest {
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
         String code = authToken.getAccessCode();
-        JSONObject param = new JSONObject();
+
+        Map<String, Object> param = new HashMap<>();
         param.put("tmp_auth_code", code);
-        String response = UnifiedHttpClient.getAdapter().post(userInfoUrl(authToken), param.toJSONString()).getBody();
-        JSONObject object = JSON.parseObject(response);
-        if (object.getIntValue(Keys.VARIANT__ERRCODE) != 0) {
-            throw new AuthException(object.getString(Keys.VARIANT__ERRMSG));
+
+        String response = UnifiedHttpClient.getAdapter().post(userInfoUrl(authToken), JsonUtils.toJson(param)).getBody();
+        JsonNode object = toNode(response);
+        if (getIntValue(object, Keys.VARIANT__ERRCODE) != 0) {
+            throw new AuthException(getStringValue(object, Keys.VARIANT__ERRMSG));
         }
-        object = object.getJSONObject("user_info");
+
+        JsonNode userInfoObject = getObjectNode(object, "user_info");
         AuthToken token = AuthToken.builder()
-                .openId(object.getString(Keys.OAUTH2_SCOPE__OPENID))
-                .unionId(object.getString(Keys.UNIONID))
+                .openId(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__OPENID))
+                .unionId(getStringValue(userInfoObject, Keys.UNIONID))
                 .build();
         return AuthUser.builder()
-                .rawUserInfo(object)
-                .uuid(object.getString(Keys.UNIONID))
-                .nickname(object.getString("nick"))
-                .username(object.getString("nick"))
+                .rawUserInfo(userInfoObject)
+                .uuid(getStringValue(userInfoObject, Keys.UNIONID))
+                .nickname(getStringValue(userInfoObject, "nick"))
+                .username(getStringValue(userInfoObject, "nick"))
                 .gender(AuthUserGender.UNKNOWN)
                 .source(source.toString())
                 .token(token)
@@ -75,11 +81,11 @@ public abstract class AbstractAuthDingtalkRequest extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(source.authorize())
-                .queryParam(Keys.OAUTH2_RESPONSE_TYPE, Keys.OAUTH2_CODE)
+                .queryParam(Keys.OAUTH2__RESPONSE_TYPE, Keys.OAUTH2__CODE)
                 .queryParam(Keys.APPID, config.getClientId())
-                .queryParam(Keys.OAUTH2_SCOPE, "snsapi_login")
-                .queryParam(Keys.OAUTH2_REDIRECT_URI, config.getRedirectUri())
-                .queryParam(Keys.OAUTH2_STATE, getRealState(state))
+                .queryParam(Keys.OAUTH2__SCOPE, "snsapi_login")
+                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2__STATE, getRealState(state))
                 .build();
     }
 

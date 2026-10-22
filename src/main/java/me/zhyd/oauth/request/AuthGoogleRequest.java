@@ -1,6 +1,5 @@
 package me.zhyd.oauth.request;
 
-import com.alibaba.fastjson2.JSONObject;
 import com.google.common.net.HttpHeaders;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
@@ -17,6 +16,7 @@ import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
 import me.zhyd.oauth.utils.TokenUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Google登录
@@ -37,14 +37,15 @@ public class AuthGoogleRequest extends AuthDefaultRequest {
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
         String response = doPostAuthorizationCode(authCallback.getCode());
-        JSONObject accessTokenObject = JSONObject.parseObject(response);
+        JsonNode accessTokenObject = toNode(response);
+
         this.checkResponse(accessTokenObject);
         return AuthToken.builder()
-                .accessToken(accessTokenObject.getString(Keys.OAUTH2_ACCESS_TOKEN))
-                .expireIn(accessTokenObject.getIntValue(Keys.OAUTH2_EXPIRES_IN))
-                .scope(accessTokenObject.getString(Keys.OAUTH2_SCOPE))
-                .tokenType(accessTokenObject.getString(Keys.OAUTH2_TOKEN_TYPE))
-                .idToken(accessTokenObject.getString(Keys.OIDC_ID_TOKEN))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
+                .scope(getStringValue(accessTokenObject, Keys.OAUTH2__SCOPE))
+                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
+                .idToken(getStringValue(accessTokenObject, Keys.OIDC__ID_TOKEN))
                 .build();
     }
 
@@ -53,16 +54,16 @@ public class AuthGoogleRequest extends AuthDefaultRequest {
         HttpHeader httpHeader = new HttpHeader();
         httpHeader.add(HttpHeaders.AUTHORIZATION, TokenUtils.bearer(authToken.getAccessToken()));
         String userInfo = UnifiedHttpClient.getAdapter().post(userInfoUrl(authToken), null, httpHeader).getBody();
-        JSONObject object = JSONObject.parseObject(userInfo);
+        JsonNode object = toNode(userInfo);
         this.checkResponse(object);
         return AuthUser.builder()
                 .rawUserInfo(object)
-                .uuid(object.getString("sub"))
-                .username(object.getString(Keys.OAUTH2_SCOPE__EMAIL))
-                .avatar(object.getString("picture"))
-                .nickname(object.getString(Keys.NAME))
-                .location(object.getString("locale"))
-                .email(object.getString(Keys.OAUTH2_SCOPE__EMAIL))
+                .uuid(getStringValue(object, "sub"))
+                .username(getStringValue(object, Keys.OAUTH2_SCOPE__EMAIL))
+                .avatar(getStringValue(object, "picture"))
+                .nickname(getStringValue(object, Keys.NAME))
+                .location(getStringValue(object, "locale"))
+                .email(getStringValue(object, Keys.OAUTH2_SCOPE__EMAIL))
                 .gender(AuthUserGender.UNKNOWN)
                 .token(authToken)
                 .source(source.toString())
@@ -80,7 +81,7 @@ public class AuthGoogleRequest extends AuthDefaultRequest {
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(super.authorize(state))
                 .queryParam("access_type", "offline")
-                .queryParam(Keys.OAUTH2_SCOPE, this.getScopes(" ", false, AuthScopeUtils.getDefaultScopes(AuthGoogleScope.values())))
+                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(" ", false, AuthScopeUtils.getDefaultScopes(AuthGoogleScope.values())))
                 .queryParam("prompt", "select_account")
                 .build();
     }
@@ -93,7 +94,7 @@ public class AuthGoogleRequest extends AuthDefaultRequest {
      */
     @Override
     protected String userInfoUrl(AuthToken authToken) {
-        return UrlBuilder.fromBaseUrl(source.userInfo()).queryParam(Keys.OAUTH2_ACCESS_TOKEN, authToken.getAccessToken()).build();
+        return UrlBuilder.fromBaseUrl(source.userInfo()).queryParam(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken()).build();
     }
 
     /**
@@ -101,9 +102,9 @@ public class AuthGoogleRequest extends AuthDefaultRequest {
      *
      * @param object 请求响应内容
      */
-    private void checkResponse(JSONObject object) {
-        if (object.containsKey(Keys.ERROR) || object.containsKey(Keys.ERROR_DESCRIPTION)) {
-            throw new AuthException(object.containsKey(Keys.ERROR) + ":" + object.getString(Keys.ERROR_DESCRIPTION));
+    private void checkResponse(JsonNode object) {
+        if (containsKey(object, Keys.ERROR) || containsKey(object, Keys.ERROR_DESCRIPTION)) {
+            throw new AuthException(containsKey(object, Keys.ERROR) + ":" + getStringValue(object, Keys.ERROR_DESCRIPTION));
         }
     }
 }

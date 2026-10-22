@@ -1,6 +1,5 @@
 package me.zhyd.oauth.request;
 
-import com.alibaba.fastjson2.JSONObject;
 import com.google.common.net.HttpHeaders;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
@@ -16,6 +15,7 @@ import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.TokenUtils;
+import tools.jackson.databind.JsonNode;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,19 +43,19 @@ public class AuthTeambitionRequest extends AuthDefaultRequest {
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
         Map<String, String> form = new HashMap<>(7);
-        form.put(Keys.OAUTH2_CLIENT_ID, config.getClientId());
-        form.put(Keys.OAUTH2_CLIENT_SECRET, config.getClientSecret());
-        form.put(Keys.OAUTH2_CODE, authCallback.getCode());
-        form.put(Keys.OAUTH2_GRANT_TYPE, Keys.OAUTH2_CODE);
+        form.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
+        form.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
+        form.put(Keys.OAUTH2__CODE, authCallback.getCode());
+        form.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__CODE);
 
         String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), form, false).getBody();
-        JSONObject accessTokenObject = JSONObject.parseObject(response);
+        JsonNode accessTokenObject = toNode(response);
 
         this.checkResponse(accessTokenObject);
 
         return AuthToken.builder()
-                .accessToken(accessTokenObject.getString(Keys.OAUTH2_ACCESS_TOKEN))
-                .refreshToken(accessTokenObject.getString(Keys.OAUTH2_REFRESH_TOKEN))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
                 .build();
     }
 
@@ -67,21 +67,21 @@ public class AuthTeambitionRequest extends AuthDefaultRequest {
         httpHeader.add(HttpHeaders.AUTHORIZATION, TokenUtils.oauth2(accessToken));
 
         String response = UnifiedHttpClient.getAdapter().get(source.userInfo(), null, httpHeader, false).getBody();
-        JSONObject object = JSONObject.parseObject(response);
 
-        this.checkResponse(object);
+        JsonNode userInfoObject = toNode(response);
+        this.checkResponse(userInfoObject);
 
-        authToken.setUid(object.getString("_id"));
+        authToken.setUid(getStringValue(userInfoObject, "_id"));
 
         return AuthUser.builder()
-                .rawUserInfo(object)
-                .uuid(object.getString("_id"))
-                .username(object.getString(Keys.NAME))
-                .nickname(object.getString(Keys.NAME))
-                .avatar(object.getString("avatarUrl"))
-                .blog(object.getString("website"))
-                .location(object.getString(Keys.LOCATION))
-                .email(object.getString(Keys.OAUTH2_SCOPE__EMAIL))
+                .rawUserInfo(userInfoObject)
+                .uuid(getStringValue(userInfoObject, "_id"))
+                .username(getStringValue(userInfoObject, Keys.NAME))
+                .nickname(getStringValue(userInfoObject, Keys.NAME))
+                .avatar(getStringValue(userInfoObject, "avatarUrl"))
+                .blog(getStringValue(userInfoObject, "website"))
+                .location(getStringValue(userInfoObject, Keys.LOCATION))
+                .email(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
                 .gender(AuthUserGender.UNKNOWN)
                 .token(authToken)
                 .source(source.toString())
@@ -95,17 +95,17 @@ public class AuthTeambitionRequest extends AuthDefaultRequest {
 
         Map<String, String> form = new HashMap<>(4);
         form.put("_userId", uid);
-        form.put(Keys.OAUTH2_REFRESH_TOKEN, refreshToken);
+        form.put(Keys.OAUTH2__REFRESH_TOKEN, refreshToken);
         String response = UnifiedHttpClient.getAdapter().post(source.refresh(), form, false).getBody();
-        JSONObject refreshTokenObject = JSONObject.parseObject(response);
 
+        JsonNode refreshTokenObject = toNode(response);
         this.checkResponse(refreshTokenObject);
 
         return AuthResponse.<AuthToken>builder()
                 .code(AuthResponseStatus.SUCCESS.getCode())
                 .data(AuthToken.builder()
-                        .accessToken(refreshTokenObject.getString(Keys.OAUTH2_ACCESS_TOKEN))
-                        .refreshToken(refreshTokenObject.getString(Keys.OAUTH2_REFRESH_TOKEN))
+                        .accessToken(getStringValue(refreshTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
+                        .refreshToken(getStringValue(refreshTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
                         .build())
                 .build();
     }
@@ -115,9 +115,9 @@ public class AuthTeambitionRequest extends AuthDefaultRequest {
      *
      * @param object 请求响应内容
      */
-    private void checkResponse(JSONObject object) {
-        if ((object.containsKey(Keys.MESSAGE) && object.containsKey(Keys.NAME))) {
-            throw new AuthException(object.getString(Keys.NAME) + ", " + object.getString(Keys.MESSAGE));
+    private void checkResponse(JsonNode object) {
+        if ((containsKey(object, Keys.MESSAGE) && containsKey(object, Keys.NAME))) {
+            throw new AuthException(getStringValue(object, Keys.NAME) + ", " + getStringValue(object, Keys.MESSAGE));
         }
     }
 }

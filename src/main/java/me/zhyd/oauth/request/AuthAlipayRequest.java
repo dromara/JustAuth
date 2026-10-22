@@ -1,6 +1,5 @@
 package me.zhyd.oauth.request;
 
-import com.alibaba.fastjson2.JSONObject;
 import com.alipay.api.AlipayApiException;
 import com.alipay.api.AlipayClient;
 import com.alipay.api.DefaultAlipayClient;
@@ -21,11 +20,11 @@ import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthChecker;
 import me.zhyd.oauth.utils.GlobalAuthUtils;
+import me.zhyd.oauth.utils.JsonUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
+import org.apache.commons.lang3.StringUtils;
 
 import java.net.InetSocketAddress;
-
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * 支付宝公钥模式登录
@@ -179,7 +178,7 @@ public class AuthAlipayRequest extends AuthDefaultRequest {
     @Override
     public AuthResponse<AuthToken> refresh(AuthToken authToken) {
         AlipaySystemOauthTokenRequest request = new AlipaySystemOauthTokenRequest();
-        request.setGrantType(Keys.OAUTH2_REFRESH_TOKEN);
+        request.setGrantType(Keys.OAUTH2__REFRESH_TOKEN);
         request.setRefreshToken(authToken.getRefreshToken());
         AlipaySystemOauthTokenResponse response = null;
         try {
@@ -219,7 +218,7 @@ public class AuthAlipayRequest extends AuthDefaultRequest {
         String location = String.format("%s %s", StringUtils.isEmpty(province) ? "" : province, StringUtils.isEmpty(city) ? "" : city);
 
         return AuthUser.builder()
-                .rawUserInfo(JSONObject.parseObject(JSONObject.toJSONString(response)))
+                .rawUserInfo(toNode(JsonUtils.toJson(response)))
                 .uuid(response.getUserId())
                 .username(StringUtils.isEmpty(response.getUserName()) ? response.getNickName() : response.getUserName())
                 .nickname(response.getNickName())
@@ -242,9 +241,9 @@ public class AuthAlipayRequest extends AuthDefaultRequest {
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(source.authorize())
                 .queryParam(Keys.VARIANT__APP_ID, config.getClientId())
-                .queryParam(Keys.OAUTH2_SCOPE, "auth_user")
-                .queryParam(Keys.OAUTH2_REDIRECT_URI, config.getRedirectUri())
-                .queryParam(Keys.OAUTH2_STATE, getRealState(state))
+                .queryParam(Keys.OAUTH2__SCOPE, "auth_user")
+                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2__STATE, getRealState(state))
                 .build();
     }
 }

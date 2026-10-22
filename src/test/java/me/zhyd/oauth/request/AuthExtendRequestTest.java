@@ -23,10 +23,10 @@ public class AuthExtendRequestTest {
     @Test
     public void authorize() {
         AuthRequest request = new AuthExtendRequest(AuthConfig.builder()
-            .clientId("clientId")
-            .clientSecret("clientSecret")
-            .redirectUri("http://redirectUri")
-            .build());
+                .clientId("clientId")
+                .clientSecret("clientSecret")
+                .redirectUri("http://redirectUri")
+                .build());
         String authorize = request.authorize(AuthStateUtils.createState());
         System.out.println(authorize);
         Assert.assertNotNull(authorize);
@@ -35,17 +35,17 @@ public class AuthExtendRequestTest {
     @Test
     public void login() {
         AuthRequest request = new AuthExtendRequest(AuthConfig.builder()
-            .clientId("clientId")
-            .clientSecret("clientSecret")
-            .redirectUri("http://redirectUri")
-            .build());
+                .clientId("clientId")
+                .clientSecret("clientSecret")
+                .redirectUri("http://redirectUri")
+                .build());
 
         String state = AuthStateUtils.createState();
         request.authorize(state);
         AuthCallback callback = AuthCallback.builder()
-            .code(Keys.OAUTH2_CODE)
-            .state(state)
-            .build();
+                .code(Keys.OAUTH2__CODE)
+                .state(state)
+                .build();
         AuthResponse<AuthUser> response = request.login(callback);
         Assert.assertNotNull(response);
 
@@ -57,10 +57,10 @@ public class AuthExtendRequestTest {
     @Test
     public void revoke() {
         AuthRequest request = new AuthExtendRequest(AuthConfig.builder()
-            .clientId("clientId")
-            .clientSecret("clientSecret")
-            .redirectUri("http://redirectUri")
-            .build());
+                .clientId("clientId")
+                .clientSecret("clientSecret")
+                .redirectUri("http://redirectUri")
+                .build());
 
         AuthResponse<?> response = request.revoke(AuthToken.builder().build());
         Assert.assertNotNull(response);
@@ -70,10 +70,10 @@ public class AuthExtendRequestTest {
     @Test
     public void refresh() {
         AuthRequest request = new AuthExtendRequest(AuthConfig.builder()
-            .clientId("clientId")
-            .clientSecret("clientSecret")
-            .redirectUri("http://redirectUri")
-            .build());
+                .clientId("clientId")
+                .clientSecret("clientSecret")
+                .redirectUri("http://redirectUri")
+                .build());
 
         AuthResponse<AuthToken> response = request.refresh(AuthToken.builder().build());
         Assert.assertNotNull(response);

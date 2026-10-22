@@ -3,10 +3,9 @@ package me.zhyd.oauth.config;
 import lombok.*;
 import me.zhyd.oauth.http.HttpConfig;
 import me.zhyd.oauth.model.AuthCallback;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * JustAuth配置类

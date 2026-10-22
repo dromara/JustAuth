@@ -19,46 +19,48 @@ public class UrlBuilderTest {
     @Test
     public void testUrlBuilder() {
         AuthConfig config = AuthConfig.builder()
-            .clientId("appid-110110110")
-            .clientSecret("secret-110110110")
-            .redirectUri("https://xkcoding.com")
-            .build();
+                .clientId("appid-110110110")
+                .clientSecret("secret-110110110")
+                .redirectUri("https://xkcoding.com")
+                .build();
         String build = UrlBuilder.fromBaseUrl(AuthDefaultSource.WECHAT_OPEN.authorize())
-            .queryParam(Keys.APPID, config.getClientId())
-            .queryParam(Keys.OAUTH2_REDIRECT_URI, config.getRedirectUri())
-            .queryParam(Keys.OAUTH2_RESPONSE_TYPE, Keys.OAUTH2_CODE)
-            .queryParam(Keys.OAUTH2_SCOPE, "snsapi_login")
-            .queryParam(Keys.OAUTH2_STATE, "")
-            .build(false);
+                .queryParam(Keys.APPID, config.getClientId())
+                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2__RESPONSE_TYPE, Keys.OAUTH2__CODE)
+                .queryParam(Keys.OAUTH2__SCOPE, "snsapi_login")
+                .queryParam(Keys.OAUTH2__STATE, "")
+                .build(false);
         System.out.println(build);
         AuthWeChatOpenRequest request = new AuthWeChatOpenRequest(config);
-        String authorize = request.authorize(Keys.OAUTH2_STATE);
+        String authorize = request.authorize(Keys.OAUTH2__STATE);
         System.out.println(authorize);
     }
 
     @Test
     public void build() {
         String url = UrlBuilder.fromBaseUrl("https://www.zhyd.me")
-            .queryParam(Keys.NAME, "yadong.zhang")
-            .build();
-        Assert.assertEquals(url, "https://www.zhyd.me?name=yadong.zhang");
+                .queryParam(Keys.NAME, "yadong.zhang")
+                .build();
+        Assert.assertEquals("https://www.zhyd.me?name=yadong.zhang", url);
 
-        url = UrlBuilder.fromBaseUrl(url)
-            .queryParam("github", "https://github.com/zhangyd-c")
-            .build();
-        Assert.assertEquals(url, "https://www.zhyd.me?name=yadong.zhang&github=https://github.com/zhangyd-c");
+        url = UrlBuilder.fromBaseUrl("https://www.zhyd.me")
+                .queryParam(Keys.NAME, "yadong.zhang")
+                .queryParam("github", "https://github.com/zhangyd-c")
+                .build();
+        Assert.assertEquals("https://www.zhyd.me?name=yadong.zhang&github=https://github.com/zhangyd-c", url);
     }
 
     @Test
     public void build1() {
         String url = UrlBuilder.fromBaseUrl("https://www.zhyd.me")
-            .queryParam(Keys.NAME, "yadong.zhang")
-            .build(true);
-        Assert.assertEquals(url, "https://www.zhyd.me?name=yadong.zhang");
+                .queryParam(Keys.NAME, "yadong.zhang")
+                .build(true);
+        Assert.assertEquals("https://www.zhyd.me?name=yadong.zhang", url);
 
-        url = UrlBuilder.fromBaseUrl(url)
-            .queryParam("github", "https://github.com/zhangyd-c")
-            .build(true);
-        Assert.assertEquals(url, "https://www.zhyd.me?name=yadong.zhang&github=https%3A%2F%2Fgithub.com%2Fzhangyd-c");
+        url = UrlBuilder.fromBaseUrl("https://www.zhyd.me")
+                .queryParam(Keys.NAME, "yadong.zhang")
+                .queryParam("github", "https://github.com/zhangyd-c")
+                .build(true);
+        Assert.assertEquals("https://www.zhyd.me?name=yadong.zhang&github=https%3A%2F%2Fgithub.com%2Fzhangyd-c", url);
     }
 }

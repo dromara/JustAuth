@@ -1,6 +1,5 @@
 package me.zhyd.oauth.request;
 
-import com.alibaba.fastjson2.JSONObject;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.constant.Keys;
@@ -17,6 +16,7 @@ import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
 import me.zhyd.oauth.utils.MapUtil;
 import me.zhyd.oauth.utils.UrlBuilder;
+import tools.jackson.databind.JsonNode;
 
 import java.util.Map;
 
@@ -46,34 +46,36 @@ public class AuthStackOverflowRequest extends AuthDefaultRequest {
         httpHeader.add(HttpConstants.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
         String response = UnifiedHttpClient.getAdapter().post(accessTokenUrl, form, httpHeader, false).getBody();
 
-        JSONObject accessTokenObject = JSONObject.parseObject(response);
+        JsonNode accessTokenObject = toNode(response);
         this.checkResponse(accessTokenObject);
 
         return AuthToken.builder()
-                .accessToken(accessTokenObject.getString(Keys.OAUTH2_ACCESS_TOKEN))
-                .expireIn(accessTokenObject.getIntValue("expires"))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, "expires"))
                 .build();
     }
 
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
         String userInfoUrl = UrlBuilder.fromBaseUrl(this.source.userInfo())
-                .queryParam(Keys.OAUTH2_ACCESS_TOKEN, authToken.getAccessToken())
+                .queryParam(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken())
                 .queryParam("site", "stackoverflow")
                 .queryParam("key", this.config.getStackOverflowKey())
                 .build();
         String response = UnifiedHttpClient.getAdapter().get(userInfoUrl).getBody();
-        JSONObject object = JSONObject.parseObject(response);
+        JsonNode object = toNode(response);
         this.checkResponse(object);
-        JSONObject userObj = object.getJSONArray("items").getJSONObject(0);
+
+        JsonNode items = getArrayNode(object, "items");
+        JsonNode userInfoObject = items.asArray().get(0);
 
         return AuthUser.builder()
-                .rawUserInfo(userObj)
-                .uuid(userObj.getString(Keys.VARIANT__USER_ID))
-                .avatar(userObj.getString("profile_image"))
-                .location(userObj.getString(Keys.LOCATION))
-                .nickname(userObj.getString("display_name"))
-                .blog(userObj.getString("website_url"))
+                .rawUserInfo(userInfoObject)
+                .uuid(getStringValue(userInfoObject, Keys.VARIANT__USER_ID))
+                .avatar(getStringValue(userInfoObject, "profile_image"))
+                .location(getStringValue(userInfoObject, Keys.LOCATION))
+                .nickname(getStringValue(userInfoObject, "display_name"))
+                .blog(getStringValue(userInfoObject, "website_url"))
                 .gender(AuthUserGender.UNKNOWN)
                 .token(authToken)
                 .source(source.toString())
@@ -90,7 +92,7 @@ public class AuthStackOverflowRequest extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(super.authorize(state))
-                .queryParam(Keys.OAUTH2_SCOPE, this.getScopes(",", false, AuthScopeUtils.getDefaultScopes(AuthStackoverflowScope.values())))
+                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(",", false, AuthScopeUtils.getDefaultScopes(AuthStackoverflowScope.values())))
                 .build();
     }
 
@@ -99,9 +101,9 @@ public class AuthStackOverflowRequest extends AuthDefaultRequest {
      *
      * @param object 请求响应内容
      */
-    private void checkResponse(JSONObject object) {
-        if (object.containsKey(Keys.ERROR)) {
-            throw new AuthException(object.getString(Keys.ERROR_DESCRIPTION));
+    private void checkResponse(JsonNode object) {
+        if (containsKey(object, Keys.ERROR)) {
+            throw new AuthException(getStringValue(object, Keys.ERROR_DESCRIPTION));
         }
     }
 }

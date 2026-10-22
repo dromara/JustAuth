@@ -1,6 +1,5 @@
 package me.zhyd.oauth.request;
 
-import com.alibaba.fastjson2.JSONObject;
 import com.google.common.net.HttpHeaders;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
@@ -19,6 +18,7 @@ import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
 import me.zhyd.oauth.utils.TokenUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Figma登录
@@ -38,7 +38,7 @@ public class AuthFigmaRequest extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(super.authorize(state))
-                .queryParam(Keys.OAUTH2_SCOPE, this.getScopes(",", true, AuthScopeUtils.getDefaultScopes(AuthFigmaScope.values())))
+                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(",", true, AuthScopeUtils.getDefaultScopes(AuthFigmaScope.values())))
                 .build();
     }
 
@@ -49,16 +49,16 @@ public class AuthFigmaRequest extends AuthDefaultRequest {
                 .add(HttpHeaders.AUTHORIZATION, TokenUtils.basic(config.getClientId(), config.getClientSecret()));
 
         String response = UnifiedHttpClient.getAdapter().post(super.accessTokenUrl(authCallback.getCode()), null, header, true).getBody();
-        JSONObject accessTokenObject = JSONObject.parseObject(response);
+        JsonNode accessTokenObject = toNode(response);
 
         this.checkResponse(accessTokenObject);
 
         return AuthToken.builder()
-                .accessToken(accessTokenObject.getString(Keys.OAUTH2_ACCESS_TOKEN))
-                .refreshToken(accessTokenObject.getString(Keys.OAUTH2_REFRESH_TOKEN))
-                .scope(accessTokenObject.getString(Keys.OAUTH2_SCOPE))
-                .userId(accessTokenObject.getString(Keys.VARIANT__USER_ID))
-                .expireIn(accessTokenObject.getIntValue(Keys.OAUTH2_EXPIRES_IN))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
+                .scope(getStringValue(accessTokenObject, Keys.OAUTH2__SCOPE))
+                .userId(getStringValue(accessTokenObject, Keys.VARIANT__USER_ID))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
                 .build();
     }
 
@@ -66,18 +66,18 @@ public class AuthFigmaRequest extends AuthDefaultRequest {
     public AuthResponse<AuthToken> refresh(AuthToken authToken) {
         HttpHeader header = new HttpHeader().add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
         String response = UnifiedHttpClient.getAdapter().post(this.refreshTokenUrl(authToken.getRefreshToken()), null, header, false).getBody();
-        JSONObject dataObj = JSONObject.parseObject(response);
+        JsonNode refreshTokenObject = toNode(response);
 
-        this.checkResponse(dataObj);
+        this.checkResponse(refreshTokenObject);
 
         return AuthResponse.<AuthToken>builder()
                 .code(AuthResponseStatus.SUCCESS.getCode())
                 .data(AuthToken.builder()
-                        .accessToken(dataObj.getString(Keys.OAUTH2_ACCESS_TOKEN))
-                        .openId(dataObj.getString(Keys.VARIANT__OPEN_ID))
-                        .expireIn(dataObj.getIntValue(Keys.OAUTH2_EXPIRES_IN))
-                        .refreshToken(dataObj.getString(Keys.OAUTH2_REFRESH_TOKEN))
-                        .scope(dataObj.getString(Keys.OAUTH2_SCOPE))
+                        .accessToken(getStringValue(refreshTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
+                        .expireIn(getIntValue(refreshTokenObject, Keys.OAUTH2__EXPIRES_IN))
+                        .refreshToken(getStringValue(refreshTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
+                        .scope(getStringValue(refreshTokenObject, Keys.OAUTH2__SCOPE))
+                        .openId(getStringValue(refreshTokenObject, Keys.VARIANT__OPEN_ID))
                         .build())
                 .build();
 
@@ -86,9 +86,9 @@ public class AuthFigmaRequest extends AuthDefaultRequest {
     @Override
     protected String refreshTokenUrl(String refreshToken) {
         return UrlBuilder.fromBaseUrl(source.refresh())
-                .queryParam(Keys.OAUTH2_CLIENT_ID, config.getClientId())
-                .queryParam(Keys.OAUTH2_CLIENT_SECRET, config.getClientSecret())
-                .queryParam(Keys.OAUTH2_REFRESH_TOKEN, refreshToken)
+                .queryParam(Keys.OAUTH2__CLIENT_ID, config.getClientId())
+                .queryParam(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret())
+                .queryParam(Keys.OAUTH2__REFRESH_TOKEN, refreshToken)
                 .build();
     }
 
@@ -96,16 +96,16 @@ public class AuthFigmaRequest extends AuthDefaultRequest {
     public AuthUser getUserInfo(AuthToken authToken) {
         HttpHeader header = new HttpHeader().add(HttpHeaders.AUTHORIZATION, TokenUtils.bearer(authToken.getAccessToken()));
         String response = UnifiedHttpClient.getAdapter().get(super.userInfoUrl(authToken), null, header, false).getBody();
-        JSONObject dataObj = JSONObject.parseObject(response);
+        JsonNode userInfoObject = toNode(response);
 
-        this.checkResponse(dataObj);
+        this.checkResponse(userInfoObject);
 
         return AuthUser.builder()
-                .rawUserInfo(dataObj)
-                .uuid(dataObj.getString(Keys.ID))
-                .username(dataObj.getString("handle"))
-                .avatar(dataObj.getString("img_url"))
-                .email(dataObj.getString(Keys.OAUTH2_SCOPE__EMAIL))
+                .rawUserInfo(userInfoObject)
+                .uuid(getStringValue(userInfoObject, Keys.ID))
+                .username(getStringValue(userInfoObject, "handle"))
+                .avatar(getStringValue(userInfoObject, "img_url"))
+                .email(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
                 .token(authToken)
                 .source(source.toString())
                 .build();
@@ -117,9 +117,9 @@ public class AuthFigmaRequest extends AuthDefaultRequest {
      *
      * @param object 接口返回的结果
      */
-    private void checkResponse(JSONObject object) {
-        if (object.containsKey(Keys.ERROR)) {
-            throw new AuthException(object.getString(Keys.ERROR) + ":" + object.getString(Keys.MESSAGE));
+    private void checkResponse(JsonNode object) {
+        if (containsKey(object, Keys.ERROR)) {
+            throw new AuthException(getStringValue(object, Keys.ERROR) + ":" + getStringValue(object, Keys.MESSAGE));
         }
     }
 }

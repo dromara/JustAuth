@@ -2,10 +2,9 @@ package me.zhyd.oauth.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
-
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * 用户性别

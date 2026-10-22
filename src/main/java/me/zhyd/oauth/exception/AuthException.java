@@ -12,10 +12,10 @@ import me.zhyd.oauth.enums.AuthResponseStatus;
 public class AuthException extends RuntimeException {
 
     /**
-	 * 
-	 */
-	private static final long serialVersionUID = -8844734613557245722L;
-	private int errorCode;
+     *
+     */
+    private static final long serialVersionUID = -8844734613557245722L;
+    private int errorCode;
     private String errorMsg;
 
     public AuthException(String errorMsg) {

@@ -1,6 +1,5 @@
 package me.zhyd.oauth.request;
 
-import com.alibaba.fastjson2.JSONObject;
 import com.google.common.net.HttpHeaders;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
@@ -14,7 +13,11 @@ import me.zhyd.oauth.http.UnifiedHttpClient;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
-import me.zhyd.oauth.utils.*;
+import me.zhyd.oauth.utils.AuthScopeUtils;
+import me.zhyd.oauth.utils.GlobalAuthUtils;
+import me.zhyd.oauth.utils.TokenUtils;
+import me.zhyd.oauth.utils.UrlBuilder;
+import tools.jackson.databind.JsonNode;
 
 import java.util.Map;
 
@@ -42,9 +45,9 @@ public class AuthGithubRequest extends AuthDefaultRequest {
         this.checkResponse(res.containsKey(Keys.ERROR), res.get(Keys.ERROR_DESCRIPTION));
 
         return AuthToken.builder()
-                .accessToken(res.get(Keys.OAUTH2_ACCESS_TOKEN))
-                .scope(res.get(Keys.OAUTH2_SCOPE))
-                .tokenType(res.get(Keys.OAUTH2_TOKEN_TYPE))
+                .accessToken(res.get(Keys.OAUTH2__ACCESS_TOKEN))
+                .scope(res.get(Keys.OAUTH2__SCOPE))
+                .tokenType(res.get(Keys.OAUTH2__TOKEN_TYPE))
                 .build();
     }
 
@@ -53,21 +56,22 @@ public class AuthGithubRequest extends AuthDefaultRequest {
         HttpHeader header = new HttpHeader();
         header.add(HttpHeaders.AUTHORIZATION, TokenUtils.token(authToken.getAccessToken()));
         String response = UnifiedHttpClient.getAdapter().get(UrlBuilder.fromBaseUrl(source.userInfo()).build(), null, header, false).getBody();
-        JSONObject object = JSONObject.parseObject(response);
 
-        this.checkResponse(object.containsKey(Keys.ERROR), object.getString(Keys.ERROR_DESCRIPTION));
+        JsonNode userInfoObject = toNode(response);
+
+        this.checkResponse(containsKey(userInfoObject, Keys.ERROR), getStringValue(userInfoObject, Keys.ERROR_DESCRIPTION));
 
         return AuthUser.builder()
-                .rawUserInfo(object)
-                .uuid(object.getString(Keys.ID))
-                .username(object.getString("login"))
-                .avatar(object.getString(Keys.AVATAR_URL))
-                .blog(object.getString("blog"))
-                .nickname(object.getString(Keys.NAME))
-                .company(object.getString(Keys.COMPANY))
-                .location(object.getString(Keys.LOCATION))
-                .email(object.getString(Keys.OAUTH2_SCOPE__EMAIL))
-                .remark(object.getString("bio"))
+                .rawUserInfo(userInfoObject)
+                .uuid(getStringValue(userInfoObject, Keys.ID))
+                .username(getStringValue(userInfoObject, "login"))
+                .avatar(getStringValue(userInfoObject, Keys.AVATAR_URL))
+                .blog(getStringValue(userInfoObject, "blog"))
+                .nickname(getStringValue(userInfoObject, Keys.NAME))
+                .company(getStringValue(userInfoObject, Keys.COMPANY))
+                .location(getStringValue(userInfoObject, Keys.LOCATION))
+                .email(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
+                .remark(getStringValue(userInfoObject, "bio"))
                 .gender(AuthUserGender.UNKNOWN)
                 .token(authToken)
                 .source(source.toString())
@@ -89,7 +93,7 @@ public class AuthGithubRequest extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(super.authorize(state))
-                .queryParam(Keys.OAUTH2_SCOPE, this.getScopes(" ", true, AuthScopeUtils.getDefaultScopes(AuthGithubScope.values())))
+                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(" ", true, AuthScopeUtils.getDefaultScopes(AuthGithubScope.values())))
                 .build();
     }
 

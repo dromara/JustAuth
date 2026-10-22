@@ -1,8 +1,8 @@
 package me.zhyd.oauth.model;
 
-import com.alibaba.fastjson2.JSONObject;
 import lombok.*;
 import me.zhyd.oauth.enums.AuthUserGender;
+import tools.jackson.databind.JsonNode;
 
 import java.io.Serializable;
 
@@ -19,10 +19,10 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class AuthUser implements Serializable {
     /**
-	 * 
-	 */
-	private static final long serialVersionUID = -2874839945348913098L;
-	/**
+     *
+     */
+    private static final long serialVersionUID = -2874839945348913098L;
+    /**
      * 用户第三方系统的唯一id。在调用方集成该组件时，可以用uuid + source唯一确定一个用户
      *
      * @since 1.3.3
@@ -75,7 +75,7 @@ public class AuthUser implements Serializable {
     /**
      * 第三方平台返回的原始用户信息
      */
-    private JSONObject rawUserInfo;
+    private JsonNode rawUserInfo;
 
     /**
      * 微信公众号 - 网页授权的登录时可用

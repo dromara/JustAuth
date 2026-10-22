@@ -1,6 +1,5 @@
 package me.zhyd.oauth.request;
 
-import com.alibaba.fastjson2.JSONObject;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
@@ -10,6 +9,7 @@ import me.zhyd.oauth.exception.AuthException;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
+import tools.jackson.databind.JsonNode;
 
 /**
  * CSDN登录
@@ -31,22 +31,22 @@ public class AuthCsdnRequest extends AuthDefaultRequest {
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
         String response = doPostAuthorizationCode(authCallback.getCode());
-        JSONObject accessTokenObject = JSONObject.parseObject(response);
+        JsonNode accessTokenObject = toNode(response);
         this.checkResponse(accessTokenObject);
-        return AuthToken.builder().accessToken(accessTokenObject.getString(Keys.OAUTH2_ACCESS_TOKEN)).build();
+        return AuthToken.builder().accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN)).build();
     }
 
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
         String response = doGetUserInfo(authToken);
-        JSONObject object = JSONObject.parseObject(response);
-        this.checkResponse(object);
+        JsonNode userInfoObject = toNode(response);
+        this.checkResponse(userInfoObject);
         return AuthUser.builder()
-                .rawUserInfo(object)
-                .uuid(object.getString(Keys.USERNAME))
-                .username(object.getString(Keys.USERNAME))
-                .remark(object.getString(Keys.DESCRIPTION))
-                .blog(object.getString("website"))
+                .rawUserInfo(userInfoObject)
+                .uuid(getStringValue(userInfoObject, Keys.USERNAME))
+                .username(getStringValue(userInfoObject, Keys.USERNAME))
+                .remark(getStringValue(userInfoObject, Keys.DESCRIPTION))
+                .blog(getStringValue(userInfoObject, "website"))
                 .gender(AuthUserGender.UNKNOWN)
                 .token(authToken)
                 .source(source.toString())
@@ -58,9 +58,9 @@ public class AuthCsdnRequest extends AuthDefaultRequest {
      *
      * @param object 请求响应内容
      */
-    private void checkResponse(JSONObject object) {
-        if (object.containsKey(Keys.ERROR_CODE)) {
-            throw new AuthException(object.getString(Keys.ERROR));
+    private void checkResponse(JsonNode object) {
+        if (containsKey(object, Keys.ERROR_CODE)) {
+            throw new AuthException(getStringValue(object, Keys.ERROR));
         }
     }
 }

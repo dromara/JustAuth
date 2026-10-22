@@ -1,20 +1,20 @@
 package me.zhyd.oauth.exception;
 
 public class AuthHttpException extends RuntimeException {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 4866484377036757564L;
+    /**
+     *
+     */
+    private static final long serialVersionUID = 4866484377036757564L;
 
-	public AuthHttpException(Throwable cause) {
-		super(cause);
-	}
+    public AuthHttpException(Throwable cause) {
+        super(cause);
+    }
 
-	public AuthHttpException(String message) {
-		super(message);
-	}
+    public AuthHttpException(String message) {
+        super(message);
+    }
 
-	public AuthHttpException(String message, Throwable cause) {
-		super(message, cause);
-	}
+    public AuthHttpException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

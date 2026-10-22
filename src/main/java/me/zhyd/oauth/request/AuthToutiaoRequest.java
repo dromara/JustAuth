@@ -1,6 +1,5 @@
 package me.zhyd.oauth.request;
 
-import com.alibaba.fastjson2.JSONObject;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
@@ -12,6 +11,7 @@ import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.UrlBuilder;
+import tools.jackson.databind.JsonNode;
 
 /**
  * 今日头条登录
@@ -32,14 +32,14 @@ public class AuthToutiaoRequest extends AuthDefaultRequest {
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
         String response = doGetAuthorizationCode(authCallback.getCode());
-        JSONObject accessTokenObject = JSONObject.parseObject(response);
 
+        JsonNode accessTokenObject = toNode(response);
         this.checkResponse(accessTokenObject);
 
         return AuthToken.builder()
-                .accessToken(accessTokenObject.getString(Keys.OAUTH2_ACCESS_TOKEN))
-                .expireIn(accessTokenObject.getIntValue(Keys.OAUTH2_EXPIRES_IN))
-                .openId(accessTokenObject.getString(Keys.VARIANT__OPEN_ID))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
+                .openId(getStringValue(accessTokenObject, Keys.VARIANT__OPEN_ID))
                 .build();
     }
 
@@ -47,23 +47,23 @@ public class AuthToutiaoRequest extends AuthDefaultRequest {
     public AuthUser getUserInfo(AuthToken authToken) {
         String userResponse = doGetUserInfo(authToken);
 
-        JSONObject userProfile = JSONObject.parseObject(userResponse);
+        JsonNode userProfile = toNode(userResponse);
 
         this.checkResponse(userProfile);
 
-        JSONObject user = userProfile.getJSONObject(Keys.DATA);
+        JsonNode userInfoObject = getDataNode(userProfile);
 
-        boolean isAnonymousUser = user.getIntValue("uid_type") == 14;
+        boolean isAnonymousUser = getIntValue(userInfoObject, "uid_type") == 14;
         String anonymousUserName = "匿名用户";
 
         return AuthUser.builder()
-                .rawUserInfo(user)
-                .uuid(user.getString(Keys.UID))
-                .username(isAnonymousUser ? anonymousUserName : user.getString("screen_name"))
-                .nickname(isAnonymousUser ? anonymousUserName : user.getString("screen_name"))
-                .avatar(user.getString(Keys.AVATAR_URL))
-                .remark(user.getString(Keys.DESCRIPTION))
-                .gender(AuthUserGender.getRealGender(user.getString(Keys.GENDER)))
+                .rawUserInfo(userInfoObject)
+                .uuid(getStringValue(userInfoObject, Keys.UID))
+                .username(isAnonymousUser ? anonymousUserName : getStringValue(userInfoObject, "screen_name"))
+                .nickname(isAnonymousUser ? anonymousUserName : getStringValue(userInfoObject, "screen_name"))
+                .avatar(getStringValue(userInfoObject, Keys.AVATAR_URL))
+                .remark(getStringValue(userInfoObject, Keys.DESCRIPTION))
+                .gender(AuthUserGender.getRealGender(getStringValue(userInfoObject, Keys.GENDER)))
                 .token(authToken)
                 .source(source.toString())
                 .build();
@@ -79,12 +79,12 @@ public class AuthToutiaoRequest extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(source.authorize())
-                .queryParam(Keys.OAUTH2_RESPONSE_TYPE, Keys.OAUTH2_CODE)
+                .queryParam(Keys.OAUTH2__RESPONSE_TYPE, Keys.OAUTH2__CODE)
                 .queryParam("client_key", config.getClientId())
-                .queryParam(Keys.OAUTH2_REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
                 .queryParam("auth_only", 1)
                 .queryParam("display", 0)
-                .queryParam(Keys.OAUTH2_STATE, getRealState(state))
+                .queryParam(Keys.OAUTH2__STATE, getRealState(state))
                 .build();
     }
 
@@ -97,10 +97,10 @@ public class AuthToutiaoRequest extends AuthDefaultRequest {
     @Override
     protected String accessTokenUrl(String code) {
         return UrlBuilder.fromBaseUrl(source.accessToken())
-                .queryParam(Keys.OAUTH2_CODE, code)
+                .queryParam(Keys.OAUTH2__CODE, code)
                 .queryParam("client_key", config.getClientId())
-                .queryParam(Keys.OAUTH2_CLIENT_SECRET, config.getClientSecret())
-                .queryParam(Keys.OAUTH2_GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE)
+                .queryParam(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret())
+                .queryParam(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE)
                 .build();
     }
 
@@ -114,7 +114,7 @@ public class AuthToutiaoRequest extends AuthDefaultRequest {
     protected String userInfoUrl(AuthToken authToken) {
         return UrlBuilder.fromBaseUrl(source.userInfo())
                 .queryParam("client_key", config.getClientId())
-                .queryParam(Keys.OAUTH2_ACCESS_TOKEN, authToken.getAccessToken())
+                .queryParam(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken())
                 .build();
     }
 
@@ -123,9 +123,9 @@ public class AuthToutiaoRequest extends AuthDefaultRequest {
      *
      * @param object 请求响应内容
      */
-    private void checkResponse(JSONObject object) {
-        if (object.containsKey(Keys.ERROR_CODE)) {
-            throw new AuthException(AuthToutiaoErrorCode.getErrorCode(object.getIntValue(Keys.ERROR_CODE)).getDesc());
+    private void checkResponse(JsonNode object) {
+        if (containsKey(object, Keys.ERROR_CODE)) {
+            throw new AuthException(AuthToutiaoErrorCode.getErrorCode(getIntValue(object, Keys.ERROR_CODE)).getDesc());
         }
     }
 }

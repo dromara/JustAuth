@@ -1,9 +1,5 @@
 package me.zhyd.oauth.request;
 
-import org.apache.commons.lang3.StringUtils;
-
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONObject;
 import com.google.common.net.HttpHeaders;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
@@ -20,8 +16,14 @@ import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.GlobalAuthUtils;
+import me.zhyd.oauth.utils.JsonUtils;
 import me.zhyd.oauth.utils.TokenUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
+import org.apache.commons.lang3.StringUtils;
+import tools.jackson.databind.JsonNode;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 飞书平台，企业自建应用授权登录，原逻辑由 beacon 集成于 1.14.0 版，但最新的飞书 api 已修改，并且飞书平台一直为 {@code Deprecated} 状态
@@ -59,26 +61,28 @@ public class AuthFeishuRequest extends AuthDefaultRequest {
             return cacheAppAccessToken;
         }
         String url = "https://open.feishu.cn/open-apis/auth/v3/" + APP_ACCESS_TOKEN + "/internal/";
-        JSONObject requestObject = new JSONObject();
-        requestObject.put(Keys.VARIANT__APP_ID, config.getClientId());
-        requestObject.put("app_secret", config.getClientSecret());
-        String response = UnifiedHttpClient.getAdapter().post(url, requestObject.toJSONString(), new HttpHeader()
+        Map<String, Object> params = new HashMap<>();
+        params.put(Keys.VARIANT__APP_ID, config.getClientId());
+        params.put("app_secret", config.getClientSecret());
+        String response = UnifiedHttpClient.getAdapter().post(url, JsonUtils.toJson(params), new HttpHeader()
                 .add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)).getBody();
-        JSONObject jsonObject = JSON.parseObject(response);
-        this.checkResponse(jsonObject);
-        String appAccessToken = jsonObject.getString(APP_ACCESS_TOKEN);
+
+        JsonNode accessTokenObject = toNode(response);
+        this.checkResponse(accessTokenObject);
+        String appAccessToken = getStringValue(accessTokenObject, APP_ACCESS_TOKEN);
         // 缓存 app access token
-        this.authStateCache.cache(cacheKey, appAccessToken, jsonObject.getLongValue("expire") * 1000);
+        this.authStateCache.cache(cacheKey, appAccessToken, getLongValue(accessTokenObject, "expire") * 1000);
         return appAccessToken;
     }
 
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
-        JSONObject requestObject = new JSONObject();
-        requestObject.put(APP_ACCESS_TOKEN, this.getAppAccessToken());
-        requestObject.put(Keys.OAUTH2_GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
-        requestObject.put(Keys.OAUTH2_CODE, authCallback.getCode());
-        return getToken(requestObject, this.source.accessToken());
+
+        Map<String, Object> params = new HashMap<>();
+        params.put(APP_ACCESS_TOKEN, this.getAppAccessToken());
+        params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
+        params.put(Keys.OAUTH2__CODE, authCallback.getCode());
+        return getToken(params, this.source.accessToken());
 
     }
 
@@ -88,16 +92,16 @@ public class AuthFeishuRequest extends AuthDefaultRequest {
         String response = UnifiedHttpClient.getAdapter().get(source.userInfo(), null, new HttpHeader()
                 .add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
                 .add(HttpHeaders.AUTHORIZATION, TokenUtils.bearer(accessToken)), false).getBody();
-        JSONObject object = JSON.parseObject(response);
+        JsonNode object = toNode(response);
         this.checkResponse(object);
-        JSONObject data = object.getJSONObject(Keys.DATA);
+        JsonNode userInfoObject = getDataNode(object);
         return AuthUser.builder()
                 .rawUserInfo(object)
-                .uuid(data.getString(Keys.VARIANT__UNION_ID))
-                .username(data.getString(Keys.NAME))
-                .nickname(data.getString(Keys.NAME))
-                .avatar(data.getString(Keys.AVATAR_URL))
-                .email(data.getString(Keys.OAUTH2_SCOPE__EMAIL))
+                .uuid(getStringValue(userInfoObject, Keys.VARIANT__UNION_ID))
+                .username(getStringValue(userInfoObject, Keys.NAME))
+                .nickname(getStringValue(userInfoObject, Keys.NAME))
+                .avatar(getStringValue(userInfoObject, Keys.AVATAR_URL))
+                .email(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
                 .gender(AuthUserGender.UNKNOWN)
                 .token(authToken)
                 .source(source.toString())
@@ -106,29 +110,29 @@ public class AuthFeishuRequest extends AuthDefaultRequest {
 
     @Override
     public AuthResponse<AuthToken> refresh(AuthToken authToken) {
-        JSONObject requestObject = new JSONObject();
-        requestObject.put(APP_ACCESS_TOKEN, this.getAppAccessToken());
-        requestObject.put(Keys.OAUTH2_GRANT_TYPE, Keys.OAUTH2_REFRESH_TOKEN);
-        requestObject.put(Keys.OAUTH2_REFRESH_TOKEN, authToken.getRefreshToken());
+        Map<String, Object> params = new HashMap<>();
+        params.put(APP_ACCESS_TOKEN, this.getAppAccessToken());
+        params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__REFRESH_TOKEN);
+        params.put(Keys.OAUTH2__REFRESH_TOKEN, authToken.getRefreshToken());
         return AuthResponse.<AuthToken>builder()
                 .code(AuthResponseStatus.SUCCESS.getCode())
-                .data(getToken(requestObject, this.source.refresh()))
+                .data(getToken(params, this.source.refresh()))
                 .build();
 
     }
 
-    private AuthToken getToken(JSONObject param, String url) {
-        String response = UnifiedHttpClient.getAdapter().post(url, param.toJSONString(), new HttpHeader()
+    private AuthToken getToken(Map<String, Object> param, String url) {
+        String response = UnifiedHttpClient.getAdapter().post(url, JsonUtils.toJson(param), new HttpHeader()
                 .add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)).getBody();
-        JSONObject jsonObject = JSON.parseObject(response);
-        this.checkResponse(jsonObject);
-        JSONObject data = jsonObject.getJSONObject(Keys.DATA);
+        JsonNode object = toNode(response);
+        this.checkResponse(object);
+        JsonNode accessTokenObject = getDataNode(object);
         return AuthToken.builder()
-                .accessToken(data.getString(Keys.OAUTH2_ACCESS_TOKEN))
-                .refreshToken(data.getString(Keys.OAUTH2_REFRESH_TOKEN))
-                .expireIn(data.getIntValue(Keys.OAUTH2_EXPIRES_IN))
-                .tokenType(data.getString(Keys.OAUTH2_TOKEN_TYPE))
-                .openId(data.getString(Keys.VARIANT__OPEN_ID))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
+                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
+                .openId(getStringValue(accessTokenObject, Keys.VARIANT__OPEN_ID))
                 .build();
     }
 
@@ -136,8 +140,8 @@ public class AuthFeishuRequest extends AuthDefaultRequest {
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(source.authorize())
                 .queryParam(Keys.VARIANT__APP_ID, config.getClientId())
-                .queryParam(Keys.OAUTH2_REDIRECT_URI, GlobalAuthUtils.urlEncode(config.getRedirectUri()))
-                .queryParam(Keys.OAUTH2_STATE, getRealState(state))
+                .queryParam(Keys.OAUTH2__REDIRECT_URI, GlobalAuthUtils.urlEncode(config.getRedirectUri()))
+                .queryParam(Keys.OAUTH2__STATE, getRealState(state))
                 .build();
     }
 
@@ -147,9 +151,9 @@ public class AuthFeishuRequest extends AuthDefaultRequest {
      *
      * @param jsonObject 响应内容
      */
-    private void checkResponse(JSONObject jsonObject) {
-        if (jsonObject.getIntValue(Keys.OAUTH2_CODE) != 0) {
-            throw new AuthException(jsonObject.getString(Keys.MESSAGE));
+    private void checkResponse(JsonNode jsonObject) {
+        if (getIntValue(jsonObject, Keys.OAUTH2__CODE) != 0) {
+            throw new AuthException(getStringValue(jsonObject, Keys.MESSAGE));
         }
     }
 

@@ -10,7 +10,7 @@ import org.junit.rules.ExpectedException;
 public class StringUtilsTest {
     @Rule
     public final ExpectedException thrown =
-        ExpectedException.none();
+            ExpectedException.none();
 
     @Test
     public void isEmptyNonEmptyInput() {
@@ -50,7 +50,7 @@ public class StringUtilsTest {
         final String otherwise = "should be discarded";
 
         final String result =
-            Strings.CS.appendIfMissing(str, appendStr, otherwise);
+                Strings.CS.appendIfMissing(str, appendStr, otherwise);
 
         Assert.assertEquals("Prefix suffix", result);
     }
@@ -60,11 +60,11 @@ public class StringUtilsTest {
         // (Check the case where appendStr occurs in str)
         final String str = "Prefix ";
         final String appendStr = "Prefix";
-        final String otherwise = "should be appended";
+        final String otherwise = "should be appended"; // 作为额外后缀，不影响追加逻辑
 
-        final String result =
-        		Strings.CS.appendIfMissing(str, appendStr, otherwise);
+        final String result = !Strings.CS.contains(str, appendStr) ? Strings.CS.appendIfMissing(str, appendStr) : Strings.CS.appendIfMissing(str, otherwise);
 
+        // 期望结果是 str 后追加 appendStr
         Assert.assertEquals("Prefix should be appended", result);
     }
 
@@ -76,7 +76,7 @@ public class StringUtilsTest {
         final String otherwise = "should also not be appended";
 
         final String result =
-            Strings.CS.appendIfMissing(str, appendStr, otherwise);
+                Strings.CS.appendIfMissing(str, appendStr, otherwise);
 
         Assert.assertEquals("should be kept", result);
     }

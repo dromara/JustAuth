@@ -14,13 +14,11 @@ import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
-import me.zhyd.oauth.utils.AuthChecker;
-import me.zhyd.oauth.utils.UrlBuilder;
-import me.zhyd.oauth.utils.UuidUtils;
+import me.zhyd.oauth.utils.*;
+import org.apache.commons.lang3.StringUtils;
+import tools.jackson.databind.JsonNode;
 
 import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * 默认的request处理类
@@ -78,6 +76,61 @@ public abstract class AuthDefaultRequest implements AuthRequest {
     }
 
     /**
+     * 将 JSON 字符串转换为 {@link JsonNode}
+     *
+     * @param json JSON 字符串
+     * @return JSON 节点 {@link JsonNode}
+     */
+    protected JsonNode toNode(String json) {
+        return JsonUtils.toNode(json);
+    }
+
+    /**
+     * 获取 {@link JsonNode} 中指定的数据节点
+     *
+     * @param jsonNode Node {@link JsonNode}
+     * @param key      数据节点对应的 Key 值
+     * @return 数据节点 {@link JsonNode}
+     */
+    protected JsonNode getObjectNode(JsonNode jsonNode, String key) {
+        return JsonNodeUtils.findObjectNode(jsonNode, key);
+    }
+
+    protected JsonNode getArrayNode(JsonNode jsonNode, String key) {
+        return JsonNodeUtils.findArrayNode(jsonNode, key);
+    }
+
+    /**
+     * 获取 {@link JsonNode} 中 data 属性对应的数据节点
+     *
+     * @param jsonNode Node {@link JsonNode}
+     * @return 数据节点 {@link JsonNode}
+     */
+    protected JsonNode getDataNode(JsonNode jsonNode) {
+        return getObjectNode(jsonNode, Keys.DATA);
+    }
+
+    protected String getStringValue(JsonNode jsonNode, String key) {
+        return JsonNodeUtils.findStringValue(jsonNode, key);
+    }
+
+    protected boolean getBooleanValue(JsonNode jsonNode, String key) {
+        return JsonNodeUtils.findBooleanValue(jsonNode, key);
+    }
+
+    protected int getIntValue(JsonNode jsonNode, String key) {
+        return JsonNodeUtils.findIntValue(jsonNode, key);
+    }
+
+    protected long getLongValue(JsonNode jsonNode, String key) {
+        return JsonNodeUtils.findLongValue(jsonNode, key);
+    }
+
+    protected boolean containsKey(JsonNode jsonNode, String key) {
+        return JsonNodeUtils.containsKey(jsonNode, key);
+    }
+
+    /**
      * 处理{@link AuthDefaultRequest#login(AuthCallback)} 发生异常的情况，统一响应参数
      *
      * @param e 具体的异常
@@ -121,10 +174,10 @@ public abstract class AuthDefaultRequest implements AuthRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(source.authorize())
-                .queryParam(Keys.OAUTH2_RESPONSE_TYPE, Keys.OAUTH2_CODE)
-                .queryParam(Keys.OAUTH2_CLIENT_ID, config.getClientId())
-                .queryParam(Keys.OAUTH2_REDIRECT_URI, config.getRedirectUri())
-                .queryParam(Keys.OAUTH2_STATE, getRealState(state))
+                .queryParam(Keys.OAUTH2__RESPONSE_TYPE, Keys.OAUTH2__CODE)
+                .queryParam(Keys.OAUTH2__CLIENT_ID, config.getClientId())
+                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2__STATE, getRealState(state))
                 .build();
     }
 
@@ -136,11 +189,11 @@ public abstract class AuthDefaultRequest implements AuthRequest {
      */
     protected String accessTokenUrl(String code) {
         return UrlBuilder.fromBaseUrl(source.accessToken())
-                .queryParam(Keys.OAUTH2_CODE, code)
-                .queryParam(Keys.OAUTH2_CLIENT_ID, config.getClientId())
-                .queryParam(Keys.OAUTH2_CLIENT_SECRET, config.getClientSecret())
-                .queryParam(Keys.OAUTH2_GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE)
-                .queryParam(Keys.OAUTH2_REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2__CODE, code)
+                .queryParam(Keys.OAUTH2__CLIENT_ID, config.getClientId())
+                .queryParam(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret())
+                .queryParam(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE)
+                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
                 .build();
     }
 
@@ -152,11 +205,11 @@ public abstract class AuthDefaultRequest implements AuthRequest {
      */
     protected String refreshTokenUrl(String refreshToken) {
         return UrlBuilder.fromBaseUrl(source.refresh())
-                .queryParam(Keys.OAUTH2_CLIENT_ID, config.getClientId())
-                .queryParam(Keys.OAUTH2_CLIENT_SECRET, config.getClientSecret())
-                .queryParam(Keys.OAUTH2_REFRESH_TOKEN, refreshToken)
-                .queryParam(Keys.OAUTH2_GRANT_TYPE, Keys.OAUTH2_REFRESH_TOKEN)
-                .queryParam(Keys.OAUTH2_REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2__CLIENT_ID, config.getClientId())
+                .queryParam(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret())
+                .queryParam(Keys.OAUTH2__REFRESH_TOKEN, refreshToken)
+                .queryParam(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__REFRESH_TOKEN)
+                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
                 .build();
     }
 
@@ -167,7 +220,7 @@ public abstract class AuthDefaultRequest implements AuthRequest {
      * @return 返回获取userInfo的url
      */
     protected String userInfoUrl(AuthToken authToken) {
-        return UrlBuilder.fromBaseUrl(source.userInfo()).queryParam(Keys.OAUTH2_ACCESS_TOKEN, authToken.getAccessToken()).build();
+        return UrlBuilder.fromBaseUrl(source.userInfo()).queryParam(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken()).build();
     }
 
     /**
@@ -177,7 +230,7 @@ public abstract class AuthDefaultRequest implements AuthRequest {
      * @return 返回获取revoke authorization的url
      */
     protected String revokeUrl(AuthToken authToken) {
-        return UrlBuilder.fromBaseUrl(source.revoke()).queryParam(Keys.OAUTH2_ACCESS_TOKEN, authToken.getAccessToken()).build();
+        return UrlBuilder.fromBaseUrl(source.revoke()).queryParam(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken()).build();
     }
 
     /**

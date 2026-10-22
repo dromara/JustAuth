@@ -78,7 +78,7 @@ public class AuthWechatMiniProgramRequest extends AuthDefaultRequest {
                 .queryParam(Keys.APPID, config.getClientId())
                 .queryParam("secret", config.getClientSecret())
                 .queryParam("js_code", code)
-                .queryParam(Keys.OAUTH2_GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE)
+                .queryParam(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE)
                 .build();
     }
 

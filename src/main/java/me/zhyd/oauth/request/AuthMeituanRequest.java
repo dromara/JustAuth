@@ -1,6 +1,5 @@
 package me.zhyd.oauth.request;
 
-import com.alibaba.fastjson2.JSONObject;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
@@ -14,6 +13,7 @@ import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.UrlBuilder;
+import tools.jackson.databind.JsonNode;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,18 +39,18 @@ public class AuthMeituanRequest extends AuthDefaultRequest {
         Map<String, String> form = new HashMap<>(7);
         form.put(Keys.VARIANT__APP_ID, config.getClientId());
         form.put("secret", config.getClientSecret());
-        form.put(Keys.OAUTH2_CODE, authCallback.getCode());
-        form.put(Keys.OAUTH2_GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
+        form.put(Keys.OAUTH2__CODE, authCallback.getCode());
+        form.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
 
         String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), form, false).getBody();
-        JSONObject object = JSONObject.parseObject(response);
+        JsonNode accessTokenObject = toNode(response);
 
-        this.checkResponse(object);
+        this.checkResponse(accessTokenObject);
 
         return AuthToken.builder()
-                .accessToken(object.getString(Keys.OAUTH2_ACCESS_TOKEN))
-                .refreshToken(object.getString(Keys.OAUTH2_REFRESH_TOKEN))
-                .expireIn(object.getIntValue(Keys.OAUTH2_EXPIRES_IN))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
                 .build();
     }
 
@@ -59,19 +59,19 @@ public class AuthMeituanRequest extends AuthDefaultRequest {
         Map<String, String> form = new HashMap<>(5);
         form.put(Keys.VARIANT__APP_ID, config.getClientId());
         form.put("secret", config.getClientSecret());
-        form.put(Keys.OAUTH2_ACCESS_TOKEN, authToken.getAccessToken());
+        form.put(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken());
 
         String response = UnifiedHttpClient.getAdapter().post(source.userInfo(), form, false).getBody();
-        JSONObject object = JSONObject.parseObject(response);
+        JsonNode userInfoObject = toNode(response);
 
-        this.checkResponse(object);
+        this.checkResponse(userInfoObject);
 
         return AuthUser.builder()
-                .rawUserInfo(object)
-                .uuid(object.getString(Keys.OAUTH2_SCOPE__OPENID))
-                .username(object.getString(Keys.NICKNAME))
-                .nickname(object.getString(Keys.NICKNAME))
-                .avatar(object.getString(Keys.AVATAR))
+                .rawUserInfo(userInfoObject)
+                .uuid(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__OPENID))
+                .username(getStringValue(userInfoObject, Keys.NICKNAME))
+                .nickname(getStringValue(userInfoObject, Keys.NICKNAME))
+                .avatar(getStringValue(userInfoObject, Keys.AVATAR))
                 .gender(AuthUserGender.UNKNOWN)
                 .token(authToken)
                 .source(source.toString())
@@ -83,34 +83,34 @@ public class AuthMeituanRequest extends AuthDefaultRequest {
         Map<String, String> form = new HashMap<>(7);
         form.put(Keys.VARIANT__APP_ID, config.getClientId());
         form.put("secret", config.getClientSecret());
-        form.put(Keys.OAUTH2_REFRESH_TOKEN, oldToken.getRefreshToken());
-        form.put(Keys.OAUTH2_GRANT_TYPE, Keys.OAUTH2_REFRESH_TOKEN);
+        form.put(Keys.OAUTH2__REFRESH_TOKEN, oldToken.getRefreshToken());
+        form.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__REFRESH_TOKEN);
 
         String response = UnifiedHttpClient.getAdapter().post(source.refresh(), form, false).getBody();
-        JSONObject object = JSONObject.parseObject(response);
+        JsonNode refreshTokenObject = toNode(response);
 
-        this.checkResponse(object);
+        this.checkResponse(refreshTokenObject);
 
         return AuthResponse.<AuthToken>builder()
                 .code(AuthResponseStatus.SUCCESS.getCode())
                 .data(AuthToken.builder()
-                        .accessToken(object.getString(Keys.OAUTH2_ACCESS_TOKEN))
-                        .refreshToken(object.getString(Keys.OAUTH2_REFRESH_TOKEN))
-                        .expireIn(object.getIntValue(Keys.OAUTH2_EXPIRES_IN))
+                        .accessToken(getStringValue(refreshTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
+                        .refreshToken(getStringValue(refreshTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
+                        .expireIn(getIntValue(refreshTokenObject, Keys.OAUTH2__EXPIRES_IN))
                         .build())
                 .build();
     }
 
-    private void checkResponse(JSONObject object) {
-        if (object.containsKey(Keys.ERROR_CODE)) {
-            throw new AuthException(object.getString("erroe_msg"));
+    private void checkResponse(JsonNode object) {
+        if (containsKey(object, Keys.ERROR_CODE)) {
+            throw new AuthException(getStringValue(object, "erroe_msg"));
         }
     }
 
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(super.authorize(state))
-                .queryParam(Keys.OAUTH2_SCOPE, "")
+                .queryParam(Keys.OAUTH2__SCOPE, "")
                 .build();
     }
 

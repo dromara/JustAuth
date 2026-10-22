@@ -16,11 +16,11 @@ import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
-
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
+import tools.jackson.databind.JsonNode;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -47,7 +47,7 @@ public class AuthAppleRequest extends AuthDefaultRequest {
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(super.authorize(state))
                 .queryParam("response_mode", "form_post")
-                .queryParam(Keys.OAUTH2_SCOPE, this.getScopes(" ", false, AuthScopeUtils.getDefaultScopes(AuthAppleScope.values())))
+                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(" ", false, AuthScopeUtils.getDefaultScopes(AuthAppleScope.values())))
                 .build();
     }
 
@@ -59,14 +59,14 @@ public class AuthAppleRequest extends AuthDefaultRequest {
         this.config.setClientSecret(this.getToken());
         // if failed will throw AuthException
         String response = doPostAuthorizationCode(authCallback.getCode());
-        JSONObject accessTokenObject = JSONObject.parseObject(response);
+        JsonNode accessTokenObject = toNode(response);
         // https://developer.apple.com/documentation/sign_in_with_apple/tokenresponse
         AuthToken.AuthTokenBuilder builder = AuthToken.builder()
-                .accessToken(accessTokenObject.getString(Keys.OAUTH2_ACCESS_TOKEN))
-                .expireIn(accessTokenObject.getIntValue(Keys.OAUTH2_EXPIRES_IN))
-                .refreshToken(accessTokenObject.getString(Keys.OAUTH2_REFRESH_TOKEN))
-                .tokenType(accessTokenObject.getString(Keys.OAUTH2_TOKEN_TYPE))
-                .idToken(accessTokenObject.getString(Keys.OIDC_ID_TOKEN));
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
+                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
+                .idToken(getStringValue(accessTokenObject, Keys.OIDC__ID_TOKEN));
         if (!StringUtils.isEmpty(authCallback.getUser())) {
             try {
                 AppleUserInfo userInfo = JSONObject.parseObject(authCallback.getUser(), AppleUserInfo.class);
@@ -82,12 +82,12 @@ public class AuthAppleRequest extends AuthDefaultRequest {
         Base64.Decoder urlDecoder = Base64.getUrlDecoder();
         String[] idToken = authToken.getIdToken().split("\\.");
         String payload = new String(urlDecoder.decode(idToken[1]));
-        JSONObject object = JSONObject.parseObject(payload);
+        JsonNode object = toNode(payload);
         // https://developer.apple.com/documentation/sign_in_with_apple/sign_in_with_apple_rest_api/authenticating_users_with_sign_in_with_apple#3383773
         return AuthUser.builder()
                 .rawUserInfo(object)
-                .uuid(object.getString("sub"))
-                .email(object.getString(Keys.OAUTH2_SCOPE__EMAIL))
+                .uuid(getStringValue(object, "sub"))
+                .email(getStringValue(object, Keys.OAUTH2_SCOPE__EMAIL))
                 .username(authToken.getUsername())
                 .token(authToken)
                 .source(source.toString())

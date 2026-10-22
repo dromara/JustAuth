@@ -1,6 +1,5 @@
 package me.zhyd.oauth.request;
 
-import com.alibaba.fastjson2.JSONObject;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
@@ -17,6 +16,7 @@ import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
 import me.zhyd.oauth.utils.GlobalAuthUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
+import tools.jackson.databind.JsonNode;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -45,26 +45,27 @@ public class AuthJdRequest extends AuthDefaultRequest {
         Map<String, String> params = new HashMap<>(7);
         params.put(Keys.VARIANT__APP_KEY, config.getClientId());
         params.put("app_secret", config.getClientSecret());
-        params.put(Keys.OAUTH2_GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
-        params.put(Keys.OAUTH2_CODE, authCallback.getCode());
+        params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
+        params.put(Keys.OAUTH2__CODE, authCallback.getCode());
         String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), params, false).getBody();
-        JSONObject object = JSONObject.parseObject(response);
 
-        this.checkResponse(object);
+        JsonNode accessTokenObject = toNode(response);
+
+        this.checkResponse(accessTokenObject);
 
         return AuthToken.builder()
-                .accessToken(object.getString(Keys.OAUTH2_ACCESS_TOKEN))
-                .expireIn(object.getIntValue(Keys.OAUTH2_EXPIRES_IN))
-                .refreshToken(object.getString(Keys.OAUTH2_REFRESH_TOKEN))
-                .scope(object.getString(Keys.OAUTH2_SCOPE))
-                .openId(object.getString(Keys.VARIANT__OPEN_ID))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
+                .scope(getStringValue(accessTokenObject, Keys.OAUTH2__SCOPE))
+                .openId(getStringValue(accessTokenObject, Keys.VARIANT__OPEN_ID))
                 .build();
     }
 
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
         UrlBuilder urlBuilder = UrlBuilder.fromBaseUrl(source.userInfo())
-                .queryParam(Keys.OAUTH2_ACCESS_TOKEN, authToken.getAccessToken())
+                .queryParam(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken())
                 .queryParam(Keys.VARIANT__APP_KEY, config.getClientId())
                 .queryParam("method", "jingdong.user.getUserInfoByOpenId")
                 .queryParam("360buy_param_json", "{\"openId\":\"" + authToken.getOpenId() + "\"}")
@@ -72,19 +73,19 @@ public class AuthJdRequest extends AuthDefaultRequest {
                 .queryParam("v", "2.0");
         urlBuilder.queryParam("sign", GlobalAuthUtils.generateJdSignature(config.getClientSecret(), urlBuilder.getReadOnlyParams()));
         String response = UnifiedHttpClient.getAdapter().post(urlBuilder.build(true)).getBody();
-        JSONObject object = JSONObject.parseObject(response);
+        JsonNode object = toNode(response);
 
         this.checkResponse(object);
 
-        JSONObject data = this.getUserDataJsonObject(object);
+        JsonNode userInfoObject = this.getUserDataJsonObject(object);
 
         return AuthUser.builder()
-                .rawUserInfo(data)
+                .rawUserInfo(userInfoObject)
                 .uuid(authToken.getOpenId())
-                .username(data.getString(Keys.NICKNAME))
-                .nickname(data.getString(Keys.NICKNAME))
-                .avatar(data.getString("imageUrl"))
-                .gender(AuthUserGender.getRealGender(data.getString("gendar")))
+                .username(getStringValue(userInfoObject, Keys.NICKNAME))
+                .nickname(getStringValue(userInfoObject, Keys.NICKNAME))
+                .avatar(getStringValue(userInfoObject, "imageUrl"))
+                .gender(AuthUserGender.getRealGender(getStringValue(userInfoObject, "gendar")))
                 .token(authToken)
                 .source(source.toString())
                 .build();
@@ -97,10 +98,10 @@ public class AuthJdRequest extends AuthDefaultRequest {
      * @param object 请求返回结果
      * @return data JSONObject
      */
-    private JSONObject getUserDataJsonObject(JSONObject object) {
-        return object.getJSONObject("jingdong_user_getUserInfoByOpenId_response")
-                .getJSONObject("getuserinfobyappidandopenid_result")
-                .getJSONObject(Keys.DATA);
+    private JsonNode getUserDataJsonObject(JsonNode object) {
+        JsonNode response = getObjectNode(object, "jingdong_user_getUserInfoByOpenId_response");
+        JsonNode result = getObjectNode(response, "getuserinfobyappidandopenid_result");
+        return getDataNode(result);
     }
 
     @Override
@@ -108,28 +109,29 @@ public class AuthJdRequest extends AuthDefaultRequest {
         Map<String, String> params = new HashMap<>(7);
         params.put(Keys.VARIANT__APP_KEY, config.getClientId());
         params.put("app_secret", config.getClientSecret());
-        params.put(Keys.OAUTH2_GRANT_TYPE, Keys.OAUTH2_REFRESH_TOKEN);
-        params.put(Keys.OAUTH2_REFRESH_TOKEN, oldToken.getRefreshToken());
+        params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__REFRESH_TOKEN);
+        params.put(Keys.OAUTH2__REFRESH_TOKEN, oldToken.getRefreshToken());
         String response = UnifiedHttpClient.getAdapter().post(source.refresh(), params, false).getBody();
-        JSONObject object = JSONObject.parseObject(response);
+        JsonNode object = toNode(response);
 
         this.checkResponse(object);
 
         return AuthResponse.<AuthToken>builder()
                 .code(AuthResponseStatus.SUCCESS.getCode())
                 .data(AuthToken.builder()
-                        .accessToken(object.getString(Keys.OAUTH2_ACCESS_TOKEN))
-                        .expireIn(object.getIntValue(Keys.OAUTH2_EXPIRES_IN))
-                        .refreshToken(object.getString(Keys.OAUTH2_REFRESH_TOKEN))
-                        .scope(object.getString(Keys.OAUTH2_SCOPE))
-                        .openId(object.getString(Keys.VARIANT__OPEN_ID))
+                        .accessToken(getStringValue(object, Keys.OAUTH2__ACCESS_TOKEN))
+                        .expireIn(getIntValue(object, Keys.OAUTH2__EXPIRES_IN))
+                        .refreshToken(getStringValue(object, Keys.OAUTH2__REFRESH_TOKEN))
+                        .scope(getStringValue(object, Keys.OAUTH2__SCOPE))
+                        .openId(getStringValue(object, Keys.VARIANT__OPEN_ID))
                         .build())
                 .build();
     }
 
-    private void checkResponse(JSONObject object) {
-        if (object.containsKey("error_response")) {
-            throw new AuthException(object.getJSONObject("error_response").getString("zh_desc"));
+    private void checkResponse(JsonNode object) {
+        if (containsKey(object, "error_response")) {
+            JsonNode errorResponse = object.get("error_response");
+            throw new AuthException(getStringValue(errorResponse, "zh_desc"));
         }
     }
 
@@ -137,10 +139,10 @@ public class AuthJdRequest extends AuthDefaultRequest {
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(source.authorize())
                 .queryParam(Keys.VARIANT__APP_KEY, config.getClientId())
-                .queryParam(Keys.OAUTH2_RESPONSE_TYPE, Keys.OAUTH2_CODE)
-                .queryParam(Keys.OAUTH2_REDIRECT_URI, config.getRedirectUri())
-                .queryParam(Keys.OAUTH2_SCOPE, this.getScopes(" ", true, AuthScopeUtils.getDefaultScopes(AuthJdScope.values())))
-                .queryParam(Keys.OAUTH2_STATE, getRealState(state))
+                .queryParam(Keys.OAUTH2__RESPONSE_TYPE, Keys.OAUTH2__CODE)
+                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(" ", true, AuthScopeUtils.getDefaultScopes(AuthJdScope.values())))
+                .queryParam(Keys.OAUTH2__STATE, getRealState(state))
                 .build();
     }
 

@@ -1,6 +1,5 @@
 package me.zhyd.oauth.request;
 
-import com.alibaba.fastjson2.JSONObject;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
@@ -13,6 +12,7 @@ import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Gitee登录
@@ -33,33 +33,33 @@ public class AuthGiteeRequest extends AuthDefaultRequest {
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
         String response = doPostAuthorizationCode(authCallback.getCode());
-        JSONObject accessTokenObject = JSONObject.parseObject(response);
+        JsonNode accessTokenObject = toNode(response);
         this.checkResponse(accessTokenObject);
         return AuthToken.builder()
-                .accessToken(accessTokenObject.getString(Keys.OAUTH2_ACCESS_TOKEN))
-                .refreshToken(accessTokenObject.getString(Keys.OAUTH2_REFRESH_TOKEN))
-                .scope(accessTokenObject.getString(Keys.OAUTH2_SCOPE))
-                .tokenType(accessTokenObject.getString(Keys.OAUTH2_TOKEN_TYPE))
-                .expireIn(accessTokenObject.getIntValue(Keys.OAUTH2_EXPIRES_IN))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
+                .scope(getStringValue(accessTokenObject, Keys.OAUTH2__SCOPE))
+                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
                 .build();
     }
 
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
         String userInfo = doGetUserInfo(authToken);
-        JSONObject object = JSONObject.parseObject(userInfo);
+        JsonNode object = toNode(userInfo);
         this.checkResponse(object);
         return AuthUser.builder()
                 .rawUserInfo(object)
-                .uuid(object.getString(Keys.ID))
-                .username(object.getString("login"))
-                .avatar(object.getString(Keys.AVATAR_URL))
-                .blog(object.getString("blog"))
-                .nickname(object.getString(Keys.NAME))
-                .company(object.getString(Keys.COMPANY))
-                .location(object.getString(Keys.OAUTH2_SCOPE__ADDRESS))
-                .email(object.getString(Keys.OAUTH2_SCOPE__EMAIL))
-                .remark(object.getString("bio"))
+                .uuid(getStringValue(object, Keys.ID))
+                .username(getStringValue(object, "login"))
+                .avatar(getStringValue(object, Keys.AVATAR_URL))
+                .blog(getStringValue(object, "blog"))
+                .nickname(getStringValue(object, Keys.NAME))
+                .company(getStringValue(object, Keys.COMPANY))
+                .location(getStringValue(object, Keys.OAUTH2_SCOPE__ADDRESS))
+                .email(getStringValue(object, Keys.OAUTH2_SCOPE__EMAIL))
+                .remark(getStringValue(object, "bio"))
                 .gender(AuthUserGender.UNKNOWN)
                 .token(authToken)
                 .source(source.toString())
@@ -71,9 +71,9 @@ public class AuthGiteeRequest extends AuthDefaultRequest {
      *
      * @param object 请求响应内容
      */
-    private void checkResponse(JSONObject object) {
-        if (object.containsKey(Keys.ERROR)) {
-            throw new AuthException(object.getString(Keys.ERROR_DESCRIPTION));
+    private void checkResponse(JsonNode object) {
+        if (containsKey(object, Keys.ERROR)) {
+            throw new AuthException(getStringValue(object, Keys.ERROR_DESCRIPTION));
         }
     }
 
@@ -86,7 +86,7 @@ public class AuthGiteeRequest extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(super.authorize(state))
-                .queryParam(Keys.OAUTH2_SCOPE, this.getScopes(" ", true, AuthScopeUtils.getDefaultScopes(AuthGiteeScope.values())))
+                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(" ", true, AuthScopeUtils.getDefaultScopes(AuthGiteeScope.values())))
                 .build();
     }
 }

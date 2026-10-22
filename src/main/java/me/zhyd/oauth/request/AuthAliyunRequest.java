@@ -1,6 +1,5 @@
 package me.zhyd.oauth.request;
 
-import com.alibaba.fastjson2.JSONObject;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
@@ -9,6 +8,7 @@ import me.zhyd.oauth.enums.AuthUserGender;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
+import tools.jackson.databind.JsonNode;
 
 /**
  * 阿里云登录
@@ -29,25 +29,25 @@ public class AuthAliyunRequest extends AuthDefaultRequest {
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
         String response = doPostAuthorizationCode(authCallback.getCode());
-        JSONObject accessTokenObject = JSONObject.parseObject(response);
+        JsonNode accessTokenObject = toNode(response);
         return AuthToken.builder()
-                .accessToken(accessTokenObject.getString(Keys.OAUTH2_ACCESS_TOKEN))
-                .expireIn(accessTokenObject.getIntValue(Keys.OAUTH2_EXPIRES_IN))
-                .tokenType(accessTokenObject.getString(Keys.OAUTH2_TOKEN_TYPE))
-                .idToken(accessTokenObject.getString(Keys.OIDC_ID_TOKEN))
-                .refreshToken(accessTokenObject.getString(Keys.OAUTH2_REFRESH_TOKEN))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
+                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
+                .idToken(getStringValue(accessTokenObject, Keys.OIDC__ID_TOKEN))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
                 .build();
     }
 
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
         String userInfo = doGetUserInfo(authToken);
-        JSONObject object = JSONObject.parseObject(userInfo);
+        JsonNode object = toNode(userInfo);
         return AuthUser.builder()
                 .rawUserInfo(object)
-                .uuid(object.getString("sub"))
-                .username(object.getString("login_name"))
-                .nickname(object.getString(Keys.NAME))
+                .uuid(getStringValue(object, "sub"))
+                .username(getStringValue(object, "login_name"))
+                .nickname(getStringValue(object, Keys.NAME))
                 .gender(AuthUserGender.UNKNOWN)
                 .token(authToken)
                 .source(source.toString())

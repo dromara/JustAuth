@@ -1,6 +1,5 @@
 package me.zhyd.oauth.request;
 
-import com.alibaba.fastjson2.JSONObject;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
@@ -15,7 +14,9 @@ import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
+import me.zhyd.oauth.utils.JsonNodeUtils;
 import me.zhyd.oauth.utils.UrlBuilder;
+import tools.jackson.databind.JsonNode;
 
 
 /**
@@ -44,19 +45,19 @@ public class AuthDouyinRequest extends AuthDefaultRequest {
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
         String response = doGetUserInfo(authToken);
-        JSONObject userInfoObject = JSONObject.parseObject(response);
+        JsonNode userInfoObject = toNode(response);
         this.checkResponse(userInfoObject);
-        JSONObject object = userInfoObject.getJSONObject(Keys.DATA);
-        authToken.setUnionId(object.getString(Keys.VARIANT__UNION_ID));
+        JsonNode userInfoDataObject = JsonNodeUtils.findObjectNode(userInfoObject, Keys.DATA);
+        authToken.setUnionId(getStringValue(userInfoDataObject, Keys.VARIANT__UNION_ID));
         return AuthUser.builder()
-                .rawUserInfo(object)
-                .uuid(object.getString(Keys.VARIANT__UNION_ID))
-                .username(object.getString(Keys.NICKNAME))
-                .nickname(object.getString(Keys.NICKNAME))
-                .avatar(object.getString(Keys.AVATAR))
-                .remark(object.getString(Keys.DESCRIPTION))
-                .gender(AuthUserGender.getRealGender(object.getString(Keys.GENDER)))
-                .location(String.format("%s %s %s", object.getString("country"), object.getString("province"), object.getString("city")))
+                .rawUserInfo(userInfoDataObject)
+                .uuid(getStringValue(userInfoDataObject, Keys.VARIANT__UNION_ID))
+                .username(getStringValue(userInfoDataObject, Keys.NICKNAME))
+                .nickname(getStringValue(userInfoDataObject, Keys.NICKNAME))
+                .avatar(getStringValue(userInfoDataObject, Keys.AVATAR))
+                .remark(getStringValue(userInfoDataObject, Keys.DESCRIPTION))
+                .gender(AuthUserGender.getRealGender(getStringValue(userInfoDataObject, Keys.GENDER)))
+                .location(String.format("%s %s %s", getStringValue(userInfoDataObject, "country"), getStringValue(userInfoDataObject, "province"), getStringValue(userInfoDataObject, "city")))
                 .token(authToken)
                 .source(source.toString())
                 .build();
@@ -75,12 +76,12 @@ public class AuthDouyinRequest extends AuthDefaultRequest {
      *
      * @param object 请求响应内容
      */
-    private void checkResponse(JSONObject object) {
-        String message = object.getString(Keys.MESSAGE);
-        JSONObject data = object.getJSONObject(Keys.DATA);
-        int errorCode = data.getIntValue(Keys.ERROR_CODE);
+    private void checkResponse(JsonNode object) {
+        String message = getStringValue(object, Keys.MESSAGE);
+        JsonNode data = getDataNode(object);
+        int errorCode = getIntValue(data, Keys.ERROR_CODE);
         if (Keys.ERROR.equals(message) || errorCode != 0) {
-            throw new AuthException(errorCode, data.getString(Keys.DESCRIPTION));
+            throw new AuthException(errorCode, getStringValue(data, Keys.DESCRIPTION));
         }
     }
 
@@ -92,16 +93,17 @@ public class AuthDouyinRequest extends AuthDefaultRequest {
      */
     private AuthToken getToken(String accessTokenUrl) {
         String response = UnifiedHttpClient.getAdapter().post(accessTokenUrl).getBody();
-        JSONObject object = JSONObject.parseObject(response);
+        JsonNode object = toNode(response);
         this.checkResponse(object);
-        JSONObject dataObj = object.getJSONObject(Keys.DATA);
+
+        JsonNode accessTokenObject = getDataNode(object);
         return AuthToken.builder()
-                .accessToken(dataObj.getString(Keys.OAUTH2_ACCESS_TOKEN))
-                .openId(dataObj.getString(Keys.VARIANT__OPEN_ID))
-                .expireIn(dataObj.getIntValue(Keys.OAUTH2_EXPIRES_IN))
-                .refreshToken(dataObj.getString(Keys.OAUTH2_REFRESH_TOKEN))
-                .refreshTokenExpireIn(dataObj.getIntValue("refresh_expires_in"))
-                .scope(dataObj.getString(Keys.OAUTH2_SCOPE))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
+                .scope(getStringValue(accessTokenObject, Keys.OAUTH2__SCOPE))
+                .openId(getStringValue(accessTokenObject, Keys.VARIANT__OPEN_ID))
+                .refreshTokenExpireIn(getIntValue(accessTokenObject, "refresh_expires_in"))
                 .build();
     }
 
@@ -115,11 +117,11 @@ public class AuthDouyinRequest extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(source.authorize())
-                .queryParam(Keys.OAUTH2_RESPONSE_TYPE, Keys.OAUTH2_CODE)
+                .queryParam(Keys.OAUTH2__RESPONSE_TYPE, Keys.OAUTH2__CODE)
                 .queryParam(CLIENT_KEY, config.getClientId())
-                .queryParam(Keys.OAUTH2_REDIRECT_URI, config.getRedirectUri())
-                .queryParam(Keys.OAUTH2_SCOPE, this.getScopes(",", true, AuthScopeUtils.getDefaultScopes(AuthDouyinScope.values())))
-                .queryParam(Keys.OAUTH2_STATE, getRealState(state))
+                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(",", true, AuthScopeUtils.getDefaultScopes(AuthDouyinScope.values())))
+                .queryParam(Keys.OAUTH2__STATE, getRealState(state))
                 .build();
     }
 
@@ -132,10 +134,10 @@ public class AuthDouyinRequest extends AuthDefaultRequest {
     @Override
     protected String accessTokenUrl(String code) {
         return UrlBuilder.fromBaseUrl(source.accessToken())
-                .queryParam(Keys.OAUTH2_CODE, code)
+                .queryParam(Keys.OAUTH2__CODE, code)
                 .queryParam(CLIENT_KEY, config.getClientId())
-                .queryParam(Keys.OAUTH2_CLIENT_SECRET, config.getClientSecret())
-                .queryParam(Keys.OAUTH2_GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE)
+                .queryParam(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret())
+                .queryParam(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE)
                 .build();
     }
 
@@ -148,7 +150,7 @@ public class AuthDouyinRequest extends AuthDefaultRequest {
     @Override
     protected String userInfoUrl(AuthToken authToken) {
         return UrlBuilder.fromBaseUrl(source.userInfo())
-                .queryParam(Keys.OAUTH2_ACCESS_TOKEN, authToken.getAccessToken())
+                .queryParam(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken())
                 .queryParam(Keys.VARIANT__OPEN_ID, authToken.getOpenId())
                 .build();
     }
@@ -163,8 +165,8 @@ public class AuthDouyinRequest extends AuthDefaultRequest {
     protected String refreshTokenUrl(String refreshToken) {
         return UrlBuilder.fromBaseUrl(source.refresh())
                 .queryParam(CLIENT_KEY, config.getClientId())
-                .queryParam(Keys.OAUTH2_REFRESH_TOKEN, refreshToken)
-                .queryParam(Keys.OAUTH2_GRANT_TYPE, Keys.OAUTH2_REFRESH_TOKEN)
+                .queryParam(Keys.OAUTH2__REFRESH_TOKEN, refreshToken)
+                .queryParam(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__REFRESH_TOKEN)
                 .build();
     }
 }
