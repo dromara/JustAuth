@@ -63,11 +63,11 @@ public abstract class AbstractAuthMicrosoftRequest extends AuthDefaultRequest {
         this.checkResponse(accessTokenObject);
 
         return AuthToken.builder()
-                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
-                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
-                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
-                .scope(getStringValue(accessTokenObject, Keys.OAUTH2__SCOPE))
-                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2.EXPIRES_IN))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2.REFRESH_TOKEN))
+                .scope(getStringValue(accessTokenObject, Keys.OAUTH2.SCOPE))
+                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2.TOKEN_TYPE))
                 .build();
     }
 
@@ -77,8 +77,8 @@ public abstract class AbstractAuthMicrosoftRequest extends AuthDefaultRequest {
      * @param object 请求响应内容
      */
     private void checkResponse(JsonNode object) {
-        if (containsKey(object, Keys.ERROR)) {
-            throw new AuthException(getStringValue(object, Keys.ERROR_DESCRIPTION));
+        if (containsKey(object, Keys.RESPONSE_FIELDS.ERROR)) {
+            throw new AuthException(getStringValue(object, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
         }
     }
 
@@ -98,9 +98,9 @@ public abstract class AbstractAuthMicrosoftRequest extends AuthDefaultRequest {
 
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
-                .uuid(getStringValue(userInfoObject, Keys.ID))
+                .uuid(getStringValue(userInfoObject, Keys.USERINFO.ID))
                 .username(getStringValue(userInfoObject, "userPrincipalName"))
-                .nickname(getStringValue(userInfoObject, Keys.VARIANT__DISPLAY_NAME))
+                .nickname(getStringValue(userInfoObject, Keys.USERINFO.DISPLAY_NAME))
                 .location(getStringValue(userInfoObject, "officeLocation"))
                 .email(getStringValue(userInfoObject, "mail"))
                 .gender(AuthUserGender.UNKNOWN)
@@ -136,12 +136,12 @@ public abstract class AbstractAuthMicrosoftRequest extends AuthDefaultRequest {
         // @since 1.16.6
         String tenantId = StringUtils.isEmpty(config.getTenantId()) ? "common" : config.getTenantId();
         return UrlBuilder.fromBaseUrl(String.format(source.authorize(), tenantId))
-                .queryParam(Keys.OAUTH2__RESPONSE_TYPE, Keys.OAUTH2__CODE)
-                .queryParam(Keys.OAUTH2__CLIENT_ID, config.getClientId())
-                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
-                .queryParam(Keys.OAUTH2__STATE, getRealState(state))
+                .queryParam(Keys.OAUTH2.RESPONSE_TYPE, Keys.OAUTH2.CODE)
+                .queryParam(Keys.OAUTH2.CLIENT_ID, config.getClientId())
+                .queryParam(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2.STATE, getRealState(state))
                 .queryParam("response_mode", "query")
-                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(" ", false, AuthScopeUtils.getDefaultScopes(AuthMicrosoftScope.values())))
+                .queryParam(Keys.OAUTH2.SCOPE, this.getScopes(" ", false, AuthScopeUtils.getDefaultScopes(AuthMicrosoftScope.values())))
                 .build();
     }
 
@@ -155,12 +155,12 @@ public abstract class AbstractAuthMicrosoftRequest extends AuthDefaultRequest {
     protected String accessTokenUrl(String code) {
         String tenantId = StringUtils.isEmpty(config.getTenantId()) ? "common" : config.getTenantId();
         return UrlBuilder.fromBaseUrl(String.format(source.accessToken(), tenantId))
-                .queryParam(Keys.OAUTH2__CODE, code)
-                .queryParam(Keys.OAUTH2__CLIENT_ID, config.getClientId())
-                .queryParam(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret())
-                .queryParam(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE)
-                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(" ", false, AuthScopeUtils.getDefaultScopes(AuthMicrosoftScope.values())))
-                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2.CODE, code)
+                .queryParam(Keys.OAUTH2.CLIENT_ID, config.getClientId())
+                .queryParam(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret())
+                .queryParam(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE)
+                .queryParam(Keys.OAUTH2.SCOPE, this.getScopes(" ", false, AuthScopeUtils.getDefaultScopes(AuthMicrosoftScope.values())))
+                .queryParam(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri())
                 .build();
     }
 
@@ -185,12 +185,12 @@ public abstract class AbstractAuthMicrosoftRequest extends AuthDefaultRequest {
     protected String refreshTokenUrl(String refreshToken) {
         String tenantId = StringUtils.isEmpty(config.getTenantId()) ? "common" : config.getTenantId();
         return UrlBuilder.fromBaseUrl(String.format(source.refresh(), tenantId))
-                .queryParam(Keys.OAUTH2__CLIENT_ID, config.getClientId())
-                .queryParam(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret())
-                .queryParam(Keys.OAUTH2__REFRESH_TOKEN, refreshToken)
-                .queryParam(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__REFRESH_TOKEN)
-                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(" ", false, AuthScopeUtils.getDefaultScopes(AuthMicrosoftScope.values())))
-                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2.CLIENT_ID, config.getClientId())
+                .queryParam(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret())
+                .queryParam(Keys.OAUTH2.REFRESH_TOKEN, refreshToken)
+                .queryParam(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.REFRESH_TOKEN)
+                .queryParam(Keys.OAUTH2.SCOPE, this.getScopes(" ", false, AuthScopeUtils.getDefaultScopes(AuthMicrosoftScope.values())))
+                .queryParam(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri())
                 .build();
     }
 }

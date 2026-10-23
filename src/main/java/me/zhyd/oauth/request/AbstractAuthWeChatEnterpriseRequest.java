@@ -46,8 +46,8 @@ public abstract class AbstractAuthWeChatEnterpriseRequest extends AuthDefaultReq
         JsonNode accessTokenObject = this.checkResponse(response);
 
         return AuthToken.builder()
-                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
-                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2.EXPIRES_IN))
                 .code(authCallback.getCode())
                 .build();
     }
@@ -74,13 +74,13 @@ public abstract class AbstractAuthWeChatEnterpriseRequest extends AuthDefaultReq
 
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
-                .username(getStringValue(userInfoObject, Keys.NAME))
+                .username(getStringValue(userInfoObject, Keys.USERINFO.NAME))
                 .nickname(getStringValue(userInfoObject, "alias"))
-                .avatar(getStringValue(userInfoObject, Keys.AVATAR))
-                .location(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__ADDRESS))
-                .email(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
+                .avatar(getStringValue(userInfoObject, Keys.USERINFO.AVATAR))
+                .location(getStringValue(userInfoObject, Keys.USERINFO.ADDRESS))
+                .email(getStringValue(userInfoObject, Keys.USERINFO.EMAIL))
                 .uuid(userId)
-                .gender(AuthUserGender.getWechatRealGender(getStringValue(userInfoObject, Keys.GENDER)))
+                .gender(AuthUserGender.getWechatRealGender(getStringValue(userInfoObject, Keys.USERINFO.GENDER)))
                 .token(authToken)
                 .source(source.toString())
                 .build();
@@ -95,8 +95,8 @@ public abstract class AbstractAuthWeChatEnterpriseRequest extends AuthDefaultReq
     private JsonNode checkResponse(String response) {
         JsonNode object = toNode(response);
 
-        if (containsKey(object, Keys.VARIANT__ERRCODE) && getIntValue(object, Keys.VARIANT__ERRCODE) != 0) {
-            throw new AuthException(getStringValue(object, Keys.VARIANT__ERRMSG), source);
+        if (containsKey(object, Keys.RESPONSE_FIELDS.ERRCODE) && getIntValue(object, Keys.RESPONSE_FIELDS.ERRCODE) != 0) {
+            throw new AuthException(getStringValue(object, Keys.RESPONSE_FIELDS.ERRMSG), source);
         }
 
         return object;
@@ -126,8 +126,8 @@ public abstract class AbstractAuthWeChatEnterpriseRequest extends AuthDefaultReq
     @Override
     protected String userInfoUrl(AuthToken authToken) {
         return UrlBuilder.fromBaseUrl(source.userInfo())
-                .queryParam(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken())
-                .queryParam(Keys.OAUTH2__CODE, authToken.getCode())
+                .queryParam(Keys.OAUTH2.ACCESS_TOKEN, authToken.getAccessToken())
+                .queryParam(Keys.OAUTH2.CODE, authToken.getCode())
                 .build();
     }
 
@@ -142,8 +142,8 @@ public abstract class AbstractAuthWeChatEnterpriseRequest extends AuthDefaultReq
     private JsonNode getUserDetail(String accessToken, String userId, String userTicket) {
         // 用户基础信息
         String userInfoUrl = UrlBuilder.fromBaseUrl("https://qyapi.weixin.qq.com/cgi-bin/user/get")
-                .queryParam(Keys.OAUTH2__ACCESS_TOKEN, accessToken)
-                .queryParam(Keys.USERID, userId)
+                .queryParam(Keys.OAUTH2.ACCESS_TOKEN, accessToken)
+                .queryParam(Keys.USERINFO.USERID, userId)
                 .build();
         String userInfoResponse = UnifiedHttpClient.getAdapter().get(userInfoUrl).getBody();
         JsonNode userInfoObject = checkResponse(userInfoResponse);
@@ -151,7 +151,7 @@ public abstract class AbstractAuthWeChatEnterpriseRequest extends AuthDefaultReq
         // 用户敏感信息
         if (StringUtils.isNotEmpty(userTicket)) {
             String userDetailUrl = UrlBuilder.fromBaseUrl("https://qyapi.weixin.qq.com/cgi-bin/auth/getuserdetail")
-                    .queryParam(Keys.OAUTH2__ACCESS_TOKEN, accessToken)
+                    .queryParam(Keys.OAUTH2.ACCESS_TOKEN, accessToken)
                     .build();
             Map<String, Object> param = new HashMap<>();
             param.put("user_ticket", userTicket);

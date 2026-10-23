@@ -35,12 +35,12 @@ abstract class AbstractAuthServerRequest extends AuthDefaultRequest {
      */
     protected AuthToken buildToken(JsonNode object) {
         return AuthToken.builder()
-                .accessToken(stringValue(object, Keys.OAUTH2__ACCESS_TOKEN))
-                .refreshToken(stringValue(object, Keys.OAUTH2__REFRESH_TOKEN))
-                .idToken(stringValue(object, Keys.OIDC__ID_TOKEN))
-                .tokenType(stringValue(object, Keys.OAUTH2__TOKEN_TYPE))
-                .scope(stringValue(object, Keys.OAUTH2__SCOPE))
-                .expireIn(getIntValue(object, Keys.OAUTH2__EXPIRES_IN))
+                .accessToken(stringValue(object, Keys.OAUTH2.ACCESS_TOKEN))
+                .refreshToken(stringValue(object, Keys.OAUTH2.REFRESH_TOKEN))
+                .idToken(stringValue(object, Keys.OIDC.ID_TOKEN))
+                .tokenType(stringValue(object, Keys.OAUTH2.TOKEN_TYPE))
+                .scope(stringValue(object, Keys.OAUTH2.SCOPE))
+                .expireIn(getIntValue(object, Keys.OAUTH2.EXPIRES_IN))
                 .build();
     }
 
@@ -53,12 +53,12 @@ abstract class AbstractAuthServerRequest extends AuthDefaultRequest {
         if (object == null) {
             throw new AuthException("Empty response from OAuth server");
         }
-        if (object.has(Keys.ERROR)) {
-            String message = stringValue(object, Keys.ERROR_DESCRIPTION);
-            throw new AuthException(message == null ? stringValue(object, Keys.ERROR) : message);
+        if (object.has(Keys.RESPONSE_FIELDS.ERROR)) {
+            String message = stringValue(object, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION);
+            throw new AuthException(message == null ? stringValue(object, Keys.RESPONSE_FIELDS.ERROR) : message);
         }
-        if (object.has(Keys.MESSAGE)) {
-            throw new AuthException(stringValue(object, Keys.MESSAGE));
+        if (object.has(Keys.USERINFO.MESSAGE)) {
+            throw new AuthException(stringValue(object, Keys.USERINFO.MESSAGE));
         }
     }
 
@@ -150,10 +150,10 @@ abstract class AbstractAuthServerRequest extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(serverEndpoint(source.authorize()))
-                .queryParam(Keys.OAUTH2__RESPONSE_TYPE, Keys.OAUTH2__CODE)
-                .queryParam(Keys.OAUTH2__CLIENT_ID, config.getClientId())
-                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
-                .queryParam(Keys.OAUTH2__STATE, getRealState(state))
+                .queryParam(Keys.OAUTH2.RESPONSE_TYPE, Keys.OAUTH2.CODE)
+                .queryParam(Keys.OAUTH2.CLIENT_ID, config.getClientId())
+                .queryParam(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2.STATE, getRealState(state))
                 .build();
     }
 

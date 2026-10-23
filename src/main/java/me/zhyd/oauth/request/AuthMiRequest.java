@@ -48,16 +48,16 @@ public class AuthMiRequest extends AuthDefaultRequest {
         String jsonStr = response.replace(PREFIX, HttpConstants.EMPTY);
 
         JsonNode accessTokenObject = toNode(jsonStr);
-        if (containsKey(accessTokenObject, Keys.ERROR)) {
-            throw new AuthException(getStringValue(accessTokenObject, Keys.ERROR_DESCRIPTION));
+        if (containsKey(accessTokenObject, Keys.RESPONSE_FIELDS.ERROR)) {
+            throw new AuthException(getStringValue(accessTokenObject, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
         }
 
         return AuthToken.builder()
-                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
-                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
-                .scope(getStringValue(accessTokenObject, Keys.OAUTH2__SCOPE))
-                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
-                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2.EXPIRES_IN))
+                .scope(getStringValue(accessTokenObject, Keys.OAUTH2.SCOPE))
+                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2.TOKEN_TYPE))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2.REFRESH_TOKEN))
                 .openId(getStringValue(accessTokenObject, "openId"))
                 .macAlgorithm(getStringValue(accessTokenObject, "mac_algorithm"))
                 .macKey(getStringValue(accessTokenObject, "mac_key"))
@@ -70,8 +70,8 @@ public class AuthMiRequest extends AuthDefaultRequest {
         String userResponse = doGetUserInfo(authToken);
 
         JsonNode userProfile = toNode(userResponse);
-        if (Keys.ERROR.equalsIgnoreCase(getStringValue(userProfile, Keys.RESULT))) {
-            throw new AuthException(getStringValue(userProfile, Keys.DESCRIPTION));
+        if (Keys.RESPONSE_FIELDS.ERROR.equalsIgnoreCase(getStringValue(userProfile, Keys.RESPONSE_FIELDS.RESULT))) {
+            throw new AuthException(getStringValue(userProfile, Keys.USERINFO.DESCRIPTION));
         }
 
         JsonNode userInfoObject = getDataNode(userProfile);
@@ -95,9 +95,9 @@ public class AuthMiRequest extends AuthDefaultRequest {
         String emailResponse = UnifiedHttpClient.getAdapter().get(emailPhoneUrl).getBody();
 
         JsonNode userEmailPhone = toNode(emailResponse);
-        if (!Keys.ERROR.equalsIgnoreCase(getStringValue(userEmailPhone, Keys.RESULT))) {
+        if (!Keys.RESPONSE_FIELDS.ERROR.equalsIgnoreCase(getStringValue(userEmailPhone, Keys.RESPONSE_FIELDS.RESULT))) {
             JsonNode emailPhone = getDataNode(userEmailPhone);
-            authUser.setEmail(getStringValue(emailPhone, Keys.OAUTH2_SCOPE__EMAIL));
+            authUser.setEmail(getStringValue(emailPhone, Keys.USERINFO.EMAIL));
         } else {
             Log.warn("小米开发平台暂时不对外开放用户手机及邮箱信息的获取");
         }
@@ -130,7 +130,7 @@ public class AuthMiRequest extends AuthDefaultRequest {
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(super.authorize(state))
                 .queryParam("skip_confirm", "false")
-                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(" ", true, AuthScopeUtils.getDefaultScopes(AuthMiScope.values())))
+                .queryParam(Keys.OAUTH2.SCOPE, this.getScopes(" ", true, AuthScopeUtils.getDefaultScopes(AuthMiScope.values())))
                 .build();
     }
 
@@ -143,7 +143,7 @@ public class AuthMiRequest extends AuthDefaultRequest {
     @Override
     protected String userInfoUrl(AuthToken authToken) {
         return UrlBuilder.fromBaseUrl(source.userInfo())
-                .queryParam(Keys.PARAM__CLIENT_ID, config.getClientId())
+                .queryParam(Keys.PARAM.CLIENT_ID, config.getClientId())
                 .queryParam("token", authToken.getAccessToken())
                 .build();
     }

@@ -66,20 +66,20 @@ public class AuthWeChatMpRequest extends AuthDefaultRequest {
 
         JsonNode userInfoObject = toNode(response);
         this.checkResponse(userInfoObject);
-        String location = String.format("%s-%s-%s", getStringValue(userInfoObject, Keys.COUNTRY), getStringValue(userInfoObject, Keys.PROVINCE), getStringValue(userInfoObject, Keys.CITY));
+        String location = String.format("%s-%s-%s", getStringValue(userInfoObject, Keys.USERINFO.COUNTRY), getStringValue(userInfoObject, Keys.USERINFO.PROVINCE), getStringValue(userInfoObject, Keys.USERINFO.CITY));
 
-        if (containsKey(userInfoObject, Keys.UNIONID)) {
-            authToken.setUnionId(getStringValue(userInfoObject, Keys.UNIONID));
+        if (containsKey(userInfoObject, Keys.USERINFO.UNIONID)) {
+            authToken.setUnionId(getStringValue(userInfoObject, Keys.USERINFO.UNIONID));
         }
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
-                .username(getStringValue(userInfoObject, Keys.NICKNAME))
-                .nickname(getStringValue(userInfoObject, Keys.NICKNAME))
+                .username(getStringValue(userInfoObject, Keys.USERINFO.NICKNAME))
+                .nickname(getStringValue(userInfoObject, Keys.USERINFO.NICKNAME))
                 .avatar(getStringValue(userInfoObject, "headimgurl"))
                 .location(location)
                 .uuid(openId)
                 .snapshotUser(authToken.isSnapshotUser())
-                .gender(AuthUserGender.getWechatRealGender(getStringValue(userInfoObject, Keys.SEX)))
+                .gender(AuthUserGender.getWechatRealGender(getStringValue(userInfoObject, Keys.USERINFO.SEX)))
                 .token(authToken)
                 .source(source.toString())
                 .build();
@@ -99,8 +99,8 @@ public class AuthWeChatMpRequest extends AuthDefaultRequest {
      * @param object 请求响应内容
      */
     private void checkResponse(JsonNode object) {
-        if (containsKey(object, Keys.VARIANT__ERRCODE)) {
-            throw new AuthException(getIntValue(object, Keys.VARIANT__ERRCODE), getStringValue(object, Keys.VARIANT__ERRMSG));
+        if (containsKey(object, Keys.RESPONSE_FIELDS.ERRCODE)) {
+            throw new AuthException(getIntValue(object, Keys.RESPONSE_FIELDS.ERRCODE), getStringValue(object, Keys.RESPONSE_FIELDS.ERRMSG));
         }
     }
 
@@ -117,11 +117,11 @@ public class AuthWeChatMpRequest extends AuthDefaultRequest {
         this.checkResponse(accessTokenObject);
 
         return AuthToken.builder()
-                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
-                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
-                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
-                .openId(getStringValue(accessTokenObject, Keys.OAUTH2_SCOPE__OPENID))
-                .scope(getStringValue(accessTokenObject, Keys.OAUTH2__SCOPE))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2.REFRESH_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2.EXPIRES_IN))
+                .openId(getStringValue(accessTokenObject, Keys.OAUTH2.SCOPES.OPENID))
+                .scope(getStringValue(accessTokenObject, Keys.OAUTH2.SCOPE))
                 .snapshotUser(getIntValue(accessTokenObject, "is_snapshotuser") == 1)
                 .build();
     }
@@ -136,11 +136,11 @@ public class AuthWeChatMpRequest extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(source.authorize())
-                .queryParam(Keys.APPID, config.getClientId())
-                .queryParam(Keys.OAUTH2__REDIRECT_URI, GlobalAuthUtils.urlEncode(config.getRedirectUri()))
-                .queryParam(Keys.OAUTH2__RESPONSE_TYPE, Keys.OAUTH2__CODE)
-                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(",", false, AuthScopeUtils.getDefaultScopes(AuthWechatMpScope.values())))
-                .queryParam(Keys.OAUTH2__STATE, getRealState(state).concat("#wechat_redirect"))
+                .queryParam(Keys.OAUTH2.APPID, config.getClientId())
+                .queryParam(Keys.OAUTH2.REDIRECT_URI, GlobalAuthUtils.urlEncode(config.getRedirectUri()))
+                .queryParam(Keys.OAUTH2.RESPONSE_TYPE, Keys.OAUTH2.CODE)
+                .queryParam(Keys.OAUTH2.SCOPE, this.getScopes(",", false, AuthScopeUtils.getDefaultScopes(AuthWechatMpScope.values())))
+                .queryParam(Keys.OAUTH2.STATE, getRealState(state).concat("#wechat_redirect"))
                 .build();
     }
 
@@ -153,10 +153,10 @@ public class AuthWeChatMpRequest extends AuthDefaultRequest {
     @Override
     protected String accessTokenUrl(String code) {
         return UrlBuilder.fromBaseUrl(source.accessToken())
-                .queryParam(Keys.APPID, config.getClientId())
-                .queryParam(Keys.PARAM__SECRET, config.getClientSecret())
-                .queryParam(Keys.OAUTH2__CODE, code)
-                .queryParam(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE)
+                .queryParam(Keys.OAUTH2.APPID, config.getClientId())
+                .queryParam(Keys.OAUTH2.SECRET, config.getClientSecret())
+                .queryParam(Keys.OAUTH2.CODE, code)
+                .queryParam(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE)
                 .build();
     }
 
@@ -169,9 +169,9 @@ public class AuthWeChatMpRequest extends AuthDefaultRequest {
     @Override
     protected String userInfoUrl(AuthToken authToken) {
         return UrlBuilder.fromBaseUrl(source.userInfo())
-                .queryParam(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken())
-                .queryParam(Keys.OAUTH2_SCOPE__OPENID, authToken.getOpenId())
-                .queryParam(Keys.LANG, "zh_CN")
+                .queryParam(Keys.OAUTH2.ACCESS_TOKEN, authToken.getAccessToken())
+                .queryParam(Keys.OAUTH2.SCOPES.OPENID, authToken.getOpenId())
+                .queryParam(Keys.USERINFO.LANG, "zh_CN")
                 .build();
     }
 
@@ -184,9 +184,9 @@ public class AuthWeChatMpRequest extends AuthDefaultRequest {
     @Override
     protected String refreshTokenUrl(String refreshToken) {
         return UrlBuilder.fromBaseUrl(source.refresh())
-                .queryParam(Keys.APPID, config.getClientId())
-                .queryParam(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__REFRESH_TOKEN)
-                .queryParam(Keys.OAUTH2__REFRESH_TOKEN, refreshToken)
+                .queryParam(Keys.OAUTH2.APPID, config.getClientId())
+                .queryParam(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.REFRESH_TOKEN)
+                .queryParam(Keys.OAUTH2.REFRESH_TOKEN, refreshToken)
                 .build();
     }
 }

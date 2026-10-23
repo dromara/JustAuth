@@ -53,7 +53,7 @@ public class AuthStackOverflowRequest extends AuthDefaultRequest {
         this.checkResponse(accessTokenObject);
 
         return AuthToken.builder()
-                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
                 .expireIn(getIntValue(accessTokenObject, "expires"))
                 .build();
     }
@@ -61,7 +61,7 @@ public class AuthStackOverflowRequest extends AuthDefaultRequest {
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
         String userInfoUrl = UrlBuilder.fromBaseUrl(this.source.userInfo())
-                .queryParam(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken())
+                .queryParam(Keys.OAUTH2.ACCESS_TOKEN, authToken.getAccessToken())
                 .queryParam("site", "stackoverflow")
                 .queryParam("key", this.config.getStackOverflowKey())
                 .build();
@@ -74,9 +74,9 @@ public class AuthStackOverflowRequest extends AuthDefaultRequest {
 
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
-                .uuid(getStringValue(userInfoObject, Keys.VARIANT__USER_ID))
+                .uuid(getStringValue(userInfoObject, Keys.USERINFO.USER_ID))
                 .avatar(getStringValue(userInfoObject, "profile_image"))
-                .location(getStringValue(userInfoObject, Keys.LOCATION))
+                .location(getStringValue(userInfoObject, Keys.USERINFO.LOCATION))
                 .nickname(getStringValue(userInfoObject, "display_name"))
                 .blog(getStringValue(userInfoObject, "website_url"))
                 .gender(AuthUserGender.UNKNOWN)
@@ -95,7 +95,7 @@ public class AuthStackOverflowRequest extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(super.authorize(state))
-                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(",", false, AuthScopeUtils.getDefaultScopes(AuthStackoverflowScope.values())))
+                .queryParam(Keys.OAUTH2.SCOPE, this.getScopes(",", false, AuthScopeUtils.getDefaultScopes(AuthStackoverflowScope.values())))
                 .build();
     }
 
@@ -105,8 +105,8 @@ public class AuthStackOverflowRequest extends AuthDefaultRequest {
      * @param object 请求响应内容
      */
     private void checkResponse(JsonNode object) {
-        if (containsKey(object, Keys.ERROR)) {
-            throw new AuthException(getStringValue(object, Keys.ERROR_DESCRIPTION));
+        if (containsKey(object, Keys.RESPONSE_FIELDS.ERROR)) {
+            throw new AuthException(getStringValue(object, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
         }
     }
 }

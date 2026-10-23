@@ -52,18 +52,18 @@ public abstract class AbstractAuthDingtalkRequest extends AuthDefaultRequest {
         String response = UnifiedHttpClient.getAdapter().post(userInfoUrl(authToken), JsonUtils.toJson(param)).getBody();
 
         JsonNode responseObject = toNode(response);
-        if (getIntValue(responseObject, Keys.VARIANT__ERRCODE) != 0) {
-            throw new AuthException(getStringValue(responseObject, Keys.VARIANT__ERRMSG));
+        if (getIntValue(responseObject, Keys.RESPONSE_FIELDS.ERRCODE) != 0) {
+            throw new AuthException(getStringValue(responseObject, Keys.RESPONSE_FIELDS.ERRMSG));
         }
 
         JsonNode userInfoObject = getObjectNode(responseObject, "user_info");
         AuthToken token = AuthToken.builder()
-                .openId(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__OPENID))
-                .unionId(getStringValue(userInfoObject, Keys.UNIONID))
+                .openId(getStringValue(userInfoObject, Keys.OAUTH2.SCOPES.OPENID))
+                .unionId(getStringValue(userInfoObject, Keys.USERINFO.UNIONID))
                 .build();
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
-                .uuid(getStringValue(userInfoObject, Keys.UNIONID))
+                .uuid(getStringValue(userInfoObject, Keys.USERINFO.UNIONID))
                 .nickname(getStringValue(userInfoObject, "nick"))
                 .username(getStringValue(userInfoObject, "nick"))
                 .gender(AuthUserGender.UNKNOWN)
@@ -82,11 +82,11 @@ public abstract class AbstractAuthDingtalkRequest extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(source.authorize())
-                .queryParam(Keys.OAUTH2__RESPONSE_TYPE, Keys.OAUTH2__CODE)
-                .queryParam(Keys.APPID, config.getClientId())
-                .queryParam(Keys.OAUTH2__SCOPE, "snsapi_login")
-                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
-                .queryParam(Keys.OAUTH2__STATE, getRealState(state))
+                .queryParam(Keys.OAUTH2.RESPONSE_TYPE, Keys.OAUTH2.CODE)
+                .queryParam(Keys.OAUTH2.APPID, config.getClientId())
+                .queryParam(Keys.OAUTH2.SCOPE, "snsapi_login")
+                .queryParam(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2.STATE, getRealState(state))
                 .build();
     }
 

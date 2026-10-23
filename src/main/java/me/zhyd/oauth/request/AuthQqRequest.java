@@ -63,15 +63,15 @@ public class AuthQqRequest extends AuthDefaultRequest {
             avatar = getStringValue(object, "figureurl_qq_1");
         }
 
-        String location = String.format("%s-%s", getStringValue(object, Keys.PROVINCE), getStringValue(object, Keys.CITY));
+        String location = String.format("%s-%s", getStringValue(object, Keys.USERINFO.PROVINCE), getStringValue(object, Keys.USERINFO.CITY));
         return AuthUser.builder()
                 .rawUserInfo(object)
-                .username(getStringValue(object, Keys.NICKNAME))
-                .nickname(getStringValue(object, Keys.NICKNAME))
+                .username(getStringValue(object, Keys.USERINFO.NICKNAME))
+                .nickname(getStringValue(object, Keys.USERINFO.NICKNAME))
                 .avatar(avatar)
                 .location(location)
                 .uuid(openId)
-                .gender(AuthUserGender.getRealGender(getStringValue(object, Keys.GENDER)))
+                .gender(AuthUserGender.getRealGender(getStringValue(object, Keys.USERINFO.GENDER)))
                 .token(authToken)
                 .source(source.toString())
                 .build();
@@ -86,20 +86,20 @@ public class AuthQqRequest extends AuthDefaultRequest {
      */
     private String getOpenId(AuthToken authToken) {
         String response = UnifiedHttpClient.getAdapter().get(UrlBuilder.fromBaseUrl("https://graph.qq.com/oauth2.0/me")
-                .queryParam(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken())
-                .queryParam(Keys.UNIONID, config.isUnionId() ? 1 : 0)
+                .queryParam(Keys.OAUTH2.ACCESS_TOKEN, authToken.getAccessToken())
+                .queryParam(Keys.USERINFO.UNIONID, config.isUnionId() ? 1 : 0)
                 .build()).getBody();
         String removePrefix = response.replace("callback(", "");
         String removeSuffix = removePrefix.replace(");", "");
         String openId = removeSuffix.trim();
 
         JsonNode object = toNode(openId);
-        if (containsKey(object, Keys.ERROR)) {
-            throw new AuthException(object.get(Keys.ERROR) + ":" + object.get(Keys.ERROR_DESCRIPTION));
+        if (containsKey(object, Keys.RESPONSE_FIELDS.ERROR)) {
+            throw new AuthException(object.get(Keys.RESPONSE_FIELDS.ERROR) + ":" + object.get(Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
         }
-        authToken.setOpenId(getStringValue(object, Keys.OAUTH2_SCOPE__OPENID));
-        if (containsKey(object, Keys.UNIONID)) {
-            authToken.setUnionId(getStringValue(object, Keys.UNIONID));
+        authToken.setOpenId(getStringValue(object, Keys.OAUTH2.SCOPES.OPENID));
+        if (containsKey(object, Keys.USERINFO.UNIONID)) {
+            authToken.setUnionId(getStringValue(object, Keys.USERINFO.UNIONID));
         }
         return StringUtils.isEmpty(authToken.getUnionId()) ? authToken.getOpenId() : authToken.getUnionId();
     }
@@ -113,28 +113,28 @@ public class AuthQqRequest extends AuthDefaultRequest {
     @Override
     protected String userInfoUrl(AuthToken authToken) {
         return UrlBuilder.fromBaseUrl(source.userInfo())
-                .queryParam(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken())
+                .queryParam(Keys.OAUTH2.ACCESS_TOKEN, authToken.getAccessToken())
                 .queryParam("oauth_consumer_key", config.getClientId())
-                .queryParam(Keys.OAUTH2_SCOPE__OPENID, authToken.getOpenId())
+                .queryParam(Keys.OAUTH2.SCOPES.OPENID, authToken.getOpenId())
                 .build();
     }
 
     private AuthToken getAuthToken(String response) {
         Map<String, String> accessTokenObject = GlobalAuthUtils.parseStringToMap(response);
-        if (!accessTokenObject.containsKey(Keys.OAUTH2__ACCESS_TOKEN) || accessTokenObject.containsKey(Keys.OAUTH2__CODE)) {
+        if (!accessTokenObject.containsKey(Keys.OAUTH2.ACCESS_TOKEN) || accessTokenObject.containsKey(Keys.OAUTH2.CODE)) {
             throw new AuthException(accessTokenObject.get("msg"));
         }
         return AuthToken.builder()
-                .accessToken(accessTokenObject.get(Keys.OAUTH2__ACCESS_TOKEN))
-                .expireIn(Integer.parseInt(accessTokenObject.getOrDefault(Keys.OAUTH2__EXPIRES_IN, "0")))
-                .refreshToken(accessTokenObject.get(Keys.OAUTH2__REFRESH_TOKEN))
+                .accessToken(accessTokenObject.get(Keys.OAUTH2.ACCESS_TOKEN))
+                .expireIn(Integer.parseInt(accessTokenObject.getOrDefault(Keys.OAUTH2.EXPIRES_IN, "0")))
+                .refreshToken(accessTokenObject.get(Keys.OAUTH2.REFRESH_TOKEN))
                 .build();
     }
 
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(super.authorize(state))
-                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(",", false, AuthScopeUtils.getDefaultScopes(AuthQqScope.values())))
+                .queryParam(Keys.OAUTH2.SCOPE, this.getScopes(",", false, AuthScopeUtils.getDefaultScopes(AuthQqScope.values())))
                 .build();
     }
 }

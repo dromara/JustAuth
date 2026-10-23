@@ -42,12 +42,12 @@ public class AuthGithubRequest extends AuthDefaultRequest {
         String response = doPostAuthorizationCode(authCallback.getCode());
         Map<String, String> res = GlobalAuthUtils.parseStringToMap(response);
 
-        this.checkResponse(res.containsKey(Keys.ERROR), res.get(Keys.ERROR_DESCRIPTION));
+        this.checkResponse(res.containsKey(Keys.RESPONSE_FIELDS.ERROR), res.get(Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
 
         return AuthToken.builder()
-                .accessToken(res.get(Keys.OAUTH2__ACCESS_TOKEN))
-                .scope(res.get(Keys.OAUTH2__SCOPE))
-                .tokenType(res.get(Keys.OAUTH2__TOKEN_TYPE))
+                .accessToken(res.get(Keys.OAUTH2.ACCESS_TOKEN))
+                .scope(res.get(Keys.OAUTH2.SCOPE))
+                .tokenType(res.get(Keys.OAUTH2.TOKEN_TYPE))
                 .build();
     }
 
@@ -58,18 +58,18 @@ public class AuthGithubRequest extends AuthDefaultRequest {
         String response = UnifiedHttpClient.getAdapter().get(UrlBuilder.fromBaseUrl(source.userInfo()).build(), null, header, false).getBody();
 
         JsonNode userInfoObject = toNode(response);
-        this.checkResponse(containsKey(userInfoObject, Keys.ERROR), getStringValue(userInfoObject, Keys.ERROR_DESCRIPTION));
+        this.checkResponse(containsKey(userInfoObject, Keys.RESPONSE_FIELDS.ERROR), getStringValue(userInfoObject, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
 
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
-                .uuid(getStringValue(userInfoObject, Keys.ID))
+                .uuid(getStringValue(userInfoObject, Keys.USERINFO.ID))
                 .username(getStringValue(userInfoObject, "login"))
-                .avatar(getStringValue(userInfoObject, Keys.AVATAR_URL))
+                .avatar(getStringValue(userInfoObject, Keys.USERINFO.AVATAR_URL))
                 .blog(getStringValue(userInfoObject, "blog"))
-                .nickname(getStringValue(userInfoObject, Keys.NAME))
-                .company(getStringValue(userInfoObject, Keys.COMPANY))
-                .location(getStringValue(userInfoObject, Keys.LOCATION))
-                .email(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
+                .nickname(getStringValue(userInfoObject, Keys.USERINFO.NAME))
+                .company(getStringValue(userInfoObject, Keys.USERINFO.COMPANY))
+                .location(getStringValue(userInfoObject, Keys.USERINFO.LOCATION))
+                .email(getStringValue(userInfoObject, Keys.USERINFO.EMAIL))
                 .remark(getStringValue(userInfoObject, "bio"))
                 .gender(AuthUserGender.UNKNOWN)
                 .token(authToken)
@@ -92,7 +92,7 @@ public class AuthGithubRequest extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(super.authorize(state))
-                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(" ", true, AuthScopeUtils.getDefaultScopes(AuthGithubScope.values())))
+                .queryParam(Keys.OAUTH2.SCOPE, this.getScopes(" ", true, AuthScopeUtils.getDefaultScopes(AuthGithubScope.values())))
                 .build();
     }
 

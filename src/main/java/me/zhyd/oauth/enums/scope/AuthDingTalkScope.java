@@ -20,7 +20,7 @@ public enum AuthDingTalkScope implements AuthScope {
     /**
      * 无需申请	默认开启
      */
-    openid(Keys.OAUTH2_SCOPE__OPENID, "授权后可获得用户userid", true),
+    openid(Keys.OAUTH2.SCOPES.OPENID, "授权后可获得用户userid", true),
     /**
      * 无需申请	默认开启
      */

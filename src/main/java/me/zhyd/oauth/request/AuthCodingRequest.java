@@ -38,9 +38,9 @@ public class AuthCodingRequest extends AuthDefaultRequest {
         this.checkResponse(accessTokenObject);
 
         return AuthToken.builder()
-                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
-                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
-                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2.EXPIRES_IN))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2.REFRESH_TOKEN))
                 .build();
     }
 
@@ -55,15 +55,15 @@ public class AuthCodingRequest extends AuthDefaultRequest {
 
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
-                .uuid(getStringValue(userInfoObject, Keys.ID))
-                .username(getStringValue(userInfoObject, Keys.NAME))
-                .avatar("https://coding.net" + getStringValue(userInfoObject, Keys.AVATAR))
+                .uuid(getStringValue(userInfoObject, Keys.USERINFO.ID))
+                .username(getStringValue(userInfoObject, Keys.USERINFO.NAME))
+                .avatar("https://coding.net" + getStringValue(userInfoObject, Keys.USERINFO.AVATAR))
                 .blog("https://coding.net" + getStringValue(userInfoObject, "path"))
-                .nickname(getStringValue(userInfoObject, Keys.NAME))
-                .company(getStringValue(userInfoObject, Keys.COMPANY))
-                .location(getStringValue(userInfoObject, Keys.LOCATION))
-                .gender(AuthUserGender.getRealGender(getStringValue(userInfoObject, Keys.SEX)))
-                .email(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
+                .nickname(getStringValue(userInfoObject, Keys.USERINFO.NAME))
+                .company(getStringValue(userInfoObject, Keys.USERINFO.COMPANY))
+                .location(getStringValue(userInfoObject, Keys.USERINFO.LOCATION))
+                .gender(AuthUserGender.getRealGender(getStringValue(userInfoObject, Keys.USERINFO.SEX)))
+                .email(getStringValue(userInfoObject, Keys.USERINFO.EMAIL))
                 .remark(getStringValue(userInfoObject, "slogan"))
                 .token(authToken)
                 .source(source.toString())
@@ -76,7 +76,7 @@ public class AuthCodingRequest extends AuthDefaultRequest {
      * @param object 请求响应内容
      */
     private void checkResponse(JsonNode object) {
-        if (getIntValue(object, Keys.OAUTH2__CODE) != 0) {
+        if (getIntValue(object, Keys.OAUTH2.CODE) != 0) {
             throw new AuthException(getStringValue(object, "msg"));
         }
     }
@@ -91,11 +91,11 @@ public class AuthCodingRequest extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(String.format(source.authorize(), config.getDomainPrefix()))
-                .queryParam(Keys.OAUTH2__RESPONSE_TYPE, Keys.OAUTH2__CODE)
-                .queryParam(Keys.OAUTH2__CLIENT_ID, config.getClientId())
-                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
-                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(" ", true, AuthScopeUtils.getDefaultScopes(AuthCodingScope.values())))
-                .queryParam(Keys.OAUTH2__STATE, getRealState(state))
+                .queryParam(Keys.OAUTH2.RESPONSE_TYPE, Keys.OAUTH2.CODE)
+                .queryParam(Keys.OAUTH2.CLIENT_ID, config.getClientId())
+                .queryParam(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2.SCOPE, this.getScopes(" ", true, AuthScopeUtils.getDefaultScopes(AuthCodingScope.values())))
+                .queryParam(Keys.OAUTH2.STATE, getRealState(state))
                 .build();
     }
 
@@ -108,11 +108,11 @@ public class AuthCodingRequest extends AuthDefaultRequest {
     @Override
     public String accessTokenUrl(String code) {
         return UrlBuilder.fromBaseUrl(String.format(source.accessToken(), config.getDomainPrefix()))
-                .queryParam(Keys.OAUTH2__CODE, code)
-                .queryParam(Keys.OAUTH2__CLIENT_ID, config.getClientId())
-                .queryParam(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret())
-                .queryParam(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE)
-                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2.CODE, code)
+                .queryParam(Keys.OAUTH2.CLIENT_ID, config.getClientId())
+                .queryParam(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret())
+                .queryParam(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE)
+                .queryParam(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri())
                 .build();
     }
 
@@ -125,7 +125,7 @@ public class AuthCodingRequest extends AuthDefaultRequest {
     @Override
     public String userInfoUrl(AuthToken authToken) {
         return UrlBuilder.fromBaseUrl(String.format(source.userInfo(), config.getDomainPrefix()))
-                .queryParam(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken())
+                .queryParam(Keys.OAUTH2.ACCESS_TOKEN, authToken.getAccessToken())
                 .build();
     }
 }

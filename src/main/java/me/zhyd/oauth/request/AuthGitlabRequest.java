@@ -38,11 +38,11 @@ public class AuthGitlabRequest extends AuthDefaultRequest {
         this.checkResponse(accessTokenObject);
 
         return AuthToken.builder()
-                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
-                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
-                .scope(getStringValue(accessTokenObject, Keys.OAUTH2__SCOPE))
-                .idToken(getStringValue(accessTokenObject, Keys.OIDC__ID_TOKEN))
-                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2.REFRESH_TOKEN))
+                .scope(getStringValue(accessTokenObject, Keys.OAUTH2.SCOPE))
+                .idToken(getStringValue(accessTokenObject, Keys.OIDC.ID_TOKEN))
+                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2.TOKEN_TYPE))
                 .build();
     }
 
@@ -55,14 +55,14 @@ public class AuthGitlabRequest extends AuthDefaultRequest {
 
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
-                .uuid(getStringValue(userInfoObject, Keys.ID))
-                .username(getStringValue(userInfoObject, Keys.USERNAME))
-                .nickname(getStringValue(userInfoObject, Keys.NAME))
-                .avatar(getStringValue(userInfoObject, Keys.AVATAR_URL))
+                .uuid(getStringValue(userInfoObject, Keys.USERINFO.ID))
+                .username(getStringValue(userInfoObject, Keys.USERINFO.USERNAME))
+                .nickname(getStringValue(userInfoObject, Keys.USERINFO.NAME))
+                .avatar(getStringValue(userInfoObject, Keys.USERINFO.AVATAR_URL))
                 .blog(getStringValue(userInfoObject, "web_url"))
                 .company(getStringValue(userInfoObject, "organization"))
-                .location(getStringValue(userInfoObject, Keys.LOCATION))
-                .email(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
+                .location(getStringValue(userInfoObject, Keys.USERINFO.LOCATION))
+                .email(getStringValue(userInfoObject, Keys.USERINFO.EMAIL))
                 .remark(getStringValue(userInfoObject, "bio"))
                 .gender(AuthUserGender.UNKNOWN)
                 .token(authToken)
@@ -72,12 +72,12 @@ public class AuthGitlabRequest extends AuthDefaultRequest {
 
     private void checkResponse(JsonNode object) {
         // oauth/token 验证异常
-        if (containsKey(object, Keys.ERROR)) {
-            throw new AuthException(getStringValue(object, Keys.ERROR_DESCRIPTION));
+        if (containsKey(object, Keys.RESPONSE_FIELDS.ERROR)) {
+            throw new AuthException(getStringValue(object, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
         }
         // user 验证异常
-        if (containsKey(object, Keys.MESSAGE)) {
-            throw new AuthException(getStringValue(object, Keys.MESSAGE));
+        if (containsKey(object, Keys.USERINFO.MESSAGE)) {
+            throw new AuthException(getStringValue(object, Keys.USERINFO.MESSAGE));
         }
     }
 
@@ -91,7 +91,7 @@ public class AuthGitlabRequest extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(super.authorize(state))
-                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes("+", false, AuthScopeUtils.getDefaultScopes(AuthGitlabScope.values())))
+                .queryParam(Keys.OAUTH2.SCOPE, this.getScopes("+", false, AuthScopeUtils.getDefaultScopes(AuthGitlabScope.values())))
                 .build();
     }
 

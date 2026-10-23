@@ -38,7 +38,7 @@ public class AuthFigmaRequest extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(super.authorize(state))
-                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(",", true, AuthScopeUtils.getDefaultScopes(AuthFigmaScope.values())))
+                .queryParam(Keys.OAUTH2.SCOPE, this.getScopes(",", true, AuthScopeUtils.getDefaultScopes(AuthFigmaScope.values())))
                 .build();
     }
 
@@ -55,11 +55,11 @@ public class AuthFigmaRequest extends AuthDefaultRequest {
         this.checkResponse(accessTokenObject);
 
         return AuthToken.builder()
-                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
-                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
-                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
-                .scope(getStringValue(accessTokenObject, Keys.OAUTH2__SCOPE))
-                .userId(getStringValue(accessTokenObject, Keys.VARIANT__USER_ID))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2.EXPIRES_IN))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2.REFRESH_TOKEN))
+                .scope(getStringValue(accessTokenObject, Keys.OAUTH2.SCOPE))
+                .userId(getStringValue(accessTokenObject, Keys.USERINFO.USER_ID))
                 .build();
     }
 
@@ -75,11 +75,11 @@ public class AuthFigmaRequest extends AuthDefaultRequest {
         return AuthResponse.<AuthToken>builder()
                 .code(AuthResponseStatus.SUCCESS.getCode())
                 .data(AuthToken.builder()
-                        .accessToken(getStringValue(refreshTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
-                        .expireIn(getIntValue(refreshTokenObject, Keys.OAUTH2__EXPIRES_IN))
-                        .refreshToken(getStringValue(refreshTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
-                        .scope(getStringValue(refreshTokenObject, Keys.OAUTH2__SCOPE))
-                        .openId(getStringValue(refreshTokenObject, Keys.VARIANT__OPEN_ID))
+                        .accessToken(getStringValue(refreshTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
+                        .expireIn(getIntValue(refreshTokenObject, Keys.OAUTH2.EXPIRES_IN))
+                        .refreshToken(getStringValue(refreshTokenObject, Keys.OAUTH2.REFRESH_TOKEN))
+                        .scope(getStringValue(refreshTokenObject, Keys.OAUTH2.SCOPE))
+                        .openId(getStringValue(refreshTokenObject, Keys.OAUTH2.OPEN_ID))
                         .build())
                 .build();
 
@@ -88,9 +88,9 @@ public class AuthFigmaRequest extends AuthDefaultRequest {
     @Override
     protected String refreshTokenUrl(String refreshToken) {
         return UrlBuilder.fromBaseUrl(source.refresh())
-                .queryParam(Keys.OAUTH2__CLIENT_ID, config.getClientId())
-                .queryParam(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret())
-                .queryParam(Keys.OAUTH2__REFRESH_TOKEN, refreshToken)
+                .queryParam(Keys.OAUTH2.CLIENT_ID, config.getClientId())
+                .queryParam(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret())
+                .queryParam(Keys.OAUTH2.REFRESH_TOKEN, refreshToken)
                 .build();
     }
 
@@ -104,10 +104,10 @@ public class AuthFigmaRequest extends AuthDefaultRequest {
 
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
-                .uuid(getStringValue(userInfoObject, Keys.ID))
+                .uuid(getStringValue(userInfoObject, Keys.USERINFO.ID))
                 .username(getStringValue(userInfoObject, "handle"))
                 .avatar(getStringValue(userInfoObject, "img_url"))
-                .email(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
+                .email(getStringValue(userInfoObject, Keys.USERINFO.EMAIL))
                 .token(authToken)
                 .source(source.toString())
                 .build();
@@ -120,8 +120,8 @@ public class AuthFigmaRequest extends AuthDefaultRequest {
      * @param object 接口返回的结果
      */
     private void checkResponse(JsonNode object) {
-        if (containsKey(object, Keys.ERROR)) {
-            throw new AuthException(getStringValue(object, Keys.ERROR) + ":" + getStringValue(object, Keys.MESSAGE));
+        if (containsKey(object, Keys.RESPONSE_FIELDS.ERROR)) {
+            throw new AuthException(getStringValue(object, Keys.RESPONSE_FIELDS.ERROR) + ":" + getStringValue(object, Keys.USERINFO.MESSAGE));
         }
     }
 }

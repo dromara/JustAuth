@@ -64,7 +64,7 @@ public class AuthLinkedinRequest extends AuthDefaultRequest {
 
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
-                .uuid(getStringValue(userInfoObject, Keys.ID))
+                .uuid(getStringValue(userInfoObject, Keys.USERINFO.ID))
                 .username(userName)
                 .nickname(userName)
                 .avatar(avatar)
@@ -163,7 +163,7 @@ public class AuthLinkedinRequest extends AuthDefaultRequest {
         JsonNode firstNameObj = getObjectNode(userInfoObject, nameKey);
         JsonNode localizedObj = getObjectNode(firstNameObj, "localized");
         JsonNode preferredLocaleObj = getObjectNode(firstNameObj, "preferredLocale");
-        firstName = getStringValue(localizedObj, getStringValue(preferredLocaleObj, "language") + "_" + getStringValue(preferredLocaleObj, Keys.COUNTRY));
+        firstName = getStringValue(localizedObj, getStringValue(preferredLocaleObj, "language") + "_" + getStringValue(preferredLocaleObj, Keys.USERINFO.COUNTRY));
         return firstName;
     }
 
@@ -173,8 +173,8 @@ public class AuthLinkedinRequest extends AuthDefaultRequest {
      * @param object 请求响应内容
      */
     private void checkResponse(JsonNode object) {
-        if (containsKey(object, Keys.ERROR)) {
-            throw new AuthException(getStringValue(object, Keys.ERROR_DESCRIPTION), source);
+        if (containsKey(object, Keys.RESPONSE_FIELDS.ERROR)) {
+            throw new AuthException(getStringValue(object, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION), source);
         }
     }
 
@@ -195,9 +195,9 @@ public class AuthLinkedinRequest extends AuthDefaultRequest {
         this.checkResponse(accessTokenObject);
 
         return AuthToken.builder()
-                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
-                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
-                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2.EXPIRES_IN))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2.REFRESH_TOKEN))
                 .build();
     }
 
@@ -211,7 +211,7 @@ public class AuthLinkedinRequest extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(super.authorize(state))
-                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(" ", false, AuthScopeUtils.getDefaultScopes(AuthLinkedinScope.values())))
+                .queryParam(Keys.OAUTH2.SCOPE, this.getScopes(" ", false, AuthScopeUtils.getDefaultScopes(AuthLinkedinScope.values())))
                 .build();
     }
 

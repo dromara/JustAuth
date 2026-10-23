@@ -58,11 +58,11 @@ public class AuthHuaweiV3Request extends AuthDefaultRequest {
     public AuthToken getAccessToken(AuthCallback authCallback) {
 
         Map<String, String> params = new HashMap<>(8);
-        params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
-        params.put(Keys.OAUTH2__CODE, authCallback.getCode());
-        params.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
-        params.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
-        params.put(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri());
+        params.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE);
+        params.put(Keys.OAUTH2.CODE, authCallback.getCode());
+        params.put(Keys.OAUTH2.CLIENT_ID, config.getClientId());
+        params.put(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret());
+        params.put(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri());
 
         if (config.isPkce()) {
             String cacheKey = this.source.getName().concat(":code_verifier:").concat(authCallback.getState());
@@ -90,7 +90,7 @@ public class AuthHuaweiV3Request extends AuthDefaultRequest {
         String idToken = authToken.getIdToken();
         if (StringUtils.isEmpty(idToken)) {
             Map<String, String> params = new HashMap<>(7);
-            params.put(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken());
+            params.put(Keys.OAUTH2.ACCESS_TOKEN, authToken.getAccessToken());
             params.put("getNickName", "1");
             params.put("nsp_svc", "GOpen.User.getInfo");
 
@@ -105,8 +105,8 @@ public class AuthHuaweiV3Request extends AuthDefaultRequest {
             return AuthUser.builder()
                     .rawUserInfo(userInfoObject)
                     .uuid(getStringValue(userInfoObject, "unionID"))
-                    .username(getStringValue(userInfoObject, Keys.VARIANT__DISPLAY_NAME))
-                    .nickname(getStringValue(userInfoObject, Keys.VARIANT__DISPLAY_NAME))
+                    .username(getStringValue(userInfoObject, Keys.USERINFO.DISPLAY_NAME))
+                    .nickname(getStringValue(userInfoObject, Keys.USERINFO.DISPLAY_NAME))
                     .gender(AuthUserGender.UNKNOWN)
                     .avatar(getStringValue(userInfoObject, "headPictureURL"))
                     .token(authToken)
@@ -120,11 +120,11 @@ public class AuthHuaweiV3Request extends AuthDefaultRequest {
 
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
-                .uuid(getStringValue(userInfoObject, "sub"))
-                .username(getStringValue(userInfoObject, Keys.NAME))
-                .nickname(getStringValue(userInfoObject, Keys.NICKNAME))
+                .uuid(getStringValue(userInfoObject, Keys.USERINFO.SUB))
+                .username(getStringValue(userInfoObject, Keys.USERINFO.NAME))
+                .nickname(getStringValue(userInfoObject, Keys.USERINFO.NICKNAME))
                 .gender(AuthUserGender.UNKNOWN)
-                .avatar(getStringValue(userInfoObject, Keys.PICTURE))
+                .avatar(getStringValue(userInfoObject, Keys.USERINFO.PICTURE))
                 .token(authToken)
                 .source(source.toString())
                 .build();
@@ -139,10 +139,10 @@ public class AuthHuaweiV3Request extends AuthDefaultRequest {
     @Override
     public AuthResponse<AuthToken> refresh(AuthToken authToken) {
         Map<String, String> form = new HashMap<>(7);
-        form.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
-        form.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
-        form.put(Keys.OAUTH2__REFRESH_TOKEN, authToken.getRefreshToken());
-        form.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__REFRESH_TOKEN);
+        form.put(Keys.OAUTH2.CLIENT_ID, config.getClientId());
+        form.put(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret());
+        form.put(Keys.OAUTH2.REFRESH_TOKEN, authToken.getRefreshToken());
+        form.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.REFRESH_TOKEN);
 
         HttpHeader httpHeader = new HttpHeader();
         httpHeader.add(HttpConstants.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
@@ -156,10 +156,10 @@ public class AuthHuaweiV3Request extends AuthDefaultRequest {
         this.checkResponse(object);
 
         return AuthToken.builder()
-                .accessToken(getStringValue(object, Keys.OAUTH2__ACCESS_TOKEN))
-                .expireIn(getIntValue(object, Keys.OAUTH2__EXPIRES_IN))
-                .refreshToken(getStringValue(object, Keys.OAUTH2__REFRESH_TOKEN))
-                .idToken(getStringValue(object, Keys.OIDC__ID_TOKEN))
+                .accessToken(getStringValue(object, Keys.OAUTH2.ACCESS_TOKEN))
+                .expireIn(getIntValue(object, Keys.OAUTH2.EXPIRES_IN))
+                .refreshToken(getStringValue(object, Keys.OAUTH2.REFRESH_TOKEN))
+                .idToken(getStringValue(object, Keys.OIDC.ID_TOKEN))
                 .build();
     }
 
@@ -175,7 +175,7 @@ public class AuthHuaweiV3Request extends AuthDefaultRequest {
         String realState = getRealState(state);
         UrlBuilder builder = UrlBuilder.fromBaseUrl(super.authorize(realState))
                 .queryParam("access_type", "offline")
-                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(" ", true, AuthScopeUtils.getDefaultScopes(AuthHuaweiV3Scope.values())));
+                .queryParam(Keys.OAUTH2.SCOPE, this.getScopes(" ", true, AuthScopeUtils.getDefaultScopes(AuthHuaweiV3Scope.values())));
 
         if (config.isPkce()) {
             String cacheKey = this.source.getName().concat(":code_verifier:").concat(realState);
@@ -197,10 +197,10 @@ public class AuthHuaweiV3Request extends AuthDefaultRequest {
      */
     private void checkResponse(JsonNode object) {
         if (containsKey(object, "NSP_STATUS")) {
-            throw new AuthException(getStringValue(object, Keys.ERROR));
+            throw new AuthException(getStringValue(object, Keys.RESPONSE_FIELDS.ERROR));
         }
-        if (containsKey(object, Keys.ERROR)) {
-            throw new AuthException(getStringValue(object, "sub_error") + ":" + getStringValue(object, Keys.ERROR_DESCRIPTION));
+        if (containsKey(object, Keys.RESPONSE_FIELDS.ERROR)) {
+            throw new AuthException(getStringValue(object, "sub_error") + ":" + getStringValue(object, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
         }
     }
 

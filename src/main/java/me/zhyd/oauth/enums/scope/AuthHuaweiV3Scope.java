@@ -18,7 +18,7 @@ public enum AuthHuaweiV3Scope implements AuthScope {
     /**
      * {@code scope} 含义，以{@code description} 为准
      */
-    OPENID(Keys.OAUTH2_SCOPE__OPENID, "基础scope，v3必选", true),
+    OPENID(Keys.OAUTH2.SCOPES.OPENID, "基础scope，v3必选", true),
     /**
      * {@code scope} 含义，以{@code description} 为准
      */

@@ -33,12 +33,12 @@ public class AuthWeChatEnterpriseQrcodeV2Request extends AbstractAuthWeChatEnter
         return UrlBuilder.fromBaseUrl(source.authorize())
                 .queryParam("login_type", config.getLoginType())
                 // 登录类型为企业自建应用/服务商代开发应用时填企业 CorpID，第三方登录时填登录授权 SuiteID
-                .queryParam(Keys.APPID, config.getClientId())
+                .queryParam(Keys.OAUTH2.APPID, config.getClientId())
                 // 企业自建应用/服务商代开发应用 AgentID，当login_type=CorpApp时填写
                 .queryParam("agentid", config.getAgentId())
-                .queryParam(Keys.OAUTH2__REDIRECT_URI, GlobalAuthUtils.urlEncode(config.getRedirectUri()))
-                .queryParam(Keys.OAUTH2__STATE, getRealState(state))
-                .queryParam(Keys.LANG, config.getLang())
+                .queryParam(Keys.OAUTH2.REDIRECT_URI, GlobalAuthUtils.urlEncode(config.getRedirectUri()))
+                .queryParam(Keys.OAUTH2.STATE, getRealState(state))
+                .queryParam(Keys.USERINFO.LANG, config.getLang())
                 .build()
                 .concat("#wechat_redirect");
     }

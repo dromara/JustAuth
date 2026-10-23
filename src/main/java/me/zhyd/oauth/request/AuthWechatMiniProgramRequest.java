@@ -76,24 +76,24 @@ public class AuthWechatMiniProgramRequest extends AuthDefaultRequest {
     @Override
     protected String accessTokenUrl(String code) {
         return UrlBuilder.fromBaseUrl(source.accessToken())
-                .queryParam(Keys.APPID, config.getClientId())
-                .queryParam(Keys.PARAM__SECRET, config.getClientSecret())
+                .queryParam(Keys.OAUTH2.APPID, config.getClientId())
+                .queryParam(Keys.OAUTH2.SECRET, config.getClientSecret())
                 .queryParam("js_code", code)
-                .queryParam(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE)
+                .queryParam(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE)
                 .build();
     }
 
     @Data
     private static class JSCode2SessionResponse {
 
-        @JsonProperty(Keys.VARIANT__ERRCODE)
+        @JsonProperty(Keys.RESPONSE_FIELDS.ERRCODE)
         private int errorCode;
-        @JsonProperty(Keys.VARIANT__ERRMSG)
+        @JsonProperty(Keys.RESPONSE_FIELDS.ERRMSG)
         private String errorMsg;
         @JsonProperty("session_key")
         private String sessionKey;
         private String openid;
-        @JsonProperty(Keys.UNIONID)
+        @JsonProperty(Keys.USERINFO.UNIONID)
         private String unionId;
 
     }

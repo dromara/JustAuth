@@ -27,7 +27,7 @@ import java.util.Map;
 public class AuthTopIamRequest extends AbstractAuthServerRequest {
 
     private static final List<String> DEFAULT_SCOPES = List.of(
-            Keys.OAUTH2_SCOPE__OPENID, Keys.OAUTH2_SCOPE__PROFILE, Keys.OAUTH2_SCOPE__EMAIL);
+            Keys.OAUTH2.SCOPES.OPENID, Keys.OAUTH2.SCOPES.PROFILE, Keys.OAUTH2.SCOPES.EMAIL);
 
     public AuthTopIamRequest(AuthConfig config) {
         super(config, AuthDefaultSource.TOPIAM);
@@ -40,16 +40,16 @@ public class AuthTopIamRequest extends AbstractAuthServerRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(super.authorize(state))
-                .queryParam(Keys.OAUTH2__SCOPE, getScopes(" ", true, DEFAULT_SCOPES))
+                .queryParam(Keys.OAUTH2.SCOPE, getScopes(" ", true, DEFAULT_SCOPES))
                 .build();
     }
 
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
         Map<String, String> form = new HashMap<>(4);
-        form.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
-        form.put(Keys.OAUTH2__CODE, authCallback.getCode());
-        form.put(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri());
+        form.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE);
+        form.put(Keys.OAUTH2.CODE, authCallback.getCode());
+        form.put(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri());
 
         HttpHeader header = new HttpHeader()
                 .add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON)
@@ -69,11 +69,11 @@ public class AuthTopIamRequest extends AbstractAuthServerRequest {
                 .get(userInfoUrl(authToken), null, header, false));
         return AuthUser.builder()
                 .rawUserInfo(object)
-                .uuid(stringValue(object, "sub"))
+                .uuid(stringValue(object, Keys.USERINFO.SUB))
                 .username(stringValue(object, "preferred_username"))
-                .nickname(firstNotEmpty(object, Keys.NICKNAME, Keys.NAME, "preferred_username"))
+                .nickname(firstNotEmpty(object, Keys.USERINFO.NICKNAME, Keys.USERINFO.NAME, "preferred_username"))
                 .avatar(stringValue(object, "picture"))
-                .email(stringValue(object, Keys.OAUTH2_SCOPE__EMAIL))
+                .email(stringValue(object, Keys.USERINFO.EMAIL))
                 .gender(AuthUserGender.UNKNOWN)
                 .token(authToken)
                 .source(source.toString())

@@ -42,23 +42,23 @@ public class AuthLineRequest extends AuthDefaultRequest {
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
         Map<String, String> params = new HashMap<>();
-        params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
-        params.put(Keys.OAUTH2__CODE, authCallback.getCode());
-        params.put(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri());
-        params.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
-        params.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
+        params.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE);
+        params.put(Keys.OAUTH2.CODE, authCallback.getCode());
+        params.put(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri());
+        params.put(Keys.OAUTH2.CLIENT_ID, config.getClientId());
+        params.put(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret());
 
         String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), params, false).getBody();
 
         JsonNode accessTokenObject = toNode(response);
 
         return AuthToken.builder()
-                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
-                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
-                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
-                .idToken(getStringValue(accessTokenObject, Keys.OIDC__ID_TOKEN))
-                .scope(getStringValue(accessTokenObject, Keys.OAUTH2__SCOPE))
-                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2.REFRESH_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2.EXPIRES_IN))
+                .idToken(getStringValue(accessTokenObject, Keys.OIDC.ID_TOKEN))
+                .scope(getStringValue(accessTokenObject, Keys.OAUTH2.SCOPE))
+                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2.TOKEN_TYPE))
                 .build();
     }
 
@@ -73,8 +73,8 @@ public class AuthLineRequest extends AuthDefaultRequest {
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
                 .uuid(getStringValue(userInfoObject, "userId"))
-                .username(getStringValue(userInfoObject, Keys.VARIANT__DISPLAY_NAME))
-                .nickname(getStringValue(userInfoObject, Keys.VARIANT__DISPLAY_NAME))
+                .username(getStringValue(userInfoObject, Keys.USERINFO.DISPLAY_NAME))
+                .nickname(getStringValue(userInfoObject, Keys.USERINFO.DISPLAY_NAME))
                 .avatar(getStringValue(userInfoObject, "pictureUrl"))
                 .remark(getStringValue(userInfoObject, "statusMessage"))
                 .gender(AuthUserGender.UNKNOWN)
@@ -86,9 +86,9 @@ public class AuthLineRequest extends AuthDefaultRequest {
     @Override
     public AuthResponse<?> revoke(AuthToken authToken) {
         Map<String, String> params = new HashMap<>(5);
-        params.put(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken());
-        params.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
-        params.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
+        params.put(Keys.OAUTH2.ACCESS_TOKEN, authToken.getAccessToken());
+        params.put(Keys.OAUTH2.CLIENT_ID, config.getClientId());
+        params.put(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret());
 
         String response = UnifiedHttpClient.getAdapter().post(source.revoke(), params, false).getBody();
 
@@ -101,10 +101,10 @@ public class AuthLineRequest extends AuthDefaultRequest {
     @Override
     public AuthResponse<AuthToken> refresh(AuthToken oldToken) {
         Map<String, String> params = new HashMap<>();
-        params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__REFRESH_TOKEN);
-        params.put(Keys.OAUTH2__REFRESH_TOKEN, oldToken.getRefreshToken());
-        params.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
-        params.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
+        params.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.REFRESH_TOKEN);
+        params.put(Keys.OAUTH2.REFRESH_TOKEN, oldToken.getRefreshToken());
+        params.put(Keys.OAUTH2.CLIENT_ID, config.getClientId());
+        params.put(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret());
 
         String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), params, false).getBody();
 
@@ -112,12 +112,12 @@ public class AuthLineRequest extends AuthDefaultRequest {
         return AuthResponse.<AuthToken>builder()
                 .code(AuthResponseStatus.SUCCESS.getCode())
                 .data(AuthToken.builder()
-                        .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
-                        .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
-                        .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
-                        .scope(getStringValue(accessTokenObject, Keys.OAUTH2__SCOPE))
-                        .idToken(getStringValue(accessTokenObject, Keys.OIDC__ID_TOKEN))
-                        .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
+                        .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
+                        .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2.EXPIRES_IN))
+                        .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2.REFRESH_TOKEN))
+                        .scope(getStringValue(accessTokenObject, Keys.OAUTH2.SCOPE))
+                        .idToken(getStringValue(accessTokenObject, Keys.OIDC.ID_TOKEN))
+                        .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2.TOKEN_TYPE))
                         .build())
                 .build();
     }
@@ -125,7 +125,7 @@ public class AuthLineRequest extends AuthDefaultRequest {
     @Override
     public String userInfoUrl(AuthToken authToken) {
         return UrlBuilder.fromBaseUrl(source.userInfo())
-                .queryParam(Keys.USER, authToken.getUid())
+                .queryParam(Keys.USERINFO.USER, authToken.getUid())
                 .build();
     }
 
@@ -133,7 +133,7 @@ public class AuthLineRequest extends AuthDefaultRequest {
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(super.authorize(state))
                 .queryParam("nonce", state)
-                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(" ", true, AuthScopeUtils.getDefaultScopes(AuthLineScope.values())))
+                .queryParam(Keys.OAUTH2.SCOPE, this.getScopes(" ", true, AuthScopeUtils.getDefaultScopes(AuthLineScope.values())))
                 .build();
     }
 }

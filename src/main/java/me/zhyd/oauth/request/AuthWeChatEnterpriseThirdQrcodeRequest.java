@@ -40,9 +40,9 @@ public class AuthWeChatEnterpriseThirdQrcodeRequest extends AbstractAuthWeChatEn
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(source.authorize())
-                .queryParam(Keys.APPID, config.getClientId())
-                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
-                .queryParam(Keys.OAUTH2__STATE, getRealState(state))
+                .queryParam(Keys.OAUTH2.APPID, config.getClientId())
+                .queryParam(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2.STATE, getRealState(state))
                 .queryParam("usertype", config.getUsertype())
                 .build();
     }
@@ -69,7 +69,7 @@ public class AuthWeChatEnterpriseThirdQrcodeRequest extends AbstractAuthWeChatEn
             JsonNode object = this.checkResponse(response);
             return AuthToken.builder()
                     .accessToken(getStringValue(object, "provider_access_token"))
-                    .expireIn(getIntValue(object, Keys.OAUTH2__EXPIRES_IN))
+                    .expireIn(getIntValue(object, Keys.OAUTH2.EXPIRES_IN))
                     .code(authCallback.getCode())
                     .build();
         } catch (Exception e) {
@@ -114,14 +114,14 @@ public class AuthWeChatEnterpriseThirdQrcodeRequest extends AbstractAuthWeChatEn
     @Override
     protected String userInfoUrl(AuthToken authToken) {
         return UrlBuilder.fromBaseUrl(source.userInfo())
-                .queryParam(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken()).
+                .queryParam(Keys.OAUTH2.ACCESS_TOKEN, authToken.getAccessToken()).
                 build();
     }
 
     private JsonNode checkResponse(String response) {
         JsonNode object = toNode(response);
-        if (containsKey(object, Keys.VARIANT__ERRCODE) && getIntValue(object, Keys.VARIANT__ERRCODE) != 0) {
-            throw new AuthException(getStringValue(object, Keys.VARIANT__ERRMSG), source);
+        if (containsKey(object, Keys.RESPONSE_FIELDS.ERRCODE) && getIntValue(object, Keys.RESPONSE_FIELDS.ERRCODE) != 0) {
+            throw new AuthException(getStringValue(object, Keys.RESPONSE_FIELDS.ERRMSG), source);
         }
         return object;
     }

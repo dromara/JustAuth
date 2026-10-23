@@ -133,8 +133,8 @@ public class GlobalAuthUtilsTest {
         oauthParams.put("oauth_version", "1.0");
 
         Map<String, String> queryParams = new HashMap<>();
-        queryParams.put(Keys.VARIANT__USER_ID, authToken.getUserId());
-        queryParams.put(Keys.SCREENNAME, authToken.getScreenName());
+        queryParams.put(Keys.USERINFO.USER_ID, authToken.getUserId());
+        queryParams.put(Keys.USERINFO.SCREENNAME, authToken.getScreenName());
         queryParams.put("include_entities", Boolean.toString(true));
 
         Map<String, String> params = new HashMap<>(queryParams);
@@ -156,8 +156,8 @@ public class GlobalAuthUtilsTest {
     @Test
     public void treemap() {
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put(Keys.VARIANT__USER_ID, "1");
-        parameters.put(Keys.SCREENNAME, "222");
+        parameters.put(Keys.USERINFO.USER_ID, "1");
+        parameters.put(Keys.USERINFO.SCREENNAME, "222");
         parameters.put("a", "222");
         parameters.put("include_entities", Boolean.toString(true));
         final Map<String, Object> sorted = new TreeMap<>(parameters);
@@ -174,8 +174,8 @@ public class GlobalAuthUtilsTest {
     @Test
     public void parseMapToString() {
         Map<String, String> parameters = new HashMap<>();
-        parameters.put(Keys.VARIANT__USER_ID, "1");
-        parameters.put(Keys.SCREENNAME, "史上最全的第三方授权登录库");
+        parameters.put(Keys.USERINFO.USER_ID, "1");
+        parameters.put(Keys.USERINFO.SCREENNAME, "史上最全的第三方授权登录库");
         parameters.put("include_entities", Boolean.toString(true));
         Assertions.assertEquals("user_id=1&screen_name=史上最全的第三方授权登录库&include_entities=true", GlobalAuthUtils.parseMapToString(parameters, false));
         Assertions.assertEquals("user_id=1&screen_name=%E5%8F%B2%E4%B8%8A%E6%9C%80%E5%85%A8%E7%9A%84%E7%AC%AC%E4%B8%89%E6%96%B9%E6%8E%88%E6%9D%83%E7%99%BB%E5%BD%95%E5%BA%93&include_entities=true", GlobalAuthUtils.parseMapToString(parameters, true));
@@ -195,8 +195,8 @@ public class GlobalAuthUtilsTest {
     @Test
     public void generateTwitterSignature() {
         Map<String, String> queryParams = new HashMap<>();
-        queryParams.put(Keys.NAME, "你好");
-        queryParams.put(Keys.GENDER, "male");
+        queryParams.put(Keys.USERINFO.NAME, "你好");
+        queryParams.put(Keys.USERINFO.GENDER, "male");
 
         Assertions.assertEquals("20FYnV2aZnxNQtp+I0tpMRTvcx0=", GlobalAuthUtils.generateTwitterSignature(queryParams, "GET", TWITTER.userInfo(), "xxxxx", "xxxxx"));
     }
@@ -204,8 +204,8 @@ public class GlobalAuthUtilsTest {
     @Test
     public void generateElemeSignature() {
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put(Keys.NAME, "你好");
-        parameters.put(Keys.GENDER, "male");
+        parameters.put(Keys.USERINFO.NAME, "你好");
+        parameters.put(Keys.USERINFO.GENDER, "male");
 
         String appKey = "appKey";
         String secret = "appKey";
@@ -219,8 +219,8 @@ public class GlobalAuthUtilsTest {
     @Test
     public void generateJdSignature() {
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put(Keys.NAME, "你好");
-        parameters.put(Keys.GENDER, "male");
+        parameters.put(Keys.USERINFO.NAME, "你好");
+        parameters.put(Keys.USERINFO.GENDER, "male");
 
         String appSecret = "appKey";
 

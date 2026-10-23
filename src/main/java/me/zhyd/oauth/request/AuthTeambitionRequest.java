@@ -44,10 +44,10 @@ public class AuthTeambitionRequest extends AuthDefaultRequest {
     public AuthToken getAccessToken(AuthCallback authCallback) {
 
         Map<String, String> params = new HashMap<>(7);
-        params.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
-        params.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
-        params.put(Keys.OAUTH2__CODE, authCallback.getCode());
-        params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__CODE);
+        params.put(Keys.OAUTH2.CLIENT_ID, config.getClientId());
+        params.put(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret());
+        params.put(Keys.OAUTH2.CODE, authCallback.getCode());
+        params.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.CODE);
 
         String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), params, false).getBody();
 
@@ -55,8 +55,8 @@ public class AuthTeambitionRequest extends AuthDefaultRequest {
         this.checkResponse(accessTokenObject);
 
         return AuthToken.builder()
-                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
-                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2.REFRESH_TOKEN))
                 .build();
     }
 
@@ -77,12 +77,12 @@ public class AuthTeambitionRequest extends AuthDefaultRequest {
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
                 .uuid(getStringValue(userInfoObject, "_id"))
-                .username(getStringValue(userInfoObject, Keys.NAME))
-                .nickname(getStringValue(userInfoObject, Keys.NAME))
+                .username(getStringValue(userInfoObject, Keys.USERINFO.NAME))
+                .nickname(getStringValue(userInfoObject, Keys.USERINFO.NAME))
                 .avatar(getStringValue(userInfoObject, "avatarUrl"))
                 .blog(getStringValue(userInfoObject, "website"))
-                .location(getStringValue(userInfoObject, Keys.LOCATION))
-                .email(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
+                .location(getStringValue(userInfoObject, Keys.USERINFO.LOCATION))
+                .email(getStringValue(userInfoObject, Keys.USERINFO.EMAIL))
                 .gender(AuthUserGender.UNKNOWN)
                 .token(authToken)
                 .source(source.toString())
@@ -96,7 +96,7 @@ public class AuthTeambitionRequest extends AuthDefaultRequest {
 
         Map<String, String> params = new HashMap<>(4);
         params.put("_userId", uid);
-        params.put(Keys.OAUTH2__REFRESH_TOKEN, refreshToken);
+        params.put(Keys.OAUTH2.REFRESH_TOKEN, refreshToken);
 
         String response = UnifiedHttpClient.getAdapter().post(source.refresh(), params, false).getBody();
 
@@ -106,8 +106,8 @@ public class AuthTeambitionRequest extends AuthDefaultRequest {
         return AuthResponse.<AuthToken>builder()
                 .code(AuthResponseStatus.SUCCESS.getCode())
                 .data(AuthToken.builder()
-                        .accessToken(getStringValue(refreshTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
-                        .refreshToken(getStringValue(refreshTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
+                        .accessToken(getStringValue(refreshTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
+                        .refreshToken(getStringValue(refreshTokenObject, Keys.OAUTH2.REFRESH_TOKEN))
                         .build())
                 .build();
     }
@@ -118,8 +118,8 @@ public class AuthTeambitionRequest extends AuthDefaultRequest {
      * @param object 请求响应内容
      */
     private void checkResponse(JsonNode object) {
-        if ((containsKey(object, Keys.MESSAGE) && containsKey(object, Keys.NAME))) {
-            throw new AuthException(getStringValue(object, Keys.NAME) + ", " + getStringValue(object, Keys.MESSAGE));
+        if ((containsKey(object, Keys.USERINFO.MESSAGE) && containsKey(object, Keys.USERINFO.NAME))) {
+            throw new AuthException(getStringValue(object, Keys.USERINFO.NAME) + ", " + getStringValue(object, Keys.USERINFO.MESSAGE));
         }
     }
 }

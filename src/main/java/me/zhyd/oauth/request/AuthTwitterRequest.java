@@ -115,8 +115,8 @@ public class AuthTwitterRequest extends AuthDefaultRequest {
         return AuthToken.builder()
                 .oauthToken(requestToken.get("oauth_token"))
                 .oauthTokenSecret(requestToken.get("oauth_token_secret"))
-                .userId(requestToken.get(Keys.VARIANT__USER_ID))
-                .screenName(requestToken.get(Keys.SCREENNAME))
+                .userId(requestToken.get(Keys.USERINFO.USER_ID))
+                .screenName(requestToken.get(Keys.USERINFO.SCREENNAME))
                 .build();
     }
 
@@ -143,14 +143,14 @@ public class AuthTwitterRequest extends AuthDefaultRequest {
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
                 .uuid(getStringValue(userInfoObject, "id_str"))
-                .username(getStringValue(userInfoObject, Keys.SCREENNAME))
-                .nickname(getStringValue(userInfoObject, Keys.NAME))
-                .remark(getStringValue(userInfoObject, Keys.DESCRIPTION))
+                .username(getStringValue(userInfoObject, Keys.USERINFO.SCREENNAME))
+                .nickname(getStringValue(userInfoObject, Keys.USERINFO.NAME))
+                .remark(getStringValue(userInfoObject, Keys.USERINFO.DESCRIPTION))
                 .avatar(getStringValue(userInfoObject, "profile_image_url_https"))
-                .blog(getStringValue(userInfoObject, Keys.URL))
-                .location(getStringValue(userInfoObject, Keys.LOCATION))
+                .blog(getStringValue(userInfoObject, Keys.USERINFO.URL))
+                .location(getStringValue(userInfoObject, Keys.USERINFO.LOCATION))
                 .avatar(getStringValue(userInfoObject, "profile_image_url"))
-                .email(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
+                .email(getStringValue(userInfoObject, Keys.USERINFO.EMAIL))
                 .source(source.toString())
                 .token(authToken)
                 .build();
