@@ -9,6 +9,7 @@ import me.zhyd.oauth.enums.AuthUserGender;
 import me.zhyd.oauth.enums.scope.AuthWechatMpScope;
 import me.zhyd.oauth.exception.AuthException;
 import me.zhyd.oauth.http.UnifiedHttpClient;
+import me.zhyd.oauth.http.UrlBuilder;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
@@ -16,7 +17,7 @@ import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
 import me.zhyd.oauth.utils.GlobalAuthUtils;
 import me.zhyd.oauth.utils.JsonUtils;
-import me.zhyd.oauth.utils.UrlBuilder;
+
 import org.apache.commons.lang3.StringUtils;
 import tools.jackson.databind.JsonNode;
 
@@ -65,7 +66,7 @@ public class AuthWeChatMpRequest extends AuthDefaultRequest {
 
         JsonNode userInfoObject = toNode(response);
         this.checkResponse(userInfoObject);
-        String location = String.format("%s-%s-%s", getStringValue(userInfoObject, "country"), getStringValue(userInfoObject, "province"), getStringValue(userInfoObject, "city"));
+        String location = String.format("%s-%s-%s", getStringValue(userInfoObject, Keys.COUNTRY), getStringValue(userInfoObject, Keys.PROVINCE), getStringValue(userInfoObject, Keys.CITY));
 
         if (containsKey(userInfoObject, Keys.UNIONID)) {
             authToken.setUnionId(getStringValue(userInfoObject, Keys.UNIONID));
@@ -78,7 +79,7 @@ public class AuthWeChatMpRequest extends AuthDefaultRequest {
                 .location(location)
                 .uuid(openId)
                 .snapshotUser(authToken.isSnapshotUser())
-                .gender(AuthUserGender.getWechatRealGender(getStringValue(userInfoObject, "sex")))
+                .gender(AuthUserGender.getWechatRealGender(getStringValue(userInfoObject, Keys.SEX)))
                 .token(authToken)
                 .source(source.toString())
                 .build();
@@ -153,7 +154,7 @@ public class AuthWeChatMpRequest extends AuthDefaultRequest {
     protected String accessTokenUrl(String code) {
         return UrlBuilder.fromBaseUrl(source.accessToken())
                 .queryParam(Keys.APPID, config.getClientId())
-                .queryParam("secret", config.getClientSecret())
+                .queryParam(Keys.PARAM__SECRET, config.getClientSecret())
                 .queryParam(Keys.OAUTH2__CODE, code)
                 .queryParam(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE)
                 .build();
@@ -170,7 +171,7 @@ public class AuthWeChatMpRequest extends AuthDefaultRequest {
         return UrlBuilder.fromBaseUrl(source.userInfo())
                 .queryParam(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken())
                 .queryParam(Keys.OAUTH2_SCOPE__OPENID, authToken.getOpenId())
-                .queryParam("lang", "zh_CN")
+                .queryParam(Keys.LANG, "zh_CN")
                 .build();
     }
 

@@ -1,6 +1,8 @@
-package me.zhyd.oauth.utils;
+package me.zhyd.oauth.http;
 
 import lombok.Setter;
+import me.zhyd.oauth.utils.MapUtil;
+
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;

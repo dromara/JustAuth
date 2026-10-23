@@ -9,10 +9,7 @@ import me.zhyd.oauth.enums.AuthResponseStatus;
 import me.zhyd.oauth.enums.AuthUserGender;
 import me.zhyd.oauth.enums.scope.AuthAmazonScope;
 import me.zhyd.oauth.exception.AuthException;
-import me.zhyd.oauth.http.HttpConstants;
-import me.zhyd.oauth.http.HttpHeader;
-import me.zhyd.oauth.http.HttpUrlEncoding;
-import me.zhyd.oauth.http.UnifiedHttpClient;
+import me.zhyd.oauth.http.*;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
@@ -20,12 +17,10 @@ import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
 import me.zhyd.oauth.utils.PkceUtil;
 import me.zhyd.oauth.utils.TokenUtils;
-import me.zhyd.oauth.utils.UrlBuilder;
 import tools.jackson.databind.JsonNode;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Amazon登录
@@ -68,8 +63,8 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
             String codeChallenge = PkceUtil.generateCodeChallenge(codeChallengeMethod, codeVerifier);
             builder.queryParam("code_challenge", codeChallenge)
                     .queryParam("code_challenge_method", codeChallengeMethod);
-            // 缓存 codeVerifier 十分钟
-            this.authStateCache.cache(cacheKey, codeVerifier, TimeUnit.MINUTES.toMillis(10));
+            // 缓存 codeVerifier
+            this.authStateCache.cache(cacheKey, codeVerifier);
         }
 
         return builder.build();
@@ -185,7 +180,7 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
     protected String userInfoUrl(AuthToken authToken) {
         return UrlBuilder.fromBaseUrl(source.userInfo())
                 .queryParam(Keys.VARIANT__USER_ID, authToken.getUserId())
-                .queryParam("screen_name", authToken.getScreenName())
+                .queryParam(Keys.SCREENNAME, authToken.getScreenName())
                 .queryParam("include_entities", true)
                 .build();
     }

@@ -10,12 +10,12 @@ import me.zhyd.oauth.enums.scope.AuthGoogleScope;
 import me.zhyd.oauth.exception.AuthException;
 import me.zhyd.oauth.http.HttpHeader;
 import me.zhyd.oauth.http.UnifiedHttpClient;
+import me.zhyd.oauth.http.UrlBuilder;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
 import me.zhyd.oauth.utils.TokenUtils;
-import me.zhyd.oauth.utils.UrlBuilder;
 import tools.jackson.databind.JsonNode;
 
 /**
@@ -64,7 +64,7 @@ public class AuthGoogleRequest extends AuthDefaultRequest {
                 .rawUserInfo(userInfoObject)
                 .uuid(getStringValue(userInfoObject, "sub"))
                 .username(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
-                .avatar(getStringValue(userInfoObject, "picture"))
+                .avatar(getStringValue(userInfoObject, Keys.PICTURE))
                 .nickname(getStringValue(userInfoObject, Keys.NAME))
                 .location(getStringValue(userInfoObject, "locale"))
                 .email(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))

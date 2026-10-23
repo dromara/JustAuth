@@ -4,8 +4,8 @@ import me.zhyd.oauth.config.AuthDefaultSource;
 import me.zhyd.oauth.config.AuthExtendSource;
 import me.zhyd.oauth.config.AuthSource;
 import me.zhyd.oauth.utils.JsonUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class AuthUserTest {
 
@@ -16,7 +16,7 @@ public class AuthUserTest {
                 .nickname("test")
                 .build();
         String json = JsonUtils.toJson(user);
-        Assert.assertEquals("{\"nickname\":\"test\",\"snapshotUser\":false}", json);
+        Assertions.assertEquals("{\"avatar\":null,\"blog\":null,\"company\":null,\"email\":null,\"gender\":null,\"location\":null,\"nickname\":\"test\",\"rawUserInfo\":null,\"remark\":null,\"snapshotUser\":false,\"source\":null,\"token\":null,\"username\":null,\"uuid\":null}", json);
 
     }
 
@@ -28,7 +28,7 @@ public class AuthUserTest {
         String json = JsonUtils.toJson(user);
 
         AuthUser deserializeUser = JsonUtils.toObject(json, AuthUser.class);
-        Assert.assertEquals("test", deserializeUser.getNickname());
+        Assertions.assertEquals("test", deserializeUser.getNickname());
     }
 
     @Test
@@ -37,19 +37,19 @@ public class AuthUserTest {
         AuthUser user = AuthUser.builder()
                 .source(source.toString())
                 .build();
-        Assert.assertEquals("HUAWEI", user.getSource());
+        Assertions.assertEquals("HUAWEI", user.getSource());
 
         source = AuthExtendSource.OTHER;
         user = AuthUser.builder()
                 .source(source.toString())
                 .build();
-        Assert.assertEquals("OTHER", user.getSource());
+        Assertions.assertEquals("OTHER", user.getSource());
 
         source = AuthDefaultSource.HUAWEI;
-        Assert.assertEquals(source, AuthDefaultSource.HUAWEI);
+        Assertions.assertEquals(source, AuthDefaultSource.HUAWEI);
 
         source = AuthExtendSource.OTHER;
-        Assert.assertEquals(source, AuthExtendSource.OTHER);
+        Assertions.assertEquals(source, AuthExtendSource.OTHER);
     }
 
 }

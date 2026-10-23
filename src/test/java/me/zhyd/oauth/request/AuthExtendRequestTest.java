@@ -8,8 +8,8 @@ import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthStateUtils;
 import me.zhyd.oauth.utils.JsonUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * 自定义扩展的第三方request的测试类，用于演示具体的用法
@@ -23,20 +23,20 @@ public class AuthExtendRequestTest {
     @Test
     public void authorize() {
         AuthRequest request = new AuthExtendRequest(AuthConfig.builder()
-                .clientId("clientId")
-                .clientSecret("clientSecret")
+                .clientId(Keys.PARAM__CLIENT_ID)
+                .clientSecret(Keys.PARAM__CLIENT_SECRET)
                 .redirectUri("http://redirectUri")
                 .build());
         String authorize = request.authorize(AuthStateUtils.createState());
         System.out.println(authorize);
-        Assert.assertNotNull(authorize);
+        Assertions.assertNotNull(authorize);
     }
 
     @Test
     public void login() {
         AuthRequest request = new AuthExtendRequest(AuthConfig.builder()
-                .clientId("clientId")
-                .clientSecret("clientSecret")
+                .clientId(Keys.PARAM__CLIENT_ID)
+                .clientSecret(Keys.PARAM__CLIENT_SECRET)
                 .redirectUri("http://redirectUri")
                 .build());
 
@@ -47,36 +47,36 @@ public class AuthExtendRequestTest {
                 .state(state)
                 .build();
         AuthResponse<AuthUser> response = request.login(callback);
-        Assert.assertNotNull(response);
+        Assertions.assertNotNull(response);
 
         AuthUser user = response.getData();
-        Assert.assertNotNull(user);
+        Assertions.assertNotNull(user);
         System.out.println(JsonUtils.toJson(user));
     }
 
     @Test
     public void revoke() {
         AuthRequest request = new AuthExtendRequest(AuthConfig.builder()
-                .clientId("clientId")
-                .clientSecret("clientSecret")
+                .clientId(Keys.PARAM__CLIENT_ID)
+                .clientSecret(Keys.PARAM__CLIENT_SECRET)
                 .redirectUri("http://redirectUri")
                 .build());
 
         AuthResponse<?> response = request.revoke(AuthToken.builder().build());
-        Assert.assertNotNull(response);
+        Assertions.assertNotNull(response);
         System.out.println(JsonUtils.toJson(response));
     }
 
     @Test
     public void refresh() {
         AuthRequest request = new AuthExtendRequest(AuthConfig.builder()
-                .clientId("clientId")
-                .clientSecret("clientSecret")
+                .clientId(Keys.PARAM__CLIENT_ID)
+                .clientSecret(Keys.PARAM__CLIENT_SECRET)
                 .redirectUri("http://redirectUri")
                 .build());
 
         AuthResponse<AuthToken> response = request.refresh(AuthToken.builder().build());
-        Assert.assertNotNull(response);
+        Assertions.assertNotNull(response);
         System.out.println(JsonUtils.toJson(response.getData()));
 
     }

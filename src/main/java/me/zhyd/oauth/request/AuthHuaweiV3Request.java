@@ -11,13 +11,14 @@ import me.zhyd.oauth.exception.AuthException;
 import me.zhyd.oauth.http.HttpConstants;
 import me.zhyd.oauth.http.HttpHeader;
 import me.zhyd.oauth.http.UnifiedHttpClient;
+import me.zhyd.oauth.http.UrlBuilder;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
 import me.zhyd.oauth.utils.PkceUtil;
-import me.zhyd.oauth.utils.UrlBuilder;
+
 import org.apache.commons.lang3.StringUtils;
 import tools.jackson.databind.JsonNode;
 
@@ -25,7 +26,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import static me.zhyd.oauth.enums.AuthResponseStatus.SUCCESS;
 
@@ -105,8 +105,8 @@ public class AuthHuaweiV3Request extends AuthDefaultRequest {
             return AuthUser.builder()
                     .rawUserInfo(userInfoObject)
                     .uuid(getStringValue(userInfoObject, "unionID"))
-                    .username(getStringValue(userInfoObject, "displayName"))
-                    .nickname(getStringValue(userInfoObject, "displayName"))
+                    .username(getStringValue(userInfoObject, Keys.VARIANT__DISPLAY_NAME))
+                    .nickname(getStringValue(userInfoObject, Keys.VARIANT__DISPLAY_NAME))
                     .gender(AuthUserGender.UNKNOWN)
                     .avatar(getStringValue(userInfoObject, "headPictureURL"))
                     .token(authToken)
@@ -124,7 +124,7 @@ public class AuthHuaweiV3Request extends AuthDefaultRequest {
                 .username(getStringValue(userInfoObject, Keys.NAME))
                 .nickname(getStringValue(userInfoObject, Keys.NICKNAME))
                 .gender(AuthUserGender.UNKNOWN)
-                .avatar(getStringValue(userInfoObject, "picture"))
+                .avatar(getStringValue(userInfoObject, Keys.PICTURE))
                 .token(authToken)
                 .source(source.toString())
                 .build();
@@ -184,8 +184,8 @@ public class AuthHuaweiV3Request extends AuthDefaultRequest {
             String codeChallenge = PkceUtil.generateCodeChallenge(codeChallengeMethod, codeVerifier);
             builder.queryParam("code_challenge", codeChallenge)
                     .queryParam("code_challenge_method", codeChallengeMethod);
-            // 缓存 codeVerifier 十分钟
-            this.authStateCache.cache(cacheKey, codeVerifier, TimeUnit.MINUTES.toMillis(10));
+            // 缓存 codeVerifier
+            this.authStateCache.cache(cacheKey, codeVerifier);
         }
         return builder.build();
     }

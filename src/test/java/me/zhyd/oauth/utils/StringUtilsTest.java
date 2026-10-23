@@ -2,44 +2,39 @@ package me.zhyd.oauth.utils;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class StringUtilsTest {
-    @Rule
-    public final ExpectedException thrown =
-            ExpectedException.none();
 
     @Test
     public void isEmptyNonEmptyInput() {
-        Assert.assertFalse(StringUtils.isEmpty("non-empty string"));
+        Assertions.assertFalse(StringUtils.isEmpty("non-empty string"));
     }
 
     @Test
     public void isEmptyEmptyInput() {
-        Assert.assertTrue(StringUtils.isEmpty(""));
+        Assertions.assertTrue(StringUtils.isEmpty(""));
     }
 
     @Test
     public void isEmptyInputNull() {
-        Assert.assertTrue(StringUtils.isEmpty(null));
+        Assertions.assertTrue(StringUtils.isEmpty(null));
     }
 
     @Test
     public void isNotEmptyNonEmptyInput() {
-        Assert.assertTrue(StringUtils.isNotEmpty("non-empty string"));
+        Assertions.assertTrue(StringUtils.isNotEmpty("non-empty string"));
     }
 
     @Test
     public void isNotEmptyEmptyInput() {
-        Assert.assertFalse(StringUtils.isNotEmpty(""));
+        Assertions.assertFalse(StringUtils.isNotEmpty(""));
     }
 
     @Test
     public void isNotEmptyInputNull() {
-        Assert.assertFalse(StringUtils.isNotEmpty(null));
+        Assertions.assertFalse(StringUtils.isNotEmpty(null));
     }
 
     @Test
@@ -52,7 +47,7 @@ public class StringUtilsTest {
         final String result =
                 Strings.CS.appendIfMissing(str, appendStr, otherwise);
 
-        Assert.assertEquals("Prefix suffix", result);
+        Assertions.assertEquals("Prefix suffix", result);
     }
 
     @Test
@@ -65,7 +60,7 @@ public class StringUtilsTest {
         final String result = !Strings.CS.contains(str, appendStr) ? Strings.CS.appendIfMissing(str, appendStr) : Strings.CS.appendIfMissing(str, otherwise);
 
         // 期望结果是 str 后追加 appendStr
-        Assert.assertEquals("Prefix should be appended", result);
+        Assertions.assertEquals("Prefix should be appended", result);
     }
 
     @Test
@@ -78,6 +73,6 @@ public class StringUtilsTest {
         final String result =
                 Strings.CS.appendIfMissing(str, appendStr, otherwise);
 
-        Assert.assertEquals("should be kept", result);
+        Assertions.assertEquals("should be kept", result);
     }
 }

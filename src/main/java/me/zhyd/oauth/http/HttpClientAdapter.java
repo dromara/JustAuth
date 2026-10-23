@@ -13,7 +13,7 @@ public interface HttpClientAdapter {
     /**
      * 以 UTF-8 表单正文发送 POST，请求参数不会追加到 URL。
      *
-     * @param url 请求地址
+     * @param url    请求地址
      * @param params 表单字段
      * @param header 附加请求头
      * @return HTTP 响应

@@ -11,6 +11,7 @@ import me.zhyd.oauth.enums.scope.AuthWeiboScope;
 import me.zhyd.oauth.exception.AuthException;
 import me.zhyd.oauth.http.HttpHeader;
 import me.zhyd.oauth.http.UnifiedHttpClient;
+import me.zhyd.oauth.http.UrlBuilder;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
@@ -18,7 +19,6 @@ import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
 import me.zhyd.oauth.utils.IpUtils;
 import me.zhyd.oauth.utils.TokenUtils;
-import me.zhyd.oauth.utils.UrlBuilder;
 import tools.jackson.databind.JsonNode;
 
 
@@ -77,7 +77,7 @@ public class AuthWeiboRequest extends AuthDefaultRequest {
                 .avatar(getStringValue(userInfoObject, "profile_image_url"))
                 .blog(containsKey(userInfoObject, Keys.URL) ? "https://weibo.com/" + getStringValue(userInfoObject, "profile_url") : getStringValue(userInfoObject
                         , Keys.URL))
-                .nickname(getStringValue(userInfoObject, "screen_name"))
+                .nickname(getStringValue(userInfoObject, Keys.SCREENNAME))
                 .location(getStringValue(userInfoObject, Keys.LOCATION))
                 .remark(getStringValue(userInfoObject, Keys.DESCRIPTION))
                 .gender(AuthUserGender.getRealGender(getStringValue(userInfoObject, Keys.GENDER)))

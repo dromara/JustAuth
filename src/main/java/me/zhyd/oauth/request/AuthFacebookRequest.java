@@ -8,12 +8,12 @@ import me.zhyd.oauth.enums.AuthResponseStatus;
 import me.zhyd.oauth.enums.AuthUserGender;
 import me.zhyd.oauth.enums.scope.AuthFacebookScope;
 import me.zhyd.oauth.exception.AuthException;
+import me.zhyd.oauth.http.UrlBuilder;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
 import me.zhyd.oauth.utils.GlobalAuthUtils;
-import me.zhyd.oauth.utils.UrlBuilder;
 import tools.jackson.databind.JsonNode;
 
 /**
@@ -70,8 +70,8 @@ public class AuthFacebookRequest extends AuthDefaultRequest {
 
     private String getUserPicture(JsonNode object) {
         String picture = null;
-        if (containsKey(object, "picture")) {
-            JsonNode pictureObj = getObjectNode(object, "picture");
+        if (containsKey(object, Keys.PICTURE)) {
+            JsonNode pictureObj = getObjectNode(object, Keys.PICTURE);
             JsonNode dataObject = getDataNode(pictureObj);
             if (null != dataObject) {
                 picture = getStringValue(dataObject, Keys.URL);

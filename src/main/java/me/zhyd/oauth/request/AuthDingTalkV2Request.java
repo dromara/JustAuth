@@ -8,13 +8,13 @@ import me.zhyd.oauth.enums.scope.AuthDingTalkScope;
 import me.zhyd.oauth.exception.AuthException;
 import me.zhyd.oauth.http.HttpHeader;
 import me.zhyd.oauth.http.UnifiedHttpClient;
+import me.zhyd.oauth.http.UrlBuilder;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
 import me.zhyd.oauth.utils.GlobalAuthUtils;
 import me.zhyd.oauth.utils.JsonUtils;
-import me.zhyd.oauth.utils.UrlBuilder;
 import tools.jackson.databind.JsonNode;
 
 import java.util.HashMap;
@@ -56,8 +56,8 @@ public class AuthDingTalkV2Request extends AuthDefaultRequest {
     public AuthToken getAccessToken(AuthCallback authCallback) {
         Map<String, String> params = new HashMap<>();
         params.put("grantType", Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
-        params.put("clientId", config.getClientId());
-        params.put("clientSecret", config.getClientSecret());
+        params.put(Keys.PARAM__CLIENT_ID, config.getClientId());
+        params.put(Keys.PARAM__CLIENT_SECRET, config.getClientSecret());
         params.put(Keys.OAUTH2__CODE, authCallback.getCode());
 
         String response = UnifiedHttpClient.getAdapter().post(this.source.accessToken(), JsonUtils.toJson(params)).getBody();
@@ -109,8 +109,8 @@ public class AuthDingTalkV2Request extends AuthDefaultRequest {
     protected String accessTokenUrl(String code) {
         return UrlBuilder.fromBaseUrl(source.accessToken())
                 .queryParam(Keys.OAUTH2__CODE, code)
-                .queryParam("clientId", config.getClientId())
-                .queryParam("clientSecret", config.getClientSecret())
+                .queryParam(Keys.PARAM__CLIENT_ID, config.getClientId())
+                .queryParam(Keys.PARAM__CLIENT_SECRET, config.getClientSecret())
                 .queryParam("grantType", Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE)
                 .build();
     }

@@ -12,13 +12,14 @@ import me.zhyd.oauth.enums.scope.AuthSlackScope;
 import me.zhyd.oauth.exception.AuthException;
 import me.zhyd.oauth.http.HttpHeader;
 import me.zhyd.oauth.http.UnifiedHttpClient;
+import me.zhyd.oauth.http.UrlBuilder;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
 import me.zhyd.oauth.utils.TokenUtils;
-import me.zhyd.oauth.utils.UrlBuilder;
+
 import org.apache.commons.collections4.CollectionUtils;
 import tools.jackson.databind.JsonNode;
 
@@ -70,7 +71,7 @@ public class AuthSlackRequest extends AuthDefaultRequest {
                 .get(userInfoUrl(authToken), null, header, false).getBody();
         JsonNode object = toNode(userInfo);
         this.checkResponse(object);
-        JsonNode user = getObjectNode(object, "user");
+        JsonNode user = getObjectNode(object, Keys.USER);
         JsonNode profile = getObjectNode(user, Keys.OAUTH2_SCOPE__PROFILE);
         return AuthUser.builder()
                 .rawUserInfo(user)
@@ -123,7 +124,7 @@ public class AuthSlackRequest extends AuthDefaultRequest {
     @Override
     public String userInfoUrl(AuthToken authToken) {
         return UrlBuilder.fromBaseUrl(source.userInfo())
-                .queryParam("user", authToken.getUid())
+                .queryParam(Keys.USER, authToken.getUid())
                 .build();
     }
 

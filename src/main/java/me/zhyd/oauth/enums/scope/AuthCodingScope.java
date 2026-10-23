@@ -2,6 +2,7 @@ package me.zhyd.oauth.enums.scope;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import me.zhyd.oauth.constant.Keys;
 
 /**
  * Coding平台 OAuth 授权范围
@@ -17,7 +18,7 @@ public enum AuthCodingScope implements AuthScope {
     /**
      * {@code scope} 含义，以{@code description} 为准
      */
-    USER("user", "读取用户的基本信息", false),
+    USER(Keys.USER, "读取用户的基本信息", false),
     USER_EMAIL("user:email", "读取用户的邮件", false),
     USER_PHONE("user:phone", "读取用户的手机号", false),
     PROJECT("project", "授权项目信息、项目列表，仓库信息，公钥列表、成员", false),

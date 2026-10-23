@@ -8,11 +8,11 @@ import me.zhyd.oauth.config.AuthDefaultSource;
 import me.zhyd.oauth.constant.Keys;
 import me.zhyd.oauth.exception.AuthException;
 import me.zhyd.oauth.http.UnifiedHttpClient;
+import me.zhyd.oauth.http.UrlBuilder;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.JsonUtils;
-import me.zhyd.oauth.utils.UrlBuilder;
 
 /**
  * 微信小程序授权登录
@@ -77,7 +77,7 @@ public class AuthWechatMiniProgramRequest extends AuthDefaultRequest {
     protected String accessTokenUrl(String code) {
         return UrlBuilder.fromBaseUrl(source.accessToken())
                 .queryParam(Keys.APPID, config.getClientId())
-                .queryParam("secret", config.getClientSecret())
+                .queryParam(Keys.PARAM__SECRET, config.getClientSecret())
                 .queryParam("js_code", code)
                 .queryParam(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE)
                 .build();

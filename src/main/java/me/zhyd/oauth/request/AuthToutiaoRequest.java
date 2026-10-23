@@ -7,10 +7,10 @@ import me.zhyd.oauth.constant.Keys;
 import me.zhyd.oauth.enums.AuthToutiaoErrorCode;
 import me.zhyd.oauth.enums.AuthUserGender;
 import me.zhyd.oauth.exception.AuthException;
+import me.zhyd.oauth.http.UrlBuilder;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
-import me.zhyd.oauth.utils.UrlBuilder;
 import tools.jackson.databind.JsonNode;
 
 /**
@@ -59,8 +59,8 @@ public class AuthToutiaoRequest extends AuthDefaultRequest {
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
                 .uuid(getStringValue(userInfoObject, Keys.UID))
-                .username(isAnonymousUser ? anonymousUserName : getStringValue(userInfoObject, "screen_name"))
-                .nickname(isAnonymousUser ? anonymousUserName : getStringValue(userInfoObject, "screen_name"))
+                .username(isAnonymousUser ? anonymousUserName : getStringValue(userInfoObject, Keys.SCREENNAME))
+                .nickname(isAnonymousUser ? anonymousUserName : getStringValue(userInfoObject, Keys.SCREENNAME))
                 .avatar(getStringValue(userInfoObject, Keys.AVATAR_URL))
                 .remark(getStringValue(userInfoObject, Keys.DESCRIPTION))
                 .gender(AuthUserGender.getRealGender(getStringValue(userInfoObject, Keys.GENDER)))

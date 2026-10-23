@@ -11,13 +11,13 @@ import me.zhyd.oauth.enums.AuthUserGender;
 import me.zhyd.oauth.enums.scope.AuthLineScope;
 import me.zhyd.oauth.http.HttpHeader;
 import me.zhyd.oauth.http.UnifiedHttpClient;
+import me.zhyd.oauth.http.UrlBuilder;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
 import me.zhyd.oauth.utils.TokenUtils;
-import me.zhyd.oauth.utils.UrlBuilder;
 import tools.jackson.databind.JsonNode;
 
 import java.util.HashMap;
@@ -73,8 +73,8 @@ public class AuthLineRequest extends AuthDefaultRequest {
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
                 .uuid(getStringValue(userInfoObject, "userId"))
-                .username(getStringValue(userInfoObject, "displayName"))
-                .nickname(getStringValue(userInfoObject, "displayName"))
+                .username(getStringValue(userInfoObject, Keys.VARIANT__DISPLAY_NAME))
+                .nickname(getStringValue(userInfoObject, Keys.VARIANT__DISPLAY_NAME))
                 .avatar(getStringValue(userInfoObject, "pictureUrl"))
                 .remark(getStringValue(userInfoObject, "statusMessage"))
                 .gender(AuthUserGender.UNKNOWN)
@@ -91,7 +91,7 @@ public class AuthLineRequest extends AuthDefaultRequest {
         params.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
 
         String response = UnifiedHttpClient.getAdapter().post(source.revoke(), params, false).getBody();
-        
+
         JsonNode object = toNode(response);
         // 返回1表示取消授权成功，否则失败
         AuthResponseStatus status = getBooleanValue(object, "revoked") ? AuthResponseStatus.SUCCESS : AuthResponseStatus.FAILURE;
@@ -125,7 +125,7 @@ public class AuthLineRequest extends AuthDefaultRequest {
     @Override
     public String userInfoUrl(AuthToken authToken) {
         return UrlBuilder.fromBaseUrl(source.userInfo())
-                .queryParam("user", authToken.getUid())
+                .queryParam(Keys.USER, authToken.getUid())
                 .build();
     }
 

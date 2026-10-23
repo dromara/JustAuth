@@ -11,13 +11,14 @@ import me.zhyd.oauth.enums.scope.AuthMicrosoftScope;
 import me.zhyd.oauth.exception.AuthException;
 import me.zhyd.oauth.http.HttpHeader;
 import me.zhyd.oauth.http.UnifiedHttpClient;
+import me.zhyd.oauth.http.UrlBuilder;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
 import me.zhyd.oauth.utils.MapUtil;
-import me.zhyd.oauth.utils.UrlBuilder;
+
 import org.apache.commons.lang3.StringUtils;
 import tools.jackson.databind.JsonNode;
 
@@ -99,7 +100,7 @@ public abstract class AbstractAuthMicrosoftRequest extends AuthDefaultRequest {
                 .rawUserInfo(userInfoObject)
                 .uuid(getStringValue(userInfoObject, Keys.ID))
                 .username(getStringValue(userInfoObject, "userPrincipalName"))
-                .nickname(getStringValue(userInfoObject, "displayName"))
+                .nickname(getStringValue(userInfoObject, Keys.VARIANT__DISPLAY_NAME))
                 .location(getStringValue(userInfoObject, "officeLocation"))
                 .email(getStringValue(userInfoObject, "mail"))
                 .gender(AuthUserGender.UNKNOWN)

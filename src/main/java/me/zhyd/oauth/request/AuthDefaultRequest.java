@@ -9,12 +9,16 @@ import me.zhyd.oauth.enums.AuthResponseStatus;
 import me.zhyd.oauth.exception.AuthException;
 import me.zhyd.oauth.http.HttpUrlEncoding;
 import me.zhyd.oauth.http.UnifiedHttpClient;
+import me.zhyd.oauth.http.UrlBuilder;
 import me.zhyd.oauth.log.Log;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
-import me.zhyd.oauth.utils.*;
+import me.zhyd.oauth.utils.AuthChecker;
+import me.zhyd.oauth.utils.JsonNodeUtils;
+import me.zhyd.oauth.utils.JsonUtils;
+import me.zhyd.oauth.utils.UuidUtils;
 import org.apache.commons.lang3.StringUtils;
 import tools.jackson.databind.JsonNode;
 

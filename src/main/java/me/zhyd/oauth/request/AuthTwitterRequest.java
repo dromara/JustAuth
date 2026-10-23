@@ -8,12 +8,12 @@ import me.zhyd.oauth.constant.MediaType;
 import me.zhyd.oauth.http.HttpConstants;
 import me.zhyd.oauth.http.HttpHeader;
 import me.zhyd.oauth.http.UnifiedHttpClient;
+import me.zhyd.oauth.http.UrlBuilder;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.GlobalAuthUtils;
 import me.zhyd.oauth.utils.MapUtil;
-import me.zhyd.oauth.utils.UrlBuilder;
 import tools.jackson.databind.JsonNode;
 
 import java.util.HashMap;
@@ -116,7 +116,7 @@ public class AuthTwitterRequest extends AuthDefaultRequest {
                 .oauthToken(requestToken.get("oauth_token"))
                 .oauthTokenSecret(requestToken.get("oauth_token_secret"))
                 .userId(requestToken.get(Keys.VARIANT__USER_ID))
-                .screenName(requestToken.get("screen_name"))
+                .screenName(requestToken.get(Keys.SCREENNAME))
                 .build();
     }
 
@@ -143,7 +143,7 @@ public class AuthTwitterRequest extends AuthDefaultRequest {
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
                 .uuid(getStringValue(userInfoObject, "id_str"))
-                .username(getStringValue(userInfoObject, "screen_name"))
+                .username(getStringValue(userInfoObject, Keys.SCREENNAME))
                 .nickname(getStringValue(userInfoObject, Keys.NAME))
                 .remark(getStringValue(userInfoObject, Keys.DESCRIPTION))
                 .avatar(getStringValue(userInfoObject, "profile_image_url_https"))

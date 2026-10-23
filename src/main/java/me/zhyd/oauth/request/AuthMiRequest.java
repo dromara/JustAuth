@@ -10,13 +10,13 @@ import me.zhyd.oauth.enums.scope.AuthMiScope;
 import me.zhyd.oauth.exception.AuthException;
 import me.zhyd.oauth.http.HttpConstants;
 import me.zhyd.oauth.http.UnifiedHttpClient;
+import me.zhyd.oauth.http.UrlBuilder;
 import me.zhyd.oauth.log.Log;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
-import me.zhyd.oauth.utils.UrlBuilder;
 import tools.jackson.databind.JsonNode;
 
 import java.text.MessageFormat;
@@ -143,7 +143,7 @@ public class AuthMiRequest extends AuthDefaultRequest {
     @Override
     protected String userInfoUrl(AuthToken authToken) {
         return UrlBuilder.fromBaseUrl(source.userInfo())
-                .queryParam("clientId", config.getClientId())
+                .queryParam(Keys.PARAM__CLIENT_ID, config.getClientId())
                 .queryParam("token", authToken.getAccessToken())
                 .build();
     }

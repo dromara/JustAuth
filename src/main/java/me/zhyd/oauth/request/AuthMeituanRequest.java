@@ -8,11 +8,11 @@ import me.zhyd.oauth.enums.AuthResponseStatus;
 import me.zhyd.oauth.enums.AuthUserGender;
 import me.zhyd.oauth.exception.AuthException;
 import me.zhyd.oauth.http.UnifiedHttpClient;
+import me.zhyd.oauth.http.UrlBuilder;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
-import me.zhyd.oauth.utils.UrlBuilder;
 import tools.jackson.databind.JsonNode;
 
 import java.util.HashMap;
@@ -39,7 +39,7 @@ public class AuthMeituanRequest extends AuthDefaultRequest {
 
         Map<String, String> params = new HashMap<>(7);
         params.put(Keys.VARIANT__APP_ID, config.getClientId());
-        params.put("secret", config.getClientSecret());
+        params.put(Keys.PARAM__SECRET, config.getClientSecret());
         params.put(Keys.OAUTH2__CODE, authCallback.getCode());
         params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
 
@@ -60,7 +60,7 @@ public class AuthMeituanRequest extends AuthDefaultRequest {
 
         Map<String, String> params = new HashMap<>(5);
         params.put(Keys.VARIANT__APP_ID, config.getClientId());
-        params.put("secret", config.getClientSecret());
+        params.put(Keys.PARAM__SECRET, config.getClientSecret());
         params.put(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken());
 
         String response = UnifiedHttpClient.getAdapter().post(source.userInfo(), params, false).getBody();
@@ -85,7 +85,7 @@ public class AuthMeituanRequest extends AuthDefaultRequest {
 
         Map<String, String> params = new HashMap<>(7);
         params.put(Keys.VARIANT__APP_ID, config.getClientId());
-        params.put("secret", config.getClientSecret());
+        params.put(Keys.PARAM__SECRET, config.getClientSecret());
         params.put(Keys.OAUTH2__REFRESH_TOKEN, oldToken.getRefreshToken());
         params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__REFRESH_TOKEN);
 

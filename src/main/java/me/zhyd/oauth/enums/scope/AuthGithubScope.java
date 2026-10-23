@@ -2,6 +2,7 @@ package me.zhyd.oauth.enums.scope;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import me.zhyd.oauth.constant.Keys;
 
 /**
  * Github平台 OAuth 授权范围
@@ -32,7 +33,7 @@ public enum AuthGithubScope implements AuthScope {
     READ_PUBLIC_KEY("read:public_key", "List and view details for public keys.", false),
     GIST("gist", "Grants write access to gists.", false),
     NOTIFICATIONS("notifications", "Grants: <br>* read access to a user's notifications <br>* mark as read access to threads <br>* watch and unwatch access to a repository, and <br>* read, write, and delete access to thread subscriptions.", false),
-    USER("user", "Grants read/write access to profile info only.  Note that this scope includes <code>user:email</code> and <code>user:follow</code>.", false),
+    USER(Keys.USER, "Grants read/write access to profile info only.  Note that this scope includes <code>user:email</code> and <code>user:follow</code>.", false),
     READ_USER("read:user", "Grants access to read a user's profile data.", false),
     USER_EMAIL("user:email", "Grants read access to a user's email addresses.", false),
     USER_FOLLOW("user:follow", "Grants access to follow or unfollow other users.", false),

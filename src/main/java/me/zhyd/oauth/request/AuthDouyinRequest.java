@@ -9,13 +9,13 @@ import me.zhyd.oauth.enums.AuthUserGender;
 import me.zhyd.oauth.enums.scope.AuthDouyinScope;
 import me.zhyd.oauth.exception.AuthException;
 import me.zhyd.oauth.http.UnifiedHttpClient;
+import me.zhyd.oauth.http.UrlBuilder;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
 import me.zhyd.oauth.utils.JsonNodeUtils;
-import me.zhyd.oauth.utils.UrlBuilder;
 import tools.jackson.databind.JsonNode;
 
 
@@ -57,7 +57,7 @@ public class AuthDouyinRequest extends AuthDefaultRequest {
                 .avatar(getStringValue(userInfoDataObject, Keys.AVATAR))
                 .remark(getStringValue(userInfoDataObject, Keys.DESCRIPTION))
                 .gender(AuthUserGender.getRealGender(getStringValue(userInfoDataObject, Keys.GENDER)))
-                .location(String.format("%s %s %s", getStringValue(userInfoDataObject, "country"), getStringValue(userInfoDataObject, "province"), getStringValue(userInfoDataObject, "city")))
+                .location(String.format("%s %s %s", getStringValue(userInfoDataObject, Keys.COUNTRY), getStringValue(userInfoDataObject, Keys.PROVINCE), getStringValue(userInfoDataObject, Keys.CITY)))
                 .token(authToken)
                 .source(source.toString())
                 .build();

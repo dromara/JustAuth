@@ -2,7 +2,7 @@ package me.zhyd.oauth.request;
 
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.utils.AuthStateUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class AuthWeChatMpRequestTest {
 

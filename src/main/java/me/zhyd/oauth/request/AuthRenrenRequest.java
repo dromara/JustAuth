@@ -8,12 +8,12 @@ import me.zhyd.oauth.enums.scope.AuthRenrenScope;
 import me.zhyd.oauth.exception.AuthException;
 import me.zhyd.oauth.http.HttpUrlEncoding;
 import me.zhyd.oauth.http.UnifiedHttpClient;
+import me.zhyd.oauth.http.UrlBuilder;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
-import me.zhyd.oauth.utils.UrlBuilder;
 import tools.jackson.databind.JsonNode;
 
 import java.util.Objects;
@@ -76,7 +76,7 @@ public class AuthRenrenRequest extends AuthDefaultRequest {
             throw new AuthException("Failed to get token from Renren: " + accessTokenObject.toString());
         }
 
-        JsonNode userObject = getObjectNode(accessTokenObject, "user");
+        JsonNode userObject = getObjectNode(accessTokenObject, Keys.USER);
 
         return AuthToken.builder()
                 .accessToken(HttpUrlEncoding.encode(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN)))
@@ -100,7 +100,7 @@ public class AuthRenrenRequest extends AuthDefaultRequest {
         if (Objects.isNull(basicInformation)) {
             return AuthUserGender.UNKNOWN;
         }
-        return AuthUserGender.getRealGender(getStringValue(basicInformation, "sex"));
+        return AuthUserGender.getRealGender(getStringValue(basicInformation, Keys.SEX));
     }
 
     private String getCompany(JsonNode userObj) {

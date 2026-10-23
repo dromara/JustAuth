@@ -8,11 +8,11 @@ import me.zhyd.oauth.constant.Keys;
 import me.zhyd.oauth.constant.MediaType;
 import me.zhyd.oauth.enums.AuthUserGender;
 import me.zhyd.oauth.http.HttpHeader;
+import me.zhyd.oauth.http.UrlBuilder;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.TokenUtils;
-import me.zhyd.oauth.utils.UrlBuilder;
 import tools.jackson.databind.JsonNode;
 
 import java.util.HashMap;

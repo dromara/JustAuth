@@ -12,13 +12,13 @@ import me.zhyd.oauth.enums.scope.AuthOktaScope;
 import me.zhyd.oauth.exception.AuthException;
 import me.zhyd.oauth.http.HttpHeader;
 import me.zhyd.oauth.http.UnifiedHttpClient;
+import me.zhyd.oauth.http.UrlBuilder;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.AuthScopeUtils;
 import me.zhyd.oauth.utils.TokenUtils;
-import me.zhyd.oauth.utils.UrlBuilder;
 import tools.jackson.databind.JsonNode;
 
 import java.util.HashMap;
@@ -102,7 +102,7 @@ public class AuthOktaRequest extends AuthDefaultRequest {
                 .nickname(getStringValue(userInfoObject, Keys.NICKNAME))
                 .email(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
                 .location(null == address ? null : getStringValue(address, "street_address"))
-                .gender(AuthUserGender.getRealGender(getStringValue(userInfoObject, "sex")))
+                .gender(AuthUserGender.getRealGender(getStringValue(userInfoObject, Keys.SEX)))
                 .token(authToken)
                 .source(source.toString())
                 .build();
