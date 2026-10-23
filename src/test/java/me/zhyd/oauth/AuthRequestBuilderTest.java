@@ -76,6 +76,7 @@ public class AuthRequestBuilderTest {
                 .clientId("a")
                 .clientSecret("a")
                 .redirectUri("https://www.justauth.cn")
+                .serverUrl("https://auth.example.com")
                 .authServerId("asd")
                 .agentId("asd")
                 .domainPrefix("asd")

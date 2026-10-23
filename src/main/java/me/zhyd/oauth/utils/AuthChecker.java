@@ -9,6 +9,9 @@ import me.zhyd.oauth.exception.AuthException;
 import me.zhyd.oauth.model.AuthCallback;
 import org.apache.commons.lang3.StringUtils;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 /**
  * 授权配置类的校验器
  *
@@ -37,6 +40,9 @@ public class AuthChecker {
         if (isSupported && (AuthDefaultSource.CODING == source || AuthDefaultSource.OKTA == source)) {
             isSupported = StringUtils.isNotEmpty(config.getDomainPrefix());
         }
+        if (isSupported && (AuthDefaultSource.GITEA == source || AuthDefaultSource.MAXKEY == source || AuthDefaultSource.TOPIAM == source)) {
+            isSupported = isValidServerUrl(config.getServerUrl());
+        }
         if (isSupported && AuthDefaultSource.XMLY == source) {
             isSupported = StringUtils.isNotEmpty(config.getDeviceId()) && null != config.getClientOsType();
             if (isSupported) {
@@ -44,6 +50,22 @@ public class AuthChecker {
             }
         }
         return isSupported;
+    }
+
+    private static boolean isValidServerUrl(String serverUrl) {
+        if (StringUtils.isEmpty(serverUrl)) {
+            return false;
+        }
+        try {
+            URI uri = new URI(serverUrl);
+            String scheme = uri.getScheme();
+            return ("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme))
+                    && StringUtils.isNotEmpty(uri.getHost())
+                    && uri.getRawQuery() == null
+                    && uri.getRawFragment() == null;
+        } catch (URISyntaxException e) {
+            return false;
+        }
     }
 
     /**
