@@ -56,11 +56,17 @@ public abstract class AbstractAuthWeChatEnterpriseRequest extends AuthDefaultReq
         String response = doGetUserInfo(authToken);
 
         JsonNode responseObject = this.checkResponse(response);
+        // 兼容 userid / UserId
+        String userId = null;
         // 返回 OpenId 或其他，均代表非当前企业用户，不支持
-        if (!containsKey(responseObject, "UserId")) {
+        if (containsKey(responseObject, "userid")) {
+            userId = getStringValue(responseObject, "userid");
+        } else if (containsKey(responseObject, "UserId")) {
+            userId = getStringValue(responseObject, "UserId");
+        }
+        if (userId == null) {
             throw new AuthException(AuthResponseStatus.UNIDENTIFIED_PLATFORM, source);
         }
-        String userId = getStringValue(responseObject, "UserId");
         String userTicket = getStringValue(responseObject, "user_ticket");
 
         JsonNode userInfoObject = getUserDetail(authToken.getAccessToken(), userId, userTicket);

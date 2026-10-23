@@ -975,6 +975,81 @@ public enum AuthDefaultSource implements AuthSource {
     },
 
     /**
+     * Gitea（支持私有化部署）
+     */
+    GITEA {
+        @Override
+        public String authorize() {
+            return "%s/login/oauth/authorize";
+        }
+
+        @Override
+        public String accessToken() {
+            return "%s/login/oauth/access_token";
+        }
+
+        @Override
+        public String userInfo() {
+            return "%s/login/oauth/userinfo";
+        }
+
+        @Override
+        public Class<? extends AuthDefaultRequest> getTargetClass() {
+            return AuthGiteaRequest.class;
+        }
+    },
+
+    /**
+     * MaxKey（支持私有化部署）
+     */
+    MAXKEY {
+        @Override
+        public String authorize() {
+            return "%s/sign/authz/oauth/v20/authorize";
+        }
+
+        @Override
+        public String accessToken() {
+            return "%s/sign/authz/oauth/v20/token";
+        }
+
+        @Override
+        public String userInfo() {
+            return "%s/sign/api/oauth/v20/me";
+        }
+
+        @Override
+        public Class<? extends AuthDefaultRequest> getTargetClass() {
+            return AuthMaxKeyRequest.class;
+        }
+    },
+
+    /**
+     * TopIAM（支持私有化部署）
+     */
+    TOPIAM {
+        @Override
+        public String authorize() {
+            return "%s/oauth2/auth";
+        }
+
+        @Override
+        public String accessToken() {
+            return "%s/oauth2/token";
+        }
+
+        @Override
+        public String userInfo() {
+            return "%s/oauth2/userinfo";
+        }
+
+        @Override
+        public Class<? extends AuthDefaultRequest> getTargetClass() {
+            return AuthTopIamRequest.class;
+        }
+    },
+
+    /**
      * 美团
      *
      * @since 1.12.0

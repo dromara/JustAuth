@@ -1,8 +1,41 @@
 package me.zhyd.oauth.http;
 
+import java.net.URLEncoder;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+/**
+ * 可替换的统一 HTTP 请求适配器。
+ *
+ * @author AprilWind
+ */
 public interface HttpClientAdapter {
+    /**
+     * 以 UTF-8 表单正文发送 POST，请求参数不会追加到 URL。
+     *
+     * @param url 请求地址
+     * @param params 表单字段
+     * @param header 附加请求头
+     * @return HTTP 响应
+     */
+    default AdapterHttpResponse postForm(String url, Map<String, String> params, HttpHeader header) {
+        String body = params == null ? "" : params.entrySet().stream()
+                .map(entry -> URLEncoder.encode(entry.getKey(), HttpConstants.DEFAULT_ENCODING) + "="
+                        + URLEncoder.encode(entry.getValue() == null ? "" : entry.getValue(),
+                        HttpConstants.DEFAULT_ENCODING))
+                .collect(Collectors.joining("&"));
+        HttpHeader formHeader = new HttpHeader();
+        if (header != null) {
+            header.getHeaders().forEach((key, value) -> {
+                if (!HttpConstants.CONTENT_TYPE.equalsIgnoreCase(key)) {
+                    formHeader.add(key, value);
+                }
+            });
+        }
+        formHeader.add(HttpConstants.CONTENT_TYPE, "application/x-www-form-urlencoded");
+        return post(url, body, formHeader);
+    }
+
     /**
      * GET 请求
      *

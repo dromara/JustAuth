@@ -36,6 +36,14 @@ public class AuthConfig {
     private String redirectUri;
 
     /**
+     * 自托管授权服务器地址。
+     * <p>
+     * 用于 Gitea、MaxKey、TopIAM 等支持私有化部署的平台，例如：
+     * {@code https://gitea.example.com}。
+     */
+    private String serverUrl;
+
+    /**
      * 支付宝公钥：当选择支付宝登录时，该值可用
      * 对应“RSA2(SHA256)密钥”中的“支付宝公钥”
      *
@@ -257,4 +265,24 @@ public class AuthConfig {
      * @since 1.16.7
      */
     private String dingTalkExclusiveCorpId;
+
+    /**
+     * 保留新增 {@code serverUrl} 前的全参构造器签名，避免旧版本调用方升级后出现
+     * {@link NoSuchMethodError}。
+     */
+    public AuthConfig(String clientId, String clientSecret, String redirectUri,
+                      String alipayPublicKey, boolean unionId, String stackOverflowKey,
+                      String agentId, String usertype, String domainPrefix, HttpConfig httpConfig,
+                      boolean ignoreCheckState, List<String> scopes, String deviceId,
+                      Integer clientOsType, String packId, boolean pkce, String authServerId,
+                      boolean ignoreCheckRedirectUri, String tenantId, String kid, String teamId,
+                      String loginType, String lang, String dingTalkOrgType, String dingTalkCorpId,
+                      boolean dingTalkExclusiveLogin, String dingTalkExclusiveCorpId) {
+        this(clientId, clientSecret, redirectUri, null, alipayPublicKey, unionId,
+                stackOverflowKey, agentId, usertype, domainPrefix, httpConfig,
+                ignoreCheckState, scopes, deviceId, clientOsType, packId, pkce,
+                authServerId, ignoreCheckRedirectUri, tenantId, kid, teamId,
+                loginType, lang, dingTalkOrgType, dingTalkCorpId,
+                dingTalkExclusiveLogin, dingTalkExclusiveCorpId);
+    }
 }

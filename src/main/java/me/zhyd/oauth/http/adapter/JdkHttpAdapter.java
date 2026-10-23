@@ -19,6 +19,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 使用 JDK HTTP 客户端发送请求。
+ *
+ * @author AprilWind
+ */
 public class JdkHttpAdapter implements HttpClientAdapter {
     HttpConfig httpConfig;
     private final HttpClient.Builder clientBuilder;
@@ -161,8 +166,16 @@ public class JdkHttpAdapter implements HttpClientAdapter {
 
         if (StringUtils.isNotEmpty(data)) {
             builder.POST(HttpRequest.BodyPublishers.ofString(data, HttpConstants.DEFAULT_ENCODING));
-            builder.header(HttpConstants.CONTENT_ENCODING, HttpConstants.DEFAULT_ENCODING.displayName());
-            builder.header(HttpConstants.CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON);
+            boolean formBody = header != null && header.getHeaders().entrySet().stream()
+                    .anyMatch(entry -> HttpConstants.CONTENT_TYPE.equalsIgnoreCase(entry.getKey())
+                            && "application/x-www-form-urlencoded".equalsIgnoreCase(entry.getValue()));
+            if (!formBody) {
+                builder.header(HttpConstants.CONTENT_ENCODING, HttpConstants.DEFAULT_ENCODING.displayName());
+            }
+            if (header == null || header.getHeaders().keySet().stream()
+                    .noneMatch(HttpConstants.CONTENT_TYPE::equalsIgnoreCase)) {
+                builder.header(HttpConstants.CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON);
+            }
         } else {
             builder.POST(HttpRequest.BodyPublishers.noBody());
         }
