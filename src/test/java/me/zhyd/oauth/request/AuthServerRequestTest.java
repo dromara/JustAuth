@@ -12,8 +12,8 @@ import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.utils.Base64Utils;
 import me.zhyd.oauth.utils.JsonUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
 
 import java.io.IOException;
@@ -40,10 +40,10 @@ public class AuthServerRequestTest {
                 .authConfig(config("https://gitea.example.com///"))
                 .build();
 
-        Assert.assertTrue(request instanceof AuthGiteaRequest);
+        Assertions.assertInstanceOf(AuthGiteaRequest.class, request);
         String authorizeUrl = request.authorize("state");
-        Assert.assertTrue(authorizeUrl.startsWith("https://gitea.example.com/login/oauth/authorize?"));
-        Assert.assertFalse(authorizeUrl.contains(".com//login"));
+        Assertions.assertTrue(authorizeUrl.startsWith("https://gitea.example.com/login/oauth/authorize?"));
+        Assertions.assertFalse(authorizeUrl.contains(".com//login"));
     }
 
     @Test
@@ -53,8 +53,8 @@ public class AuthServerRequestTest {
                 .authConfig(config("https://maxkey.example.com"))
                 .build();
 
-        Assert.assertTrue(request instanceof AuthMaxKeyRequest);
-        Assert.assertTrue(request.authorize("state")
+        Assertions.assertInstanceOf(AuthMaxKeyRequest.class, request);
+        Assertions.assertTrue(request.authorize("state")
                 .startsWith("https://maxkey.example.com/sign/authz/oauth/v20/authorize?"));
     }
 
@@ -65,11 +65,11 @@ public class AuthServerRequestTest {
                 .authConfig(config("https://topiam.example.com/api/v1/authorize/app"))
                 .build();
 
-        Assert.assertTrue(request instanceof AuthTopIamRequest);
+        Assertions.assertInstanceOf(AuthTopIamRequest.class, request);
         String authorizeUrl = request.authorize("state");
-        Assert.assertTrue(authorizeUrl.startsWith(
+        Assertions.assertTrue(authorizeUrl.startsWith(
                 "https://topiam.example.com/api/v1/authorize/app/oauth2/auth?"));
-        Assert.assertTrue(authorizeUrl.contains("scope=openid%20profile%20email"));
+        Assertions.assertTrue(authorizeUrl.contains("scope=openid%20profile%20email"));
     }
 
     @Test
@@ -79,12 +79,12 @@ public class AuthServerRequestTest {
 
         String authorizeUrl = new AuthTopIamRequest(config).authorize("state");
 
-        Assert.assertTrue(authorizeUrl.contains("scope=openid%20phone"));
+        Assertions.assertTrue(authorizeUrl.contains("scope=openid%20phone"));
     }
 
-    @Test(expected = AuthException.class)
+    @Test
     public void shouldRejectInvalidServerUrl() {
-        new AuthGiteaRequest(config("gitea.internal"));
+        Assertions.assertThrows(AuthException.class, () -> new AuthGiteaRequest(config("gitea.internal")));
     }
 
     @Test
@@ -97,9 +97,9 @@ public class AuthServerRequestTest {
                 "https://gitea.example.com#fragment")) {
             try {
                 new AuthGiteaRequest(config(serverUrl));
-                Assert.fail("Expected invalid serverUrl: " + serverUrl);
+                Assertions.fail("Expected invalid serverUrl: " + serverUrl);
             } catch (AuthException exception) {
-                Assert.assertNotNull(exception.getMessage());
+                Assertions.assertNotNull(exception.getMessage());
             }
         }
     }
@@ -109,14 +109,14 @@ public class AuthServerRequestTest {
         HttpServer server = createServer();
         server.createContext("/login/oauth/access_token", exchange -> {
             Map<String, String> form = readForm(exchange);
-            Assert.assertNull(exchange.getRequestURI().getQuery());
-            Assert.assertEquals("POST", exchange.getRequestMethod());
-            Assert.assertEquals(List.of("application/x-www-form-urlencoded"),
+            Assertions.assertNull(exchange.getRequestURI().getQuery());
+            Assertions.assertEquals("POST", exchange.getRequestMethod());
+            Assertions.assertEquals(List.of("application/x-www-form-urlencoded"),
                     exchange.getRequestHeaders().get("Content-Type"));
-            Assert.assertEquals("client-id", form.get("client_id"));
-            Assert.assertEquals("secret +&=中文", form.get("client_secret"));
-            Assert.assertEquals("authorization-code", form.get("code"));
-            Assert.assertEquals("https://client.example.com/callback", form.get("redirect_uri"));
+            Assertions.assertEquals("client-id", form.get("client_id"));
+            Assertions.assertEquals("secret +&=中文", form.get("client_secret"));
+            Assertions.assertEquals("authorization-code", form.get("code"));
+            Assertions.assertEquals("https://client.example.com/callback", form.get("redirect_uri"));
             respond(exchange, 400, """
                     {"error":"invalid_grant","error_description":"authorization code expired"}
                     """);
@@ -126,9 +126,9 @@ public class AuthServerRequestTest {
             AuthGiteaRequest request = new AuthGiteaRequest(config(serverUrl(server)));
             try {
                 request.getAccessToken(callback());
-                Assert.fail("Expected OAuth error");
+                Assertions.fail("Expected OAuth error");
             } catch (AuthException e) {
-                Assert.assertEquals("authorization code expired", e.getMessage());
+                Assertions.assertEquals("authorization code expired", e.getMessage());
             }
         } finally {
             server.stop(0);
@@ -140,9 +140,9 @@ public class AuthServerRequestTest {
         HttpServer server = createServer();
         server.createContext("/sign/authz/oauth/v20/token", exchange -> {
             Map<String, String> form = readForm(exchange);
-            Assert.assertNull(exchange.getRequestURI().getQuery());
-            Assert.assertEquals("client-id", form.get("client_id"));
-            Assert.assertEquals("secret +&=中文", form.get("client_secret"));
+            Assertions.assertNull(exchange.getRequestURI().getQuery());
+            Assertions.assertEquals("client-id", form.get("client_id"));
+            Assertions.assertEquals("secret +&=中文", form.get("client_secret"));
             respond(exchange, 200, """
                     {"access_token":"maxkey-token","token_type":"Bearer","expires_in":3600}
                     """);
@@ -150,7 +150,7 @@ public class AuthServerRequestTest {
         server.start();
         try {
             AuthToken token = new AuthMaxKeyRequest(config(serverUrl(server))).getAccessToken(callback());
-            Assert.assertEquals("maxkey-token", token.getAccessToken());
+            Assertions.assertEquals("maxkey-token", token.getAccessToken());
         } finally {
             server.stop(0);
         }
@@ -161,16 +161,16 @@ public class AuthServerRequestTest {
         HttpServer server = createServer();
         server.createContext("/oauth2/token", exchange -> {
             Map<String, String> form = readForm(exchange);
-            Assert.assertNull(exchange.getRequestURI().getQuery());
-            Assert.assertEquals("authorization-code", form.get("code"));
-            Assert.assertEquals("Basic " + Base64Utils.encode("client-id:secret +&=中文".getBytes(StandardCharsets.UTF_8)),
+            Assertions.assertNull(exchange.getRequestURI().getQuery());
+            Assertions.assertEquals("authorization-code", form.get("code"));
+            Assertions.assertEquals("Basic " + Base64Utils.encode("client-id:secret +&=中文".getBytes(StandardCharsets.UTF_8)),
                     exchange.getRequestHeaders().getFirst("Authorization"));
             respond(exchange, 200, """
                     {"access_token":"topiam-token","token_type":"Bearer","expires_in":3600}
                     """);
         });
         server.createContext("/oauth2/userinfo", exchange -> {
-            Assert.assertEquals("Bearer topiam-token", exchange.getRequestHeaders().getFirst("Authorization"));
+            Assertions.assertEquals("Bearer topiam-token", exchange.getRequestHeaders().getFirst("Authorization"));
             respond(exchange, 200, """
                     {
                       "sub":"user-1",
@@ -186,9 +186,9 @@ public class AuthServerRequestTest {
             AuthTopIamRequest request = new AuthTopIamRequest(config(serverUrl(server)));
             AuthToken token = request.getAccessToken(callback());
             AuthUser user = request.getUserInfo(token);
-            Assert.assertEquals("user-1", user.getUuid());
-            Assert.assertEquals("aprilwind", user.getUsername());
-            Assert.assertEquals("April Wind", user.getNickname());
+            Assertions.assertEquals("user-1", user.getUuid());
+            Assertions.assertEquals("aprilwind", user.getUsername());
+            Assertions.assertEquals("April Wind", user.getNickname());
         } finally {
             server.stop(0);
         }
@@ -209,12 +209,12 @@ public class AuthServerRequestTest {
 
         AuthToken token = new AuthGiteaRequest(config("https://example.com")).buildToken(object);
 
-        Assert.assertEquals("access", token.getAccessToken());
-        Assert.assertEquals("refresh", token.getRefreshToken());
-        Assert.assertEquals("id", token.getIdToken());
-        Assert.assertEquals("Bearer", token.getTokenType());
-        Assert.assertEquals("openid profile", token.getScope());
-        Assert.assertEquals(3600, token.getExpireIn());
+        Assertions.assertEquals("access", token.getAccessToken());
+        Assertions.assertEquals("refresh", token.getRefreshToken());
+        Assertions.assertEquals("id", token.getIdToken());
+        Assertions.assertEquals("Bearer", token.getTokenType());
+        Assertions.assertEquals("openid profile", token.getScope());
+        Assertions.assertEquals(3600, token.getExpireIn());
     }
 
 
@@ -222,17 +222,17 @@ public class AuthServerRequestTest {
     public void shouldMapNumericGiteaIdAndFallbackFields() throws Exception {
         HttpServer server = createServer();
         server.createContext("/login/oauth/userinfo", exchange -> {
-            Assert.assertEquals("Bearer token", exchange.getRequestHeaders().getFirst("Authorization"));
+            Assertions.assertEquals("Bearer token", exchange.getRequestHeaders().getFirst("Authorization"));
             respond(exchange, 200, "{\"id\":42,\"login\":\"april\",\"full_name\":\"April Wind\"}");
         });
         server.start();
         try {
             AuthUser user = new AuthGiteaRequest(config(serverUrl(server)))
                     .getUserInfo(AuthToken.builder().accessToken("token").build());
-            Assert.assertEquals("42", user.getUuid());
-            Assert.assertEquals("april", user.getUsername());
-            Assert.assertEquals("April Wind", user.getNickname());
-            Assert.assertTrue(user.getRawUserInfo() instanceof JsonNode);
+            Assertions.assertEquals("42", user.getUuid());
+            Assertions.assertEquals("april", user.getUsername());
+            Assertions.assertEquals("April Wind", user.getNickname());
+            Assertions.assertInstanceOf(JsonNode.class, user.getRawUserInfo());
         } finally {
             server.stop(0);
         }
@@ -241,14 +241,14 @@ public class AuthServerRequestTest {
     @Test
     public void shouldKeepHttpErrorsAndRejectInvalidSuccessBodies() {
         AuthGiteaRequest request = new AuthGiteaRequest(config("https://example.com"));
-        Assert.assertEquals("gateway failed", Assert.assertThrows(AuthException.class,
+        Assertions.assertEquals("gateway failed", Assertions.assertThrows(AuthException.class,
                 () -> request.parseResponse(response(false, 502, "gateway failed"))).getMessage());
-        Assert.assertEquals("denied", Assert.assertThrows(AuthException.class,
+        Assertions.assertEquals("denied", Assertions.assertThrows(AuthException.class,
                 () -> request.parseResponse(response(false, 403, "{\"message\":\"denied\"}"))).getMessage());
         for (String body : Arrays.asList(null, "", "null", "[]", "bad json")) {
-            Assert.assertThrows(AuthException.class, () -> request.parseResponse(response(true, 200, body)));
+            Assertions.assertThrows(AuthException.class, () -> request.parseResponse(response(true, 200, body)));
         }
-        Assert.assertThrows(AuthException.class, () -> request.parseResponse(null));
+        Assertions.assertThrows(AuthException.class, () -> request.parseResponse(null));
     }
 
 
@@ -257,28 +257,28 @@ public class AuthServerRequestTest {
         HttpServer proxy = createServer();
         proxy.createContext("/sign/authz/oauth/v20/token", exchange -> {
             Map<String, String> form = readForm(exchange);
-            Assert.assertEquals("secret +&=中文", form.get("client_secret"));
+            Assertions.assertEquals("secret +&=中文", form.get("client_secret"));
             respond(exchange, 200, "{\"access_token\":\"proxy-token\"}");
         });
         proxy.createContext("/sign/api/oauth/v20/me", exchange -> {
-            Assert.assertEquals("Bearer proxy-token", exchange.getRequestHeaders().getFirst("Authorization"));
+            Assertions.assertEquals("Bearer proxy-token", exchange.getRequestHeaders().getFirst("Authorization"));
             respond(exchange, 200, "{\"userId\":99,\"username\":\"april\",\"displayName\":\"April Wind\"}");
         });
         proxy.start();
         try {
             AuthConfig config = config("http://oauth.invalid");
-            for (int timeout : new int[] {3000, 0, -1}) {
+            for (int timeout : new int[]{3000, 0, -1}) {
                 config.setHttpConfig(new HttpConfig(timeout,
                         new Proxy(Proxy.Type.HTTP, proxy.getAddress())));
                 AuthMaxKeyRequest request = new AuthMaxKeyRequest(config);
                 AuthToken token = request.getAccessToken(callback());
-                Assert.assertEquals("proxy-token", token.getAccessToken());
+                Assertions.assertEquals("proxy-token", token.getAccessToken());
                 AuthUser user = request.getUserInfo(token);
-                Assert.assertEquals("99", user.getUuid());
-                Assert.assertEquals("april", user.getUsername());
-                Assert.assertEquals("April Wind", user.getNickname());
-                Assert.assertEquals("MAXKEY", user.getSource());
-                Assert.assertEquals(timeout, config.getHttpConfig().getTimeout());
+                Assertions.assertEquals("99", user.getUuid());
+                Assertions.assertEquals("april", user.getUsername());
+                Assertions.assertEquals("April Wind", user.getNickname());
+                Assertions.assertEquals("MAXKEY", user.getSource());
+                Assertions.assertEquals(timeout, config.getHttpConfig().getTimeout());
             }
         } finally {
             proxy.stop(0);

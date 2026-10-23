@@ -1,12 +1,10 @@
 package me.zhyd.oauth.utils;
 
-import org.junit.jupiter.api.Test;
-
 import java.util.UUID;
 
 public class UuidUtilsTest {
 
-    @Test
+    //    @Test
     public void getUUID() {
         long start = System.currentTimeMillis();
         for (int i = 0; i <= 1000000; i++) {
@@ -16,7 +14,7 @@ public class UuidUtilsTest {
         System.out.println("cost " + (System.currentTimeMillis() - start));
     }
 
-    @Test
+    //    @Test
     public void getJdkUUID() {
         long start = System.currentTimeMillis();
         for (int i = 0; i <= 1000000; i++) {

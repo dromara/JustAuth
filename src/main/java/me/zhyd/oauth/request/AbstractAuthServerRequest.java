@@ -5,15 +5,10 @@ import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthSource;
 import me.zhyd.oauth.constant.Keys;
 import me.zhyd.oauth.exception.AuthException;
-import me.zhyd.oauth.http.AdapterHttpResponse;
-import me.zhyd.oauth.http.HttpClientAdapter;
-import me.zhyd.oauth.http.HttpConfig;
-import me.zhyd.oauth.http.HttpConstants;
-import me.zhyd.oauth.http.UnifiedHttpClient;
+import me.zhyd.oauth.http.*;
 import me.zhyd.oauth.http.adapter.JdkHttpAdapter;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.utils.JsonUtils;
-import me.zhyd.oauth.utils.UrlBuilder;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 
@@ -111,7 +106,7 @@ abstract class AbstractAuthServerRequest extends AuthDefaultRequest {
      * 读取标量字段，兼容用户标识为数字的平台。
      *
      * @param object 响应对象
-     * @param key 字段名称
+     * @param key    字段名称
      * @return 字段文本，不存在或非标量时返回 null
      */
     protected String stringValue(JsonNode object, String key) {
@@ -123,7 +118,7 @@ abstract class AbstractAuthServerRequest extends AuthDefaultRequest {
      * 按顺序读取第一个非空字段。
      *
      * @param object 响应对象
-     * @param keys 候选字段
+     * @param keys   候选字段
      * @return 首个非空字段文本
      */
     protected String firstNotEmpty(JsonNode object, String... keys) {

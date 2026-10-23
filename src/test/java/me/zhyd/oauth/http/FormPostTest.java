@@ -2,8 +2,8 @@ package me.zhyd.oauth.http;
 
 import com.sun.net.httpserver.HttpServer;
 import me.zhyd.oauth.http.adapter.JdkHttpAdapter;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -37,11 +37,11 @@ public class FormPostTest {
             JdkHttpAdapter adapter = new JdkHttpAdapter();
             AdapterHttpResponse form = adapter.postForm(url, Map.of("secret", "a +&=中文"),
                     new HttpHeader().add("Authorization", "Basic abc"));
-            Assert.assertTrue(form.isSuccess());
-            Assert.assertEquals("null|secret=a+%2B%26%3D%E4%B8%AD%E6%96%87|"
+            Assertions.assertTrue(form.isSuccess());
+            Assertions.assertEquals("null|secret=a+%2B%26%3D%E4%B8%AD%E6%96%87|"
                     + "[application/x-www-form-urlencoded]|Basic abc|null", form.getBody());
             AdapterHttpResponse json = adapter.post(url, "{\"name\":\"test\"}");
-            Assert.assertEquals("null|{\"name\":\"test\"}|[application/json; charset=utf-8]|null|UTF-8", json.getBody());
+            Assertions.assertEquals("null|{\"name\":\"test\"}|[application/json; charset=utf-8]|null|UTF-8", json.getBody());
         } finally {
             server.stop(0);
         }
