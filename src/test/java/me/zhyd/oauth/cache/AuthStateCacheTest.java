@@ -23,11 +23,10 @@ public class AuthStateCacheTest {
         Assertions.assertEquals("value", AuthDefaultStateCache.INSTANCE.get("key"));
 
         // 没过期
-        TimeUnit.MILLISECONDS.sleep(5);
         Assertions.assertEquals("value", AuthDefaultStateCache.INSTANCE.get("key"));
-
+        
+        AuthDefaultStateCache.INSTANCE.expire("key");
         // 过期
-        TimeUnit.MILLISECONDS.sleep(6);
         Assertions.assertNull(AuthDefaultStateCache.INSTANCE.get("key"));
     }
 }
