@@ -44,8 +44,8 @@ public class AuthPinterestRequest extends AuthDefaultRequest {
         this.checkResponse(accessTokenObject);
 
         return AuthToken.builder()
-                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
-                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
+                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2.TOKEN_TYPE))
                 .build();
     }
 
@@ -61,9 +61,9 @@ public class AuthPinterestRequest extends AuthDefaultRequest {
 
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
-                .uuid(getStringValue(userInfoObject, Keys.ID))
+                .uuid(getStringValue(userInfoObject, Keys.USERINFO.ID))
                 .avatar(getAvatarUrl(userInfoObject))
-                .username(getStringValue(userInfoObject, Keys.USERNAME))
+                .username(getStringValue(userInfoObject, Keys.USERINFO.USERNAME))
                 .nickname(getStringValue(userInfoObject, "first_name") + " " + getStringValue(userInfoObject, "last_name"))
                 .gender(AuthUserGender.UNKNOWN)
                 .remark(getStringValue(userInfoObject, "bio"))
@@ -80,7 +80,7 @@ public class AuthPinterestRequest extends AuthDefaultRequest {
         }
 
         JsonNode imageNode = getObjectNode(jsonObject, "60x60");
-        return getStringValue(imageNode, Keys.URL);
+        return getStringValue(imageNode, Keys.USERINFO.URL);
     }
 
     /**
@@ -93,7 +93,7 @@ public class AuthPinterestRequest extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(super.authorize(state))
-                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(",", false, AuthScopeUtils.getDefaultScopes(AuthPinterestScope.values())))
+                .queryParam(Keys.OAUTH2.SCOPE, this.getScopes(",", false, AuthScopeUtils.getDefaultScopes(AuthPinterestScope.values())))
                 .build();
     }
 
@@ -106,7 +106,7 @@ public class AuthPinterestRequest extends AuthDefaultRequest {
     @Override
     protected String userInfoUrl(AuthToken authToken) {
         return UrlBuilder.fromBaseUrl(source.userInfo())
-                .queryParam(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken())
+                .queryParam(Keys.OAUTH2.ACCESS_TOKEN, authToken.getAccessToken())
                 .queryParam("fields", "id,username,first_name,last_name,bio,image")
                 .build();
     }
@@ -118,7 +118,7 @@ public class AuthPinterestRequest extends AuthDefaultRequest {
      */
     private void checkResponse(JsonNode object) {
         if (!containsKey(object, "status") && FAILURE.equals(getStringValue(object, "status"))) {
-            throw new AuthException(getStringValue(object, Keys.MESSAGE));
+            throw new AuthException(getStringValue(object, Keys.USERINFO.MESSAGE));
         }
     }
 

@@ -48,10 +48,10 @@ public class AuthElemeRequest extends AuthDefaultRequest {
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
         Map<String, String> form = new HashMap<>(7);
-        form.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
-        form.put(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri());
-        form.put(Keys.OAUTH2__CODE, authCallback.getCode());
-        form.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
+        form.put(Keys.OAUTH2.CLIENT_ID, config.getClientId());
+        form.put(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri());
+        form.put(Keys.OAUTH2.CODE, authCallback.getCode());
+        form.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE);
 
         HttpHeader httpHeader = this.buildHeader(CONTENT_TYPE_FORM, this.getRequestId(), true);
 
@@ -61,10 +61,10 @@ public class AuthElemeRequest extends AuthDefaultRequest {
         this.checkResponse(accessTokenObject);
 
         return AuthToken.builder()
-                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
-                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
-                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
-                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2.EXPIRES_IN))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2.REFRESH_TOKEN))
+                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2.TOKEN_TYPE))
                 .build();
     }
 
@@ -77,7 +77,7 @@ public class AuthElemeRequest extends AuthDefaultRequest {
         final long timestamp = System.currentTimeMillis();
         // 公共参数
         Map<String, Object> metasHashMap = new HashMap<>(4);
-        metasHashMap.put(Keys.VARIANT__APP_KEY, config.getClientId());
+        metasHashMap.put(Keys.OAUTH2.APP_KEY, config.getClientId());
         metasHashMap.put("timestamp", timestamp);
         String signature = GlobalAuthUtils.generateElemeSignature(config.getClientId(), config.getClientSecret(), timestamp, action, authToken
                 .getAccessToken(), parameters);
@@ -86,7 +86,7 @@ public class AuthElemeRequest extends AuthDefaultRequest {
 
         Map<String, Object> paramsMap = new HashMap<>();
         paramsMap.put("nop", "1.0.0");
-        paramsMap.put(Keys.ID, requestId);
+        paramsMap.put(Keys.USERINFO.ID, requestId);
         paramsMap.put("action", action);
         paramsMap.put("token", authToken.getAccessToken());
         paramsMap.put("metas", metasHashMap);
@@ -99,15 +99,15 @@ public class AuthElemeRequest extends AuthDefaultRequest {
         JsonNode responseObject = toNode(response);
 
         // 校验请求
-        if (containsKey(responseObject, Keys.NAME)) {
-            throw new AuthException(getStringValue(responseObject, Keys.MESSAGE));
+        if (containsKey(responseObject, Keys.USERINFO.NAME)) {
+            throw new AuthException(getStringValue(responseObject, Keys.USERINFO.MESSAGE));
         }
-        if (containsKey(responseObject, Keys.ERROR) && null != responseObject.get(Keys.ERROR)) {
-            JsonNode error = responseObject.get(Keys.ERROR);
-            throw new AuthException(getStringValue(error, Keys.MESSAGE));
+        if (containsKey(responseObject, Keys.RESPONSE_FIELDS.ERROR) && null != responseObject.get(Keys.RESPONSE_FIELDS.ERROR)) {
+            JsonNode error = responseObject.get(Keys.RESPONSE_FIELDS.ERROR);
+            throw new AuthException(getStringValue(error, Keys.USERINFO.MESSAGE));
         }
 
-        JsonNode userInfoObject = getObjectNode(responseObject, Keys.RESULT);
+        JsonNode userInfoObject = getObjectNode(responseObject, Keys.RESPONSE_FIELDS.RESULT);
 
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
@@ -125,8 +125,8 @@ public class AuthElemeRequest extends AuthDefaultRequest {
         HttpHeader httpHeader = this.buildHeader(CONTENT_TYPE_FORM, this.getRequestId(), true);
 
         Map<String, String> params = new HashMap<>(4);
-        params.put(Keys.OAUTH2__REFRESH_TOKEN, oldToken.getRefreshToken());
-        params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__REFRESH_TOKEN);
+        params.put(Keys.OAUTH2.REFRESH_TOKEN, oldToken.getRefreshToken());
+        params.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.REFRESH_TOKEN);
 
         String response = UnifiedHttpClient.getAdapter().post(source.refresh(), params, httpHeader, false).getBody();
 
@@ -137,17 +137,17 @@ public class AuthElemeRequest extends AuthDefaultRequest {
         return AuthResponse.<AuthToken>builder()
                 .code(AuthResponseStatus.SUCCESS.getCode())
                 .data(AuthToken.builder()
-                        .accessToken(getStringValue(refreshTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
-                        .expireIn(getIntValue(refreshTokenObject, Keys.OAUTH2__EXPIRES_IN))
-                        .refreshToken(getStringValue(refreshTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
-                        .tokenType(getStringValue(refreshTokenObject, Keys.OAUTH2__TOKEN_TYPE))
+                        .accessToken(getStringValue(refreshTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
+                        .expireIn(getIntValue(refreshTokenObject, Keys.OAUTH2.EXPIRES_IN))
+                        .refreshToken(getStringValue(refreshTokenObject, Keys.OAUTH2.REFRESH_TOKEN))
+                        .tokenType(getStringValue(refreshTokenObject, Keys.OAUTH2.TOKEN_TYPE))
                         .build())
                 .build();
     }
 
     @Override
     public String authorize(String state) {
-        return UrlBuilder.fromBaseUrl(super.authorize(state)).queryParam(Keys.OAUTH2__SCOPE, "all").build();
+        return UrlBuilder.fromBaseUrl(super.authorize(state)).queryParam(Keys.OAUTH2.SCOPE, "all").build();
     }
 
     private HttpHeader buildHeader(String contentType, String requestId, boolean auth) {
@@ -168,8 +168,8 @@ public class AuthElemeRequest extends AuthDefaultRequest {
     }
 
     private void checkResponse(JsonNode object) {
-        if (containsKey(object, Keys.ERROR)) {
-            throw new AuthException(getStringValue(object, Keys.ERROR_DESCRIPTION));
+        if (containsKey(object, Keys.RESPONSE_FIELDS.ERROR)) {
+            throw new AuthException(getStringValue(object, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
         }
     }
 

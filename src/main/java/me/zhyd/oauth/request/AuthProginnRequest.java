@@ -38,11 +38,11 @@ public class AuthProginnRequest extends AuthDefaultRequest {
     public AuthToken getAccessToken(AuthCallback authCallback) {
 
         Map<String, String> params = new HashMap<>();
-        params.put(Keys.OAUTH2__CODE, authCallback.getCode());
-        params.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
-        params.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
-        params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
-        params.put(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri());
+        params.put(Keys.OAUTH2.CODE, authCallback.getCode());
+        params.put(Keys.OAUTH2.CLIENT_ID, config.getClientId());
+        params.put(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret());
+        params.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE);
+        params.put(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri());
 
         String response = UnifiedHttpClient.getAdapter().post(AuthDefaultSource.PROGINN.accessToken(), params, false).getBody();
 
@@ -50,11 +50,11 @@ public class AuthProginnRequest extends AuthDefaultRequest {
         this.checkResponse(accessTokenObject);
 
         return AuthToken.builder()
-                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
-                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
-                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
-                .uid(getStringValue(accessTokenObject, Keys.UID))
-                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2.REFRESH_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2.EXPIRES_IN))
+                .uid(getStringValue(accessTokenObject, Keys.USERINFO.UID))
+                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2.TOKEN_TYPE))
                 .build();
     }
 
@@ -67,11 +67,11 @@ public class AuthProginnRequest extends AuthDefaultRequest {
 
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
-                .uuid(getStringValue(userInfoObject, Keys.UID))
-                .username(getStringValue(userInfoObject, Keys.NICKNAME))
-                .nickname(getStringValue(userInfoObject, Keys.NICKNAME))
-                .avatar(getStringValue(userInfoObject, Keys.AVATAR))
-                .email(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
+                .uuid(getStringValue(userInfoObject, Keys.USERINFO.UID))
+                .username(getStringValue(userInfoObject, Keys.USERINFO.NICKNAME))
+                .nickname(getStringValue(userInfoObject, Keys.USERINFO.NICKNAME))
+                .avatar(getStringValue(userInfoObject, Keys.USERINFO.AVATAR))
+                .email(getStringValue(userInfoObject, Keys.USERINFO.EMAIL))
                 .gender(AuthUserGender.UNKNOWN)
                 .token(authToken)
                 .source(source.toString())
@@ -84,8 +84,8 @@ public class AuthProginnRequest extends AuthDefaultRequest {
      * @param object 请求响应内容
      */
     private void checkResponse(JsonNode object) {
-        if (containsKey(object, Keys.ERROR)) {
-            throw new AuthException(getStringValue(object, Keys.ERROR_DESCRIPTION));
+        if (containsKey(object, Keys.RESPONSE_FIELDS.ERROR)) {
+            throw new AuthException(getStringValue(object, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
         }
     }
 
@@ -98,7 +98,7 @@ public class AuthProginnRequest extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(super.authorize(state))
-                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(" ", true, AuthScopeUtils.getDefaultScopes(AuthProginnScope.values())))
+                .queryParam(Keys.OAUTH2.SCOPE, this.getScopes(" ", true, AuthScopeUtils.getDefaultScopes(AuthProginnScope.values())))
                 .build();
     }
 }

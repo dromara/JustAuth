@@ -43,15 +43,15 @@ public class AuthWeiboRequest extends AuthDefaultRequest {
         String response = doPostAuthorizationCode(authCallback.getCode());
 
         JsonNode accessTokenObject = toNode(response);
-        if (containsKey(accessTokenObject, Keys.ERROR)) {
-            throw new AuthException(getStringValue(accessTokenObject, Keys.ERROR_DESCRIPTION));
+        if (containsKey(accessTokenObject, Keys.RESPONSE_FIELDS.ERROR)) {
+            throw new AuthException(getStringValue(accessTokenObject, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
         }
 
         return AuthToken.builder()
-                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
-                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
-                .uid(getStringValue(accessTokenObject, Keys.UID))
-                .openId(getStringValue(accessTokenObject, Keys.UID))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2.EXPIRES_IN))
+                .uid(getStringValue(accessTokenObject, Keys.USERINFO.UID))
+                .openId(getStringValue(accessTokenObject, Keys.USERINFO.UID))
                 .build();
     }
 
@@ -67,20 +67,20 @@ public class AuthWeiboRequest extends AuthDefaultRequest {
         String userInfo = UnifiedHttpClient.getAdapter().get(userInfoUrl(authToken), null, httpHeader, false).getBody();
 
         JsonNode userInfoObject = toNode(userInfo);
-        if (containsKey(userInfoObject, Keys.ERROR)) {
-            throw new AuthException(getStringValue(userInfoObject, Keys.ERROR));
+        if (containsKey(userInfoObject, Keys.RESPONSE_FIELDS.ERROR)) {
+            throw new AuthException(getStringValue(userInfoObject, Keys.RESPONSE_FIELDS.ERROR));
         }
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
-                .uuid(getStringValue(userInfoObject, Keys.ID))
-                .username(getStringValue(userInfoObject, Keys.NAME))
+                .uuid(getStringValue(userInfoObject, Keys.USERINFO.ID))
+                .username(getStringValue(userInfoObject, Keys.USERINFO.NAME))
                 .avatar(getStringValue(userInfoObject, "profile_image_url"))
-                .blog(containsKey(userInfoObject, Keys.URL) ? "https://weibo.com/" + getStringValue(userInfoObject, "profile_url") : getStringValue(userInfoObject
-                        , Keys.URL))
-                .nickname(getStringValue(userInfoObject, Keys.SCREENNAME))
-                .location(getStringValue(userInfoObject, Keys.LOCATION))
-                .remark(getStringValue(userInfoObject, Keys.DESCRIPTION))
-                .gender(AuthUserGender.getRealGender(getStringValue(userInfoObject, Keys.GENDER)))
+                .blog(containsKey(userInfoObject, Keys.USERINFO.URL) ? "https://weibo.com/" + getStringValue(userInfoObject, "profile_url") : getStringValue(userInfoObject
+                        , Keys.USERINFO.URL))
+                .nickname(getStringValue(userInfoObject, Keys.USERINFO.SCREENNAME))
+                .location(getStringValue(userInfoObject, Keys.USERINFO.LOCATION))
+                .remark(getStringValue(userInfoObject, Keys.USERINFO.DESCRIPTION))
+                .gender(AuthUserGender.getRealGender(getStringValue(userInfoObject, Keys.USERINFO.GENDER)))
                 .token(authToken)
                 .source(source.toString())
                 .build();
@@ -95,15 +95,15 @@ public class AuthWeiboRequest extends AuthDefaultRequest {
     @Override
     protected String userInfoUrl(AuthToken authToken) {
         return UrlBuilder.fromBaseUrl(source.userInfo())
-                .queryParam(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken())
-                .queryParam(Keys.UID, authToken.getUid())
+                .queryParam(Keys.OAUTH2.ACCESS_TOKEN, authToken.getAccessToken())
+                .queryParam(Keys.USERINFO.UID, authToken.getUid())
                 .build();
     }
 
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(super.authorize(state))
-                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(",", false, AuthScopeUtils.getDefaultScopes(AuthWeiboScope.values())))
+                .queryParam(Keys.OAUTH2.SCOPE, this.getScopes(",", false, AuthScopeUtils.getDefaultScopes(AuthWeiboScope.values())))
                 .build();
     }
 
@@ -112,14 +112,14 @@ public class AuthWeiboRequest extends AuthDefaultRequest {
         String response = doGetRevoke(authToken);
 
         JsonNode object = toNode(response);
-        if (containsKey(object, Keys.ERROR)) {
+        if (containsKey(object, Keys.RESPONSE_FIELDS.ERROR)) {
             return AuthResponse.builder()
                     .code(AuthResponseStatus.FAILURE.getCode())
-                    .msg(getStringValue(object, Keys.ERROR))
+                    .msg(getStringValue(object, Keys.RESPONSE_FIELDS.ERROR))
                     .build();
         }
         // 返回 result = true 表示取消授权成功，否则失败
-        AuthResponseStatus status = getBooleanValue(object, Keys.RESULT) ? AuthResponseStatus.SUCCESS : AuthResponseStatus.FAILURE;
+        AuthResponseStatus status = getBooleanValue(object, Keys.RESPONSE_FIELDS.RESULT) ? AuthResponseStatus.SUCCESS : AuthResponseStatus.FAILURE;
         return AuthResponse.builder().code(status.getCode()).msg(status.getMsg()).build();
     }
 }

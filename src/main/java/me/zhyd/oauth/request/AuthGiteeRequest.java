@@ -38,11 +38,11 @@ public class AuthGiteeRequest extends AuthDefaultRequest {
         this.checkResponse(accessTokenObject);
 
         return AuthToken.builder()
-                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
-                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
-                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
-                .scope(getStringValue(accessTokenObject, Keys.OAUTH2__SCOPE))
-                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2.EXPIRES_IN))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2.REFRESH_TOKEN))
+                .scope(getStringValue(accessTokenObject, Keys.OAUTH2.SCOPE))
+                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2.TOKEN_TYPE))
                 .build();
     }
 
@@ -55,14 +55,14 @@ public class AuthGiteeRequest extends AuthDefaultRequest {
 
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
-                .uuid(getStringValue(userInfoObject, Keys.ID))
+                .uuid(getStringValue(userInfoObject, Keys.USERINFO.ID))
                 .username(getStringValue(userInfoObject, "login"))
-                .avatar(getStringValue(userInfoObject, Keys.AVATAR_URL))
+                .avatar(getStringValue(userInfoObject, Keys.USERINFO.AVATAR_URL))
                 .blog(getStringValue(userInfoObject, "blog"))
-                .nickname(getStringValue(userInfoObject, Keys.NAME))
-                .company(getStringValue(userInfoObject, Keys.COMPANY))
-                .location(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__ADDRESS))
-                .email(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
+                .nickname(getStringValue(userInfoObject, Keys.USERINFO.NAME))
+                .company(getStringValue(userInfoObject, Keys.USERINFO.COMPANY))
+                .location(getStringValue(userInfoObject, Keys.USERINFO.ADDRESS))
+                .email(getStringValue(userInfoObject, Keys.USERINFO.EMAIL))
                 .remark(getStringValue(userInfoObject, "bio"))
                 .gender(AuthUserGender.UNKNOWN)
                 .token(authToken)
@@ -76,8 +76,8 @@ public class AuthGiteeRequest extends AuthDefaultRequest {
      * @param object 请求响应内容
      */
     private void checkResponse(JsonNode object) {
-        if (containsKey(object, Keys.ERROR)) {
-            throw new AuthException(getStringValue(object, Keys.ERROR_DESCRIPTION));
+        if (containsKey(object, Keys.RESPONSE_FIELDS.ERROR)) {
+            throw new AuthException(getStringValue(object, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
         }
     }
 
@@ -90,7 +90,7 @@ public class AuthGiteeRequest extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(super.authorize(state))
-                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(" ", true, AuthScopeUtils.getDefaultScopes(AuthGiteeScope.values())))
+                .queryParam(Keys.OAUTH2.SCOPE, this.getScopes(" ", true, AuthScopeUtils.getDefaultScopes(AuthGiteeScope.values())))
                 .build();
     }
 }

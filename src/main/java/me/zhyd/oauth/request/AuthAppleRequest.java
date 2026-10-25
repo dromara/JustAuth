@@ -48,7 +48,7 @@ public class AuthAppleRequest extends AuthDefaultRequest {
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(super.authorize(state))
                 .queryParam("response_mode", "form_post")
-                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(" ", false, AuthScopeUtils.getDefaultScopes(AuthAppleScope.values())))
+                .queryParam(Keys.OAUTH2.SCOPE, this.getScopes(" ", false, AuthScopeUtils.getDefaultScopes(AuthAppleScope.values())))
                 .build();
     }
 
@@ -63,11 +63,11 @@ public class AuthAppleRequest extends AuthDefaultRequest {
         JsonNode accessTokenObject = toNode(response);
         // https://developer.apple.com/documentation/sign_in_with_apple/tokenresponse
         AuthToken.AuthTokenBuilder builder = AuthToken.builder()
-                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
-                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
-                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
-                .idToken(getStringValue(accessTokenObject, Keys.OIDC__ID_TOKEN))
-                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE));
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2.EXPIRES_IN))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2.REFRESH_TOKEN))
+                .idToken(getStringValue(accessTokenObject, Keys.OIDC.ID_TOKEN))
+                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2.TOKEN_TYPE));
 
         if (!StringUtils.isEmpty(authCallback.getUser())) {
             try {
@@ -89,8 +89,8 @@ public class AuthAppleRequest extends AuthDefaultRequest {
         // https://developer.apple.com/documentation/sign_in_with_apple/sign_in_with_apple_rest_api/authenticating_users_with_sign_in_with_apple#3383773
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
-                .uuid(getStringValue(userInfoObject, "sub"))
-                .email(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
+                .uuid(getStringValue(userInfoObject, Keys.USERINFO.SUB))
+                .email(getStringValue(userInfoObject, Keys.USERINFO.EMAIL))
                 .username(authToken.getUsername())
                 .token(authToken)
                 .source(source.toString())

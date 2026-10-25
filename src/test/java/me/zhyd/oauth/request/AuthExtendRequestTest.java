@@ -23,8 +23,8 @@ public class AuthExtendRequestTest {
     @Test
     public void authorize() {
         AuthRequest request = new AuthExtendRequest(AuthConfig.builder()
-                .clientId(Keys.PARAM__CLIENT_ID)
-                .clientSecret(Keys.PARAM__CLIENT_SECRET)
+                .clientId(Keys.PARAM.CLIENT_ID)
+                .clientSecret(Keys.PARAM.CLIENT_SECRET)
                 .redirectUri("http://redirectUri")
                 .build());
         String authorize = request.authorize(AuthStateUtils.createState());
@@ -35,15 +35,15 @@ public class AuthExtendRequestTest {
     @Test
     public void login() {
         AuthRequest request = new AuthExtendRequest(AuthConfig.builder()
-                .clientId(Keys.PARAM__CLIENT_ID)
-                .clientSecret(Keys.PARAM__CLIENT_SECRET)
+                .clientId(Keys.PARAM.CLIENT_ID)
+                .clientSecret(Keys.PARAM.CLIENT_SECRET)
                 .redirectUri("http://redirectUri")
                 .build());
 
         String state = AuthStateUtils.createState();
         request.authorize(state);
         AuthCallback callback = AuthCallback.builder()
-                .code(Keys.OAUTH2__CODE)
+                .code(Keys.OAUTH2.CODE)
                 .state(state)
                 .build();
         AuthResponse<AuthUser> response = request.login(callback);
@@ -57,8 +57,8 @@ public class AuthExtendRequestTest {
     @Test
     public void revoke() {
         AuthRequest request = new AuthExtendRequest(AuthConfig.builder()
-                .clientId(Keys.PARAM__CLIENT_ID)
-                .clientSecret(Keys.PARAM__CLIENT_SECRET)
+                .clientId(Keys.PARAM.CLIENT_ID)
+                .clientSecret(Keys.PARAM.CLIENT_SECRET)
                 .redirectUri("http://redirectUri")
                 .build());
 
@@ -70,8 +70,8 @@ public class AuthExtendRequestTest {
     @Test
     public void refresh() {
         AuthRequest request = new AuthExtendRequest(AuthConfig.builder()
-                .clientId(Keys.PARAM__CLIENT_ID)
-                .clientSecret(Keys.PARAM__CLIENT_SECRET)
+                .clientId(Keys.PARAM.CLIENT_ID)
+                .clientSecret(Keys.PARAM.CLIENT_SECRET)
                 .redirectUri("http://redirectUri")
                 .build());
 

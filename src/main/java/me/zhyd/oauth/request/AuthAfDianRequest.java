@@ -33,18 +33,18 @@ public class AuthAfDianRequest extends AuthDefaultRequest {
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
         Map<String, String> params = new HashMap<>();
-        params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
-        params.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
-        params.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
-        params.put(Keys.OAUTH2__CODE, authCallback.getCode());
-        params.put(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri());
+        params.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE);
+        params.put(Keys.OAUTH2.CLIENT_ID, config.getClientId());
+        params.put(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret());
+        params.put(Keys.OAUTH2.CODE, authCallback.getCode());
+        params.put(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri());
 
         String response = UnifiedHttpClient.getAdapter().post(AuthDefaultSource.AFDIAN.accessToken(), params, false).getBody();
 
         JsonNode accessTokenObject = toNode(response);
 
-        JsonNode data = getObjectNode(accessTokenObject, Keys.DATA);
-        String userId = getStringValue(data, Keys.VARIANT__USER_ID);
+        JsonNode data = getObjectNode(accessTokenObject, Keys.RESPONSE_FIELDS.DATA);
+        String userId = getStringValue(data, Keys.USERINFO.USER_ID);
 
         return AuthToken.builder().userId(userId).build();
     }
@@ -68,11 +68,11 @@ public class AuthAfDianRequest extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(source.authorize())
-                .queryParam(Keys.OAUTH2__RESPONSE_TYPE, Keys.OAUTH2__CODE)
-                .queryParam(Keys.OAUTH2__SCOPE, "basic")
-                .queryParam(Keys.OAUTH2__CLIENT_ID, config.getClientId())
-                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
-                .queryParam(Keys.OAUTH2__STATE, getRealState(state))
+                .queryParam(Keys.OAUTH2.RESPONSE_TYPE, Keys.OAUTH2.CODE)
+                .queryParam(Keys.OAUTH2.SCOPE, "basic")
+                .queryParam(Keys.OAUTH2.CLIENT_ID, config.getClientId())
+                .queryParam(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2.STATE, getRealState(state))
                 .build();
     }
 

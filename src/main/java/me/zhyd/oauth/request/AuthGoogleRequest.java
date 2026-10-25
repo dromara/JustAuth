@@ -42,11 +42,11 @@ public class AuthGoogleRequest extends AuthDefaultRequest {
         this.checkResponse(accessTokenObject);
 
         return AuthToken.builder()
-                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
-                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
-                .scope(getStringValue(accessTokenObject, Keys.OAUTH2__SCOPE))
-                .idToken(getStringValue(accessTokenObject, Keys.OIDC__ID_TOKEN))
-                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2.EXPIRES_IN))
+                .scope(getStringValue(accessTokenObject, Keys.OAUTH2.SCOPE))
+                .idToken(getStringValue(accessTokenObject, Keys.OIDC.ID_TOKEN))
+                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2.TOKEN_TYPE))
                 .build();
     }
 
@@ -62,12 +62,12 @@ public class AuthGoogleRequest extends AuthDefaultRequest {
 
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
-                .uuid(getStringValue(userInfoObject, "sub"))
-                .username(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
-                .avatar(getStringValue(userInfoObject, Keys.PICTURE))
-                .nickname(getStringValue(userInfoObject, Keys.NAME))
+                .uuid(getStringValue(userInfoObject, Keys.USERINFO.SUB))
+                .username(getStringValue(userInfoObject, Keys.USERINFO.EMAIL))
+                .avatar(getStringValue(userInfoObject, Keys.USERINFO.PICTURE))
+                .nickname(getStringValue(userInfoObject, Keys.USERINFO.NAME))
                 .location(getStringValue(userInfoObject, "locale"))
-                .email(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
+                .email(getStringValue(userInfoObject, Keys.USERINFO.EMAIL))
                 .gender(AuthUserGender.UNKNOWN)
                 .token(authToken)
                 .source(source.toString())
@@ -85,7 +85,7 @@ public class AuthGoogleRequest extends AuthDefaultRequest {
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(super.authorize(state))
                 .queryParam("access_type", "offline")
-                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(" ", false, AuthScopeUtils.getDefaultScopes(AuthGoogleScope.values())))
+                .queryParam(Keys.OAUTH2.SCOPE, this.getScopes(" ", false, AuthScopeUtils.getDefaultScopes(AuthGoogleScope.values())))
                 .queryParam("prompt", "select_account")
                 .build();
     }
@@ -98,7 +98,7 @@ public class AuthGoogleRequest extends AuthDefaultRequest {
      */
     @Override
     protected String userInfoUrl(AuthToken authToken) {
-        return UrlBuilder.fromBaseUrl(source.userInfo()).queryParam(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken()).build();
+        return UrlBuilder.fromBaseUrl(source.userInfo()).queryParam(Keys.OAUTH2.ACCESS_TOKEN, authToken.getAccessToken()).build();
     }
 
     /**
@@ -107,8 +107,8 @@ public class AuthGoogleRequest extends AuthDefaultRequest {
      * @param object 请求响应内容
      */
     private void checkResponse(JsonNode object) {
-        if (containsKey(object, Keys.ERROR) || containsKey(object, Keys.ERROR_DESCRIPTION)) {
-            throw new AuthException(containsKey(object, Keys.ERROR) + ":" + getStringValue(object, Keys.ERROR_DESCRIPTION));
+        if (containsKey(object, Keys.RESPONSE_FIELDS.ERROR) || containsKey(object, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION)) {
+            throw new AuthException(containsKey(object, Keys.RESPONSE_FIELDS.ERROR) + ":" + getStringValue(object, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
         }
     }
 }

@@ -65,7 +65,7 @@ public class AuthFeishuRequest extends AuthDefaultRequest {
         String url = "https://open.feishu.cn/open-apis/auth/v3/" + APP_ACCESS_TOKEN + "/internal/";
 
         Map<String, Object> params = new HashMap<>();
-        params.put(Keys.VARIANT__APP_ID, config.getClientId());
+        params.put(Keys.OAUTH2.APP_ID, config.getClientId());
         params.put("app_secret", config.getClientSecret());
 
         String response = UnifiedHttpClient.getAdapter().post(url, JsonUtils.toJson(params), new HttpHeader()
@@ -83,8 +83,8 @@ public class AuthFeishuRequest extends AuthDefaultRequest {
     public AuthToken getAccessToken(AuthCallback authCallback) {
         Map<String, Object> params = new HashMap<>();
         params.put(APP_ACCESS_TOKEN, this.getAppAccessToken());
-        params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
-        params.put(Keys.OAUTH2__CODE, authCallback.getCode());
+        params.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE);
+        params.put(Keys.OAUTH2.CODE, authCallback.getCode());
         return getToken(params, this.source.accessToken());
 
     }
@@ -103,11 +103,11 @@ public class AuthFeishuRequest extends AuthDefaultRequest {
 
         return AuthUser.builder()
                 .rawUserInfo(responseObject)
-                .uuid(getStringValue(userInfoObject, Keys.VARIANT__UNION_ID))
-                .username(getStringValue(userInfoObject, Keys.NAME))
-                .nickname(getStringValue(userInfoObject, Keys.NAME))
-                .avatar(getStringValue(userInfoObject, Keys.AVATAR_URL))
-                .email(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
+                .uuid(getStringValue(userInfoObject, Keys.USERINFO.UNION_ID))
+                .username(getStringValue(userInfoObject, Keys.USERINFO.NAME))
+                .nickname(getStringValue(userInfoObject, Keys.USERINFO.NAME))
+                .avatar(getStringValue(userInfoObject, Keys.USERINFO.AVATAR_URL))
+                .email(getStringValue(userInfoObject, Keys.USERINFO.EMAIL))
                 .gender(AuthUserGender.UNKNOWN)
                 .token(authToken)
                 .source(source.toString())
@@ -118,8 +118,8 @@ public class AuthFeishuRequest extends AuthDefaultRequest {
     public AuthResponse<AuthToken> refresh(AuthToken authToken) {
         Map<String, Object> params = new HashMap<>();
         params.put(APP_ACCESS_TOKEN, this.getAppAccessToken());
-        params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__REFRESH_TOKEN);
-        params.put(Keys.OAUTH2__REFRESH_TOKEN, authToken.getRefreshToken());
+        params.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.REFRESH_TOKEN);
+        params.put(Keys.OAUTH2.REFRESH_TOKEN, authToken.getRefreshToken());
 
         return AuthResponse.<AuthToken>builder()
                 .code(AuthResponseStatus.SUCCESS.getCode())
@@ -138,20 +138,20 @@ public class AuthFeishuRequest extends AuthDefaultRequest {
         JsonNode accessTokenObject = getDataNode(responseObject);
 
         return AuthToken.builder()
-                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
-                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
-                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
-                .openId(getStringValue(accessTokenObject, Keys.VARIANT__OPEN_ID))
-                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2.EXPIRES_IN))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2.REFRESH_TOKEN))
+                .openId(getStringValue(accessTokenObject, Keys.OAUTH2.OPEN_ID))
+                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2.TOKEN_TYPE))
                 .build();
     }
 
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(source.authorize())
-                .queryParam(Keys.VARIANT__APP_ID, config.getClientId())
-                .queryParam(Keys.OAUTH2__REDIRECT_URI, GlobalAuthUtils.urlEncode(config.getRedirectUri()))
-                .queryParam(Keys.OAUTH2__STATE, getRealState(state))
+                .queryParam(Keys.OAUTH2.APP_ID, config.getClientId())
+                .queryParam(Keys.OAUTH2.REDIRECT_URI, GlobalAuthUtils.urlEncode(config.getRedirectUri()))
+                .queryParam(Keys.OAUTH2.STATE, getRealState(state))
                 .build();
     }
 
@@ -162,8 +162,8 @@ public class AuthFeishuRequest extends AuthDefaultRequest {
      * @param jsonObject 响应内容
      */
     private void checkResponse(JsonNode jsonObject) {
-        if (getIntValue(jsonObject, Keys.OAUTH2__CODE) != 0) {
-            throw new AuthException(getStringValue(jsonObject, Keys.MESSAGE));
+        if (getIntValue(jsonObject, Keys.OAUTH2.CODE) != 0) {
+            throw new AuthException(getStringValue(jsonObject, Keys.USERINFO.MESSAGE));
         }
     }
 

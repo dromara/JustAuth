@@ -35,11 +35,11 @@ public class AuthGiteaRequest extends AbstractAuthServerRequest {
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
         Map<String, String> form = new HashMap<>(8);
-        form.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
-        form.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
-        form.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
-        form.put(Keys.OAUTH2__CODE, authCallback.getCode());
-        form.put(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri());
+        form.put(Keys.OAUTH2.CLIENT_ID, config.getClientId());
+        form.put(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret());
+        form.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE);
+        form.put(Keys.OAUTH2.CODE, authCallback.getCode());
+        form.put(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri());
 
         HttpHeader header = new HttpHeader()
                 .add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON)
@@ -54,11 +54,11 @@ public class AuthGiteaRequest extends AbstractAuthServerRequest {
         JsonNode object = getUserInfoObject(authToken);
         return AuthUser.builder()
                 .rawUserInfo(object)
-                .uuid(firstNotEmpty(object, "sub", Keys.ID))
-                .username(firstNotEmpty(object, Keys.NAME, "login"))
+                .uuid(firstNotEmpty(object, Keys.USERINFO.SUB, Keys.USERINFO.ID))
+                .username(firstNotEmpty(object, Keys.USERINFO.NAME, "login"))
                 .nickname(firstNotEmpty(object, "preferred_username", "full_name", "login"))
-                .avatar(firstNotEmpty(object, "picture", Keys.AVATAR_URL))
-                .email(stringValue(object, Keys.OAUTH2_SCOPE__EMAIL))
+                .avatar(firstNotEmpty(object, "picture", Keys.USERINFO.AVATAR_URL))
+                .email(stringValue(object, Keys.USERINFO.EMAIL))
                 .gender(AuthUserGender.UNKNOWN)
                 .token(authToken)
                 .source(source.toString())

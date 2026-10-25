@@ -43,19 +43,19 @@ public class AuthTaobaoRequest extends AuthDefaultRequest {
         this.checkResponse(object);
 
         return AuthToken.builder()
-                .accessToken(getStringValue(object, Keys.OAUTH2__ACCESS_TOKEN))
-                .expireIn(getIntValue(object, Keys.OAUTH2__EXPIRES_IN))
-                .refreshToken(getStringValue(object, Keys.OAUTH2__REFRESH_TOKEN))
-                .idToken(getStringValue(object, Keys.OIDC__ID_TOKEN))
+                .accessToken(getStringValue(object, Keys.OAUTH2.ACCESS_TOKEN))
+                .expireIn(getIntValue(object, Keys.OAUTH2.EXPIRES_IN))
+                .refreshToken(getStringValue(object, Keys.OAUTH2.REFRESH_TOKEN))
+                .idToken(getStringValue(object, Keys.OIDC.ID_TOKEN))
                 .openId(getStringValue(object, "taobao_open_uid"))
                 .uid(getStringValue(object, "taobao_user_id"))
-                .tokenType(getStringValue(object, Keys.OAUTH2__TOKEN_TYPE))
+                .tokenType(getStringValue(object, Keys.OAUTH2.TOKEN_TYPE))
                 .build();
     }
 
     private void checkResponse(JsonNode object) {
-        if (containsKey(object, Keys.ERROR)) {
-            throw new AuthException(getStringValue(object, Keys.ERROR_DESCRIPTION));
+        if (containsKey(object, Keys.RESPONSE_FIELDS.ERROR)) {
+            throw new AuthException(getStringValue(object, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
         }
     }
 
@@ -63,8 +63,8 @@ public class AuthTaobaoRequest extends AuthDefaultRequest {
     public AuthUser getUserInfo(AuthToken authToken) {
         String response = doPostAuthorizationCode(authToken.getAccessCode());
         JsonNode accessTokenObject = toNode(response);
-        if (containsKey(accessTokenObject, Keys.ERROR)) {
-            throw new AuthException(getStringValue(accessTokenObject, Keys.ERROR_DESCRIPTION));
+        if (containsKey(accessTokenObject, Keys.RESPONSE_FIELDS.ERROR)) {
+            throw new AuthException(getStringValue(accessTokenObject, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
         }
         authToken = this.getAuthToken(accessTokenObject);
 
@@ -101,11 +101,11 @@ public class AuthTaobaoRequest extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(source.authorize())
-                .queryParam(Keys.OAUTH2__RESPONSE_TYPE, Keys.OAUTH2__CODE)
-                .queryParam(Keys.OAUTH2__CLIENT_ID, config.getClientId())
-                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2.RESPONSE_TYPE, Keys.OAUTH2.CODE)
+                .queryParam(Keys.OAUTH2.CLIENT_ID, config.getClientId())
+                .queryParam(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri())
                 .queryParam("view", "web")
-                .queryParam(Keys.OAUTH2__STATE, getRealState(state))
+                .queryParam(Keys.OAUTH2.STATE, getRealState(state))
                 .build();
     }
 }

@@ -35,11 +35,11 @@ public class AuthMaxKeyRequest extends AbstractAuthServerRequest {
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
         Map<String, String> form = new HashMap<>(8);
-        form.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
-        form.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
-        form.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
-        form.put(Keys.OAUTH2__CODE, authCallback.getCode());
-        form.put(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri());
+        form.put(Keys.OAUTH2.CLIENT_ID, config.getClientId());
+        form.put(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret());
+        form.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE);
+        form.put(Keys.OAUTH2.CODE, authCallback.getCode());
+        form.put(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri());
         HttpHeader header = new HttpHeader()
                 .add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON)
                 .add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
@@ -57,14 +57,14 @@ public class AuthMaxKeyRequest extends AbstractAuthServerRequest {
                 .get(userInfoUrl(authToken), null, header, false));
         return AuthUser.builder()
                 .rawUserInfo(object)
-                .uuid(firstNotEmpty(object, "userId", Keys.USERID, "sub"))
-                .username(stringValue(object, Keys.USERNAME))
+                .uuid(firstNotEmpty(object, "userId", Keys.USERINFO.USERID, Keys.USERINFO.SUB))
+                .username(stringValue(object, Keys.USERINFO.USERNAME))
                 .nickname(stringValue(object, "displayName"))
-                .avatar(stringValue(object, Keys.AVATAR_URL))
+                .avatar(stringValue(object, Keys.USERINFO.AVATAR_URL))
                 .blog(stringValue(object, "web_url"))
                 .company(stringValue(object, "organization"))
-                .location(stringValue(object, Keys.LOCATION))
-                .email(stringValue(object, Keys.OAUTH2_SCOPE__EMAIL))
+                .location(stringValue(object, Keys.USERINFO.LOCATION))
+                .email(stringValue(object, Keys.USERINFO.EMAIL))
                 .remark(stringValue(object, "bio"))
                 .gender(AuthUserGender.UNKNOWN)
                 .token(authToken)

@@ -37,9 +37,9 @@ public class AuthToutiaoRequest extends AuthDefaultRequest {
         this.checkResponse(accessTokenObject);
 
         return AuthToken.builder()
-                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
-                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
-                .openId(getStringValue(accessTokenObject, Keys.VARIANT__OPEN_ID))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2.EXPIRES_IN))
+                .openId(getStringValue(accessTokenObject, Keys.OAUTH2.OPEN_ID))
                 .build();
     }
 
@@ -58,12 +58,12 @@ public class AuthToutiaoRequest extends AuthDefaultRequest {
 
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
-                .uuid(getStringValue(userInfoObject, Keys.UID))
-                .username(isAnonymousUser ? anonymousUserName : getStringValue(userInfoObject, Keys.SCREENNAME))
-                .nickname(isAnonymousUser ? anonymousUserName : getStringValue(userInfoObject, Keys.SCREENNAME))
-                .avatar(getStringValue(userInfoObject, Keys.AVATAR_URL))
-                .remark(getStringValue(userInfoObject, Keys.DESCRIPTION))
-                .gender(AuthUserGender.getRealGender(getStringValue(userInfoObject, Keys.GENDER)))
+                .uuid(getStringValue(userInfoObject, Keys.USERINFO.UID))
+                .username(isAnonymousUser ? anonymousUserName : getStringValue(userInfoObject, Keys.USERINFO.SCREENNAME))
+                .nickname(isAnonymousUser ? anonymousUserName : getStringValue(userInfoObject, Keys.USERINFO.SCREENNAME))
+                .avatar(getStringValue(userInfoObject, Keys.USERINFO.AVATAR_URL))
+                .remark(getStringValue(userInfoObject, Keys.USERINFO.DESCRIPTION))
+                .gender(AuthUserGender.getRealGender(getStringValue(userInfoObject, Keys.USERINFO.GENDER)))
                 .token(authToken)
                 .source(source.toString())
                 .build();
@@ -79,12 +79,12 @@ public class AuthToutiaoRequest extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(source.authorize())
-                .queryParam(Keys.OAUTH2__RESPONSE_TYPE, Keys.OAUTH2__CODE)
+                .queryParam(Keys.OAUTH2.RESPONSE_TYPE, Keys.OAUTH2.CODE)
                 .queryParam("client_key", config.getClientId())
-                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri())
                 .queryParam("auth_only", 1)
                 .queryParam("display", 0)
-                .queryParam(Keys.OAUTH2__STATE, getRealState(state))
+                .queryParam(Keys.OAUTH2.STATE, getRealState(state))
                 .build();
     }
 
@@ -97,10 +97,10 @@ public class AuthToutiaoRequest extends AuthDefaultRequest {
     @Override
     protected String accessTokenUrl(String code) {
         return UrlBuilder.fromBaseUrl(source.accessToken())
-                .queryParam(Keys.OAUTH2__CODE, code)
+                .queryParam(Keys.OAUTH2.CODE, code)
                 .queryParam("client_key", config.getClientId())
-                .queryParam(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret())
-                .queryParam(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE)
+                .queryParam(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret())
+                .queryParam(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE)
                 .build();
     }
 
@@ -114,7 +114,7 @@ public class AuthToutiaoRequest extends AuthDefaultRequest {
     protected String userInfoUrl(AuthToken authToken) {
         return UrlBuilder.fromBaseUrl(source.userInfo())
                 .queryParam("client_key", config.getClientId())
-                .queryParam(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken())
+                .queryParam(Keys.OAUTH2.ACCESS_TOKEN, authToken.getAccessToken())
                 .build();
     }
 
@@ -124,8 +124,8 @@ public class AuthToutiaoRequest extends AuthDefaultRequest {
      * @param object 请求响应内容
      */
     private void checkResponse(JsonNode object) {
-        if (containsKey(object, Keys.ERROR_CODE)) {
-            throw new AuthException(AuthToutiaoErrorCode.getErrorCode(getIntValue(object, Keys.ERROR_CODE)).getDesc());
+        if (containsKey(object, Keys.RESPONSE_FIELDS.ERROR_CODE)) {
+            throw new AuthException(AuthToutiaoErrorCode.getErrorCode(getIntValue(object, Keys.RESPONSE_FIELDS.ERROR_CODE)).getDesc());
         }
     }
 }

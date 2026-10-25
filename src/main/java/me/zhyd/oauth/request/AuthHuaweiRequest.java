@@ -52,11 +52,11 @@ public class AuthHuaweiRequest extends AuthDefaultRequest {
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
         Map<String, String> params = new HashMap<>(8);
-        params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
-        params.put(Keys.OAUTH2__CODE, authCallback.getAuthorization_code());
-        params.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
-        params.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
-        params.put(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri());
+        params.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE);
+        params.put(Keys.OAUTH2.CODE, authCallback.getAuthorization_code());
+        params.put(Keys.OAUTH2.CLIENT_ID, config.getClientId());
+        params.put(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret());
+        params.put(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri());
 
         String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), params, false).getBody();
 
@@ -74,9 +74,9 @@ public class AuthHuaweiRequest extends AuthDefaultRequest {
     public AuthUser getUserInfo(AuthToken authToken) {
         Map<String, String> params = new HashMap<>(7);
         params.put("nsp_ts", System.currentTimeMillis() + "");
-        params.put(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken());
+        params.put(Keys.OAUTH2.ACCESS_TOKEN, authToken.getAccessToken());
         params.put("nsp_fmt", "JS");
-        params.put(Keys.VARIANT__OPEN_ID, "OPENID");
+        params.put(Keys.OAUTH2.OPEN_ID, "OPENID");
         // form.put("nsp_svc", "OpenUP.User.getInfo");
         params.put("nsp_svc", "huawei.oauth2.user.getTokenInfo");
 
@@ -108,10 +108,10 @@ public class AuthHuaweiRequest extends AuthDefaultRequest {
     @Override
     public AuthResponse<AuthToken> refresh(AuthToken authToken) {
         Map<String, String> params = new HashMap<>(7);
-        params.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
-        params.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
-        params.put(Keys.OAUTH2__REFRESH_TOKEN, authToken.getRefreshToken());
-        params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__REFRESH_TOKEN);
+        params.put(Keys.OAUTH2.CLIENT_ID, config.getClientId());
+        params.put(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret());
+        params.put(Keys.OAUTH2.REFRESH_TOKEN, authToken.getRefreshToken());
+        params.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.REFRESH_TOKEN);
 
         String response = UnifiedHttpClient.getAdapter().post(source.refresh(), params, false).getBody();
 
@@ -124,9 +124,9 @@ public class AuthHuaweiRequest extends AuthDefaultRequest {
         this.checkResponse(object);
 
         return AuthToken.builder()
-                .accessToken(getStringValue(object, Keys.OAUTH2__ACCESS_TOKEN))
-                .expireIn(getIntValue(object, Keys.OAUTH2__EXPIRES_IN))
-                .refreshToken(getStringValue(object, Keys.OAUTH2__REFRESH_TOKEN))
+                .accessToken(getStringValue(object, Keys.OAUTH2.ACCESS_TOKEN))
+                .expireIn(getIntValue(object, Keys.OAUTH2.EXPIRES_IN))
+                .refreshToken(getStringValue(object, Keys.OAUTH2.REFRESH_TOKEN))
                 .build();
     }
 
@@ -141,7 +141,7 @@ public class AuthHuaweiRequest extends AuthDefaultRequest {
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(super.authorize(state))
                 .queryParam("access_type", "offline")
-                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(" ", true, AuthScopeUtils.getDefaultScopes(AuthHuaweiScope.values())))
+                .queryParam(Keys.OAUTH2.SCOPE, this.getScopes(" ", true, AuthScopeUtils.getDefaultScopes(AuthHuaweiScope.values())))
                 .build();
     }
 
@@ -155,7 +155,7 @@ public class AuthHuaweiRequest extends AuthDefaultRequest {
     protected String userInfoUrl(AuthToken authToken) {
         return UrlBuilder.fromBaseUrl(source.userInfo())
                 .queryParam("nsp_ts", System.currentTimeMillis())
-                .queryParam(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken())
+                .queryParam(Keys.OAUTH2.ACCESS_TOKEN, authToken.getAccessToken())
                 .queryParam("nsp_fmt", "JS")
                 .queryParam("nsp_svc", "OpenUP.User.getInfo")
                 .build();
@@ -168,7 +168,7 @@ public class AuthHuaweiRequest extends AuthDefaultRequest {
      * @return AuthUserGender
      */
     private AuthUserGender getRealGender(JsonNode object) {
-        int genderCodeInt = getIntValue(object, Keys.GENDER);
+        int genderCodeInt = getIntValue(object, Keys.USERINFO.GENDER);
         String genderCode = genderCodeInt == 1 ? "0" : (genderCodeInt == 0) ? "1" : genderCodeInt + "";
         return AuthUserGender.getRealGender(genderCode);
     }
@@ -180,10 +180,10 @@ public class AuthHuaweiRequest extends AuthDefaultRequest {
      */
     private void checkResponse(JsonNode object) {
         if (containsKey(object, "NSP_STATUS")) {
-            throw new AuthException(getStringValue(object, Keys.ERROR));
+            throw new AuthException(getStringValue(object, Keys.RESPONSE_FIELDS.ERROR));
         }
-        if (containsKey(object, Keys.ERROR)) {
-            throw new AuthException(getStringValue(object, "sub_error") + ":" + getStringValue(object, Keys.ERROR_DESCRIPTION));
+        if (containsKey(object, Keys.RESPONSE_FIELDS.ERROR)) {
+            throw new AuthException(getStringValue(object, "sub_error") + ":" + getStringValue(object, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
         }
     }
 }

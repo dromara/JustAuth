@@ -50,11 +50,11 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
     public String authorize(String state) {
         String realState = getRealState(state);
         UrlBuilder builder = UrlBuilder.fromBaseUrl(source.authorize())
-                .queryParam(Keys.OAUTH2__CLIENT_ID, config.getClientId())
-                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(" ", true, AuthScopeUtils.getDefaultScopes(AuthAmazonScope.values())))
-                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
-                .queryParam(Keys.OAUTH2__RESPONSE_TYPE, Keys.OAUTH2__CODE)
-                .queryParam(Keys.OAUTH2__STATE, realState);
+                .queryParam(Keys.OAUTH2.CLIENT_ID, config.getClientId())
+                .queryParam(Keys.OAUTH2.SCOPE, this.getScopes(" ", true, AuthScopeUtils.getDefaultScopes(AuthAmazonScope.values())))
+                .queryParam(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2.RESPONSE_TYPE, Keys.OAUTH2.CODE)
+                .queryParam(Keys.OAUTH2.STATE, realState);
 
         if (config.isPkce()) {
             String cacheKey = this.source.getName().concat(":code_verifier:").concat(realState);
@@ -78,11 +78,11 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
         Map<String, String> params = new HashMap<>(9);
-        params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
-        params.put(Keys.OAUTH2__CODE, authCallback.getCode());
-        params.put(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri());
-        params.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
-        params.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
+        params.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE);
+        params.put(Keys.OAUTH2.CODE, authCallback.getCode());
+        params.put(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri());
+        params.put(Keys.OAUTH2.CLIENT_ID, config.getClientId());
+        params.put(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret());
 
         if (config.isPkce()) {
             String cacheKey = this.source.getName().concat(":code_verifier:").concat(authCallback.getState());
@@ -95,10 +95,10 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
     @Override
     public AuthResponse<AuthToken> refresh(AuthToken authToken) {
         Map<String, String> params = new HashMap<>(7);
-        params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__REFRESH_TOKEN);
-        params.put(Keys.OAUTH2__REFRESH_TOKEN, authToken.getRefreshToken());
-        params.put(Keys.OAUTH2__CLIENT_ID, config.getClientId());
-        params.put(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret());
+        params.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.REFRESH_TOKEN);
+        params.put(Keys.OAUTH2.REFRESH_TOKEN, authToken.getRefreshToken());
+        params.put(Keys.OAUTH2.CLIENT_ID, config.getClientId());
+        params.put(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret());
 
         return AuthResponse.<AuthToken>builder()
                 .code(AuthResponseStatus.SUCCESS.getCode())
@@ -118,10 +118,10 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
         this.checkResponse(accessTokenObject);
 
         return AuthToken.builder()
-                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
-                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
-                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
-                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2.EXPIRES_IN))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2.REFRESH_TOKEN))
+                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2.TOKEN_TYPE))
                 .build();
     }
 
@@ -131,8 +131,8 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
      * @param jsonNode 响应内容
      */
     private void checkResponse(JsonNode jsonNode) {
-        if (containsKey(jsonNode, Keys.ERROR)) {
-            throw new AuthException(getStringValue(jsonNode, Keys.ERROR_DESCRIPTION).concat(" ") + getStringValue(jsonNode, Keys.ERROR_DESCRIPTION));
+        if (containsKey(jsonNode, Keys.RESPONSE_FIELDS.ERROR)) {
+            throw new AuthException(getStringValue(jsonNode, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION).concat(" ") + getStringValue(jsonNode, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
         }
     }
 
@@ -158,10 +158,10 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
 
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
-                .uuid(getStringValue(userInfoObject, Keys.VARIANT__USER_ID))
-                .username(getStringValue(userInfoObject, Keys.NAME))
-                .nickname(getStringValue(userInfoObject, Keys.NAME))
-                .email(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
+                .uuid(getStringValue(userInfoObject, Keys.USERINFO.USER_ID))
+                .username(getStringValue(userInfoObject, Keys.USERINFO.NAME))
+                .nickname(getStringValue(userInfoObject, Keys.USERINFO.NAME))
+                .email(getStringValue(userInfoObject, Keys.USERINFO.EMAIL))
                 .gender(AuthUserGender.UNKNOWN)
                 .source(source.toString())
                 .token(authToken)
@@ -179,8 +179,8 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
     @Override
     protected String userInfoUrl(AuthToken authToken) {
         return UrlBuilder.fromBaseUrl(source.userInfo())
-                .queryParam(Keys.VARIANT__USER_ID, authToken.getUserId())
-                .queryParam(Keys.SCREENNAME, authToken.getScreenName())
+                .queryParam(Keys.USERINFO.USER_ID, authToken.getUserId())
+                .queryParam(Keys.USERINFO.SCREENNAME, authToken.getScreenName())
                 .queryParam("include_entities", true)
                 .build();
     }

@@ -6,7 +6,7 @@
 </p>
 <p align="center">
 	<a target="_blank" href="https://search.maven.org/search?q=JustAuth">
-		<img src="https://img.shields.io/github/v/release/justauth/JustAuth?style=flat-square" ></img>
+		<img src="https://img.shields.io/github/v/release/dromara/JustAuth?style=flat-square" ></img>
 	</a>
 	<a target="_blank" href="https://www.oracle.com/technetwork/java/javase/downloads/index.html">
 		<img src="https://img.shields.io/badge/JDK-17+-green.svg" ></img>

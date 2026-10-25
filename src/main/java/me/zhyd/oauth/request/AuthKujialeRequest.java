@@ -43,7 +43,7 @@ public class AuthKujialeRequest extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(super.authorize(state))
-                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(",", false, AuthScopeUtils.getDefaultScopes(AuthKujialeScope.values())))
+                .queryParam(Keys.OAUTH2.SCOPE, this.getScopes(",", false, AuthScopeUtils.getDefaultScopes(AuthKujialeScope.values())))
                 .build();
     }
 
@@ -76,8 +76,8 @@ public class AuthKujialeRequest extends AuthDefaultRequest {
         String openId = this.getOpenId(authToken);
 
         String response = UnifiedHttpClient.getAdapter().get(UrlBuilder.fromBaseUrl(source.userInfo())
-                .queryParam(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken())
-                .queryParam(Keys.VARIANT__OPEN_ID, openId)
+                .queryParam(Keys.OAUTH2.ACCESS_TOKEN, authToken.getAccessToken())
+                .queryParam(Keys.OAUTH2.OPEN_ID, openId)
                 .build()).getBody();
 
         JsonNode responseObject = toNode(response);
@@ -90,7 +90,7 @@ public class AuthKujialeRequest extends AuthDefaultRequest {
                 .rawUserInfo(userInfoObject)
                 .username(getStringValue(userInfoObject, "userName"))
                 .nickname(getStringValue(userInfoObject, "userName"))
-                .avatar(getStringValue(userInfoObject, Keys.AVATAR))
+                .avatar(getStringValue(userInfoObject, Keys.USERINFO.AVATAR))
                 .uuid(getStringValue(userInfoObject, "openId"))
                 .token(authToken)
                 .source(source.toString())
@@ -105,7 +105,7 @@ public class AuthKujialeRequest extends AuthDefaultRequest {
      */
     private String getOpenId(AuthToken authToken) {
         String response = UnifiedHttpClient.getAdapter().get(UrlBuilder.fromBaseUrl("https://oauth.kujiale.com/oauth2/auth/user")
-                .queryParam(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken())
+                .queryParam(Keys.OAUTH2.ACCESS_TOKEN, authToken.getAccessToken())
                 .build()).getBody();
 
         JsonNode accessTokenObject = checkResponse(response);

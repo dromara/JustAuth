@@ -18,9 +18,9 @@ public enum AuthLineScope implements AuthScope {
      * {@code scope} 含义，以{@code description} 为准
      */
 
-    PROFILE(Keys.OAUTH2_SCOPE__PROFILE, "Get profile details", true),
-    OPENID(Keys.OAUTH2_SCOPE__OPENID, "Get id token", true),
-    EMAIL(Keys.OAUTH2_SCOPE__EMAIL, "Get email (separate authorization required)", false);
+    PROFILE(Keys.OAUTH2.SCOPES.PROFILE, "Get profile details", true),
+    OPENID(Keys.OAUTH2.SCOPES.OPENID, "Get id token", true),
+    EMAIL(Keys.OAUTH2.SCOPES.EMAIL, "Get email (separate authorization required)", false);
 
     private final String scope;
     private final String description;

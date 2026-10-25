@@ -28,11 +28,11 @@ public class AuthWeChatEnterpriseQrcodeRequest extends AbstractAuthWeChatEnterpr
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(source.authorize())
-                .queryParam(Keys.APPID, config.getClientId())
+                .queryParam(Keys.OAUTH2.APPID, config.getClientId())
                 .queryParam("agentid", config.getAgentId())
-                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
-                .queryParam(Keys.OAUTH2__STATE, getRealState(state))
-                .queryParam(Keys.LANG, config.getLang())
+                .queryParam(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2.STATE, getRealState(state))
+                .queryParam(Keys.USERINFO.LANG, config.getLang())
                 .build();
     }
 }

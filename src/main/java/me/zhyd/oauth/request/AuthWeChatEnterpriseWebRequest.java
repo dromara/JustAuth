@@ -29,12 +29,12 @@ public class AuthWeChatEnterpriseWebRequest extends AbstractAuthWeChatEnterprise
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(source.authorize())
-                .queryParam(Keys.APPID, config.getClientId())
+                .queryParam(Keys.OAUTH2.APPID, config.getClientId())
                 .queryParam("agentid", config.getAgentId())
-                .queryParam(Keys.OAUTH2__REDIRECT_URI, GlobalAuthUtils.urlEncode(config.getRedirectUri()))
-                .queryParam(Keys.OAUTH2__RESPONSE_TYPE, Keys.OAUTH2__CODE)
-                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(",", false, AuthScopeUtils.getDefaultScopes(AuthWeChatEnterpriseWebScope.values())))
-                .queryParam(Keys.OAUTH2__STATE, getRealState(state).concat("#wechat_redirect"))
+                .queryParam(Keys.OAUTH2.REDIRECT_URI, GlobalAuthUtils.urlEncode(config.getRedirectUri()))
+                .queryParam(Keys.OAUTH2.RESPONSE_TYPE, Keys.OAUTH2.CODE)
+                .queryParam(Keys.OAUTH2.SCOPE, this.getScopes(",", false, AuthScopeUtils.getDefaultScopes(AuthWeChatEnterpriseWebScope.values())))
+                .queryParam(Keys.OAUTH2.STATE, getRealState(state).concat("#wechat_redirect"))
                 .build();
     }
 }

@@ -10,8 +10,8 @@ import me.zhyd.oauth.constant.Keys;
 @Getter
 @AllArgsConstructor
 public enum AuthAppleScope implements AuthScope {
-    EMAIL(Keys.OAUTH2_SCOPE__EMAIL, "用户邮箱", true),
-    NAME(Keys.NAME, "用户名", true),
+    EMAIL(Keys.OAUTH2.SCOPES.EMAIL, "用户邮箱", true),
+    NAME(Keys.OAUTH2.SCOPES.NAME, "用户名", true),
     ;
 
     private final String scope;

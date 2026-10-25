@@ -39,26 +39,26 @@ public class AuthDingTalkV2Request extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(source.authorize())
-                .queryParam(Keys.OAUTH2__RESPONSE_TYPE, Keys.OAUTH2__CODE)
-                .queryParam(Keys.OAUTH2__CLIENT_ID, config.getClientId())
-                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(",", true, AuthScopeUtils.getDefaultScopes(AuthDingTalkScope.values())))
-                .queryParam(Keys.OAUTH2__REDIRECT_URI, GlobalAuthUtils.urlEncode(config.getRedirectUri()))
+                .queryParam(Keys.OAUTH2.RESPONSE_TYPE, Keys.OAUTH2.CODE)
+                .queryParam(Keys.OAUTH2.CLIENT_ID, config.getClientId())
+                .queryParam(Keys.OAUTH2.SCOPE, this.getScopes(",", true, AuthScopeUtils.getDefaultScopes(AuthDingTalkScope.values())))
+                .queryParam(Keys.OAUTH2.REDIRECT_URI, GlobalAuthUtils.urlEncode(config.getRedirectUri()))
                 .queryParam("prompt", "consent")
                 .queryParam("org_type", config.getDingTalkOrgType())
                 .queryParam("corpId", config.getDingTalkCorpId())
                 .queryParam("exclusiveLogin", config.isDingTalkExclusiveLogin())
                 .queryParam("exclusiveCorpId", config.getDingTalkExclusiveCorpId())
-                .queryParam(Keys.OAUTH2__STATE, getRealState(state))
+                .queryParam(Keys.OAUTH2.STATE, getRealState(state))
                 .build();
     }
 
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
         Map<String, String> params = new HashMap<>();
-        params.put("grantType", Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
-        params.put(Keys.PARAM__CLIENT_ID, config.getClientId());
-        params.put(Keys.PARAM__CLIENT_SECRET, config.getClientSecret());
-        params.put(Keys.OAUTH2__CODE, authCallback.getCode());
+        params.put("grantType", Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE);
+        params.put(Keys.PARAM.CLIENT_ID, config.getClientId());
+        params.put(Keys.PARAM.CLIENT_SECRET, config.getClientSecret());
+        params.put(Keys.OAUTH2.CODE, authCallback.getCode());
 
         String response = UnifiedHttpClient.getAdapter().post(this.source.accessToken(), JsonUtils.toJson(params)).getBody();
 
@@ -108,10 +108,10 @@ public class AuthDingTalkV2Request extends AuthDefaultRequest {
     @Override
     protected String accessTokenUrl(String code) {
         return UrlBuilder.fromBaseUrl(source.accessToken())
-                .queryParam(Keys.OAUTH2__CODE, code)
-                .queryParam(Keys.PARAM__CLIENT_ID, config.getClientId())
-                .queryParam(Keys.PARAM__CLIENT_SECRET, config.getClientSecret())
-                .queryParam("grantType", Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE)
+                .queryParam(Keys.OAUTH2.CODE, code)
+                .queryParam(Keys.PARAM.CLIENT_ID, config.getClientId())
+                .queryParam(Keys.PARAM.CLIENT_SECRET, config.getClientSecret())
+                .queryParam("grantType", Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE)
                 .build();
     }
 }

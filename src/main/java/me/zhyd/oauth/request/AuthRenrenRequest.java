@@ -51,9 +51,9 @@ public class AuthRenrenRequest extends AuthDefaultRequest {
 
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
-                .uuid(getStringValue(userInfoObject, Keys.ID))
+                .uuid(getStringValue(userInfoObject, Keys.USERINFO.ID))
                 .avatar(getAvatarUrl(userInfoObject))
-                .nickname(getStringValue(userInfoObject, Keys.NAME))
+                .nickname(getStringValue(userInfoObject, Keys.USERINFO.NAME))
                 .company(getCompany(userInfoObject))
                 .gender(getGender(userInfoObject))
                 .token(authToken)
@@ -72,27 +72,27 @@ public class AuthRenrenRequest extends AuthDefaultRequest {
     private AuthToken getToken(String url) {
         String response = UnifiedHttpClient.getAdapter().post(url).getBody();
         JsonNode accessTokenObject = toNode(response);
-        if (containsKey(accessTokenObject, Keys.ERROR)) {
+        if (containsKey(accessTokenObject, Keys.RESPONSE_FIELDS.ERROR)) {
             throw new AuthException("Failed to get token from Renren: " + accessTokenObject.toString());
         }
 
-        JsonNode userObject = getObjectNode(accessTokenObject, Keys.USER);
+        JsonNode userObject = getObjectNode(accessTokenObject, Keys.USERINFO.USER);
 
         return AuthToken.builder()
-                .accessToken(HttpUrlEncoding.encode(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN)))
-                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
-                .refreshToken(HttpUrlEncoding.encode(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN)))
-                .openId(getStringValue(userObject, Keys.ID))
-                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
+                .accessToken(HttpUrlEncoding.encode(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN)))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2.EXPIRES_IN))
+                .refreshToken(HttpUrlEncoding.encode(getStringValue(accessTokenObject, Keys.OAUTH2.REFRESH_TOKEN)))
+                .openId(getStringValue(userObject, Keys.USERINFO.ID))
+                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2.TOKEN_TYPE))
                 .build();
     }
 
     private String getAvatarUrl(JsonNode userObj) {
-        JsonNode jsonArray = getArrayNode(userObj, Keys.AVATAR);
+        JsonNode jsonArray = getArrayNode(userObj, Keys.USERINFO.AVATAR);
         if (Objects.isNull(jsonArray) || jsonArray.isEmpty()) {
             return null;
         }
-        return getStringValue(jsonArray.asArray().get(0), Keys.URL);
+        return getStringValue(jsonArray.asArray().get(0), Keys.USERINFO.URL);
     }
 
     private AuthUserGender getGender(JsonNode userObj) {
@@ -100,7 +100,7 @@ public class AuthRenrenRequest extends AuthDefaultRequest {
         if (Objects.isNull(basicInformation)) {
             return AuthUserGender.UNKNOWN;
         }
-        return AuthUserGender.getRealGender(getStringValue(basicInformation, Keys.SEX));
+        return AuthUserGender.getRealGender(getStringValue(basicInformation, Keys.USERINFO.SEX));
     }
 
     private String getCompany(JsonNode userObj) {
@@ -108,7 +108,7 @@ public class AuthRenrenRequest extends AuthDefaultRequest {
         if (Objects.isNull(jsonArray) || jsonArray.isEmpty()) {
             return null;
         }
-        return getStringValue(jsonArray.asArray().get(0), Keys.NAME);
+        return getStringValue(jsonArray.asArray().get(0), Keys.USERINFO.NAME);
     }
 
     /**
@@ -120,7 +120,7 @@ public class AuthRenrenRequest extends AuthDefaultRequest {
     @Override
     protected String userInfoUrl(AuthToken authToken) {
         return UrlBuilder.fromBaseUrl(source.userInfo())
-                .queryParam(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken())
+                .queryParam(Keys.OAUTH2.ACCESS_TOKEN, authToken.getAccessToken())
                 .queryParam("userId", authToken.getOpenId())
                 .build();
     }
@@ -128,7 +128,7 @@ public class AuthRenrenRequest extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(super.authorize(state))
-                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(",", false, AuthScopeUtils.getDefaultScopes(AuthRenrenScope.values())))
+                .queryParam(Keys.OAUTH2.SCOPE, this.getScopes(",", false, AuthScopeUtils.getDefaultScopes(AuthRenrenScope.values())))
                 .build();
     }
 }

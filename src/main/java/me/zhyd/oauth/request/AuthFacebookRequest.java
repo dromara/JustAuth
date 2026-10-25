@@ -40,9 +40,9 @@ public class AuthFacebookRequest extends AuthDefaultRequest {
         this.checkResponse(accessTokenObject);
 
         return AuthToken.builder()
-                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
-                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
-                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2__TOKEN_TYPE))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2.EXPIRES_IN))
+                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2.TOKEN_TYPE))
                 .build();
     }
 
@@ -55,14 +55,14 @@ public class AuthFacebookRequest extends AuthDefaultRequest {
 
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
-                .uuid(getStringValue(userInfoObject, Keys.ID))
-                .username(getStringValue(userInfoObject, Keys.NAME))
-                .nickname(getStringValue(userInfoObject, Keys.NAME))
+                .uuid(getStringValue(userInfoObject, Keys.USERINFO.ID))
+                .username(getStringValue(userInfoObject, Keys.USERINFO.NAME))
+                .nickname(getStringValue(userInfoObject, Keys.USERINFO.NAME))
                 .blog(getStringValue(userInfoObject, "link"))
                 .avatar(getUserPicture(userInfoObject))
                 .location(getStringValue(userInfoObject, "locale"))
-                .email(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__EMAIL))
-                .gender(AuthUserGender.getRealGender(getStringValue(userInfoObject, Keys.GENDER)))
+                .email(getStringValue(userInfoObject, Keys.USERINFO.EMAIL))
+                .gender(AuthUserGender.getRealGender(getStringValue(userInfoObject, Keys.USERINFO.GENDER)))
                 .token(authToken)
                 .source(source.toString())
                 .build();
@@ -70,11 +70,11 @@ public class AuthFacebookRequest extends AuthDefaultRequest {
 
     private String getUserPicture(JsonNode object) {
         String picture = null;
-        if (containsKey(object, Keys.PICTURE)) {
-            JsonNode pictureObj = getObjectNode(object, Keys.PICTURE);
+        if (containsKey(object, Keys.USERINFO.PICTURE)) {
+            JsonNode pictureObj = getObjectNode(object, Keys.USERINFO.PICTURE);
             JsonNode dataObject = getDataNode(pictureObj);
             if (null != dataObject) {
-                picture = getStringValue(dataObject, Keys.URL);
+                picture = getStringValue(dataObject, Keys.USERINFO.URL);
             }
         }
         return picture;
@@ -89,7 +89,7 @@ public class AuthFacebookRequest extends AuthDefaultRequest {
     @Override
     protected String userInfoUrl(AuthToken authToken) {
         return UrlBuilder.fromBaseUrl(source.userInfo())
-                .queryParam(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken())
+                .queryParam(Keys.OAUTH2.ACCESS_TOKEN, authToken.getAccessToken())
                 .queryParam("fields", "id,name,birthday,gender,hometown,email,devices,picture.width(400),link")
                 .build();
     }
@@ -110,9 +110,9 @@ public class AuthFacebookRequest extends AuthDefaultRequest {
      * @param object 请求响应内容
      */
     private void checkResponse(JsonNode object) {
-        if (containsKey(object, Keys.ERROR)) {
-            JsonNode errorObject = getObjectNode(object, Keys.ERROR);
-            throw new AuthException(getStringValue(errorObject, Keys.MESSAGE));
+        if (containsKey(object, Keys.RESPONSE_FIELDS.ERROR)) {
+            JsonNode errorObject = getObjectNode(object, Keys.RESPONSE_FIELDS.ERROR);
+            throw new AuthException(getStringValue(errorObject, Keys.USERINFO.MESSAGE));
         }
     }
 
@@ -125,7 +125,7 @@ public class AuthFacebookRequest extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(super.authorize(state))
-                .queryParam(Keys.OAUTH2__SCOPE, this.getScopes(",", false, AuthScopeUtils.getDefaultScopes(AuthFacebookScope.values())))
+                .queryParam(Keys.OAUTH2.SCOPE, this.getScopes(",", false, AuthScopeUtils.getDefaultScopes(AuthFacebookScope.values())))
                 .build();
     }
 }

@@ -111,7 +111,7 @@ public abstract class AuthDefaultRequest implements AuthRequest {
      * @return 数据节点 {@link JsonNode}
      */
     protected JsonNode getDataNode(JsonNode jsonNode) {
-        return getObjectNode(jsonNode, Keys.DATA);
+        return getObjectNode(jsonNode, Keys.RESPONSE_FIELDS.DATA);
     }
 
     protected String getStringValue(JsonNode jsonNode, String key) {
@@ -178,10 +178,10 @@ public abstract class AuthDefaultRequest implements AuthRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(source.authorize())
-                .queryParam(Keys.OAUTH2__RESPONSE_TYPE, Keys.OAUTH2__CODE)
-                .queryParam(Keys.OAUTH2__CLIENT_ID, config.getClientId())
-                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
-                .queryParam(Keys.OAUTH2__STATE, getRealState(state))
+                .queryParam(Keys.OAUTH2.RESPONSE_TYPE, Keys.OAUTH2.CODE)
+                .queryParam(Keys.OAUTH2.CLIENT_ID, config.getClientId())
+                .queryParam(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2.STATE, getRealState(state))
                 .build();
     }
 
@@ -193,11 +193,11 @@ public abstract class AuthDefaultRequest implements AuthRequest {
      */
     protected String accessTokenUrl(String code) {
         return UrlBuilder.fromBaseUrl(source.accessToken())
-                .queryParam(Keys.OAUTH2__CODE, code)
-                .queryParam(Keys.OAUTH2__CLIENT_ID, config.getClientId())
-                .queryParam(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret())
-                .queryParam(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE)
-                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2.CODE, code)
+                .queryParam(Keys.OAUTH2.CLIENT_ID, config.getClientId())
+                .queryParam(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret())
+                .queryParam(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE)
+                .queryParam(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri())
                 .build();
     }
 
@@ -209,11 +209,11 @@ public abstract class AuthDefaultRequest implements AuthRequest {
      */
     protected String refreshTokenUrl(String refreshToken) {
         return UrlBuilder.fromBaseUrl(source.refresh())
-                .queryParam(Keys.OAUTH2__CLIENT_ID, config.getClientId())
-                .queryParam(Keys.OAUTH2__CLIENT_SECRET, config.getClientSecret())
-                .queryParam(Keys.OAUTH2__REFRESH_TOKEN, refreshToken)
-                .queryParam(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__REFRESH_TOKEN)
-                .queryParam(Keys.OAUTH2__REDIRECT_URI, config.getRedirectUri())
+                .queryParam(Keys.OAUTH2.CLIENT_ID, config.getClientId())
+                .queryParam(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret())
+                .queryParam(Keys.OAUTH2.REFRESH_TOKEN, refreshToken)
+                .queryParam(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.REFRESH_TOKEN)
+                .queryParam(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri())
                 .build();
     }
 
@@ -224,7 +224,7 @@ public abstract class AuthDefaultRequest implements AuthRequest {
      * @return 返回获取userInfo的url
      */
     protected String userInfoUrl(AuthToken authToken) {
-        return UrlBuilder.fromBaseUrl(source.userInfo()).queryParam(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken()).build();
+        return UrlBuilder.fromBaseUrl(source.userInfo()).queryParam(Keys.OAUTH2.ACCESS_TOKEN, authToken.getAccessToken()).build();
     }
 
     /**
@@ -234,7 +234,7 @@ public abstract class AuthDefaultRequest implements AuthRequest {
      * @return 返回获取revoke authorization的url
      */
     protected String revokeUrl(AuthToken authToken) {
-        return UrlBuilder.fromBaseUrl(source.revoke()).queryParam(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken()).build();
+        return UrlBuilder.fromBaseUrl(source.revoke()).queryParam(Keys.OAUTH2.ACCESS_TOKEN, authToken.getAccessToken()).build();
     }
 
     /**

@@ -35,7 +35,7 @@ public class AuthCsdnRequest extends AuthDefaultRequest {
         JsonNode accessTokenObject = toNode(response);
         this.checkResponse(accessTokenObject);
 
-        return AuthToken.builder().accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN)).build();
+        return AuthToken.builder().accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN)).build();
     }
 
     @Override
@@ -47,9 +47,9 @@ public class AuthCsdnRequest extends AuthDefaultRequest {
 
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
-                .uuid(getStringValue(userInfoObject, Keys.USERNAME))
-                .username(getStringValue(userInfoObject, Keys.USERNAME))
-                .remark(getStringValue(userInfoObject, Keys.DESCRIPTION))
+                .uuid(getStringValue(userInfoObject, Keys.USERINFO.USERNAME))
+                .username(getStringValue(userInfoObject, Keys.USERINFO.USERNAME))
+                .remark(getStringValue(userInfoObject, Keys.USERINFO.DESCRIPTION))
                 .blog(getStringValue(userInfoObject, "website"))
                 .gender(AuthUserGender.UNKNOWN)
                 .token(authToken)
@@ -63,8 +63,8 @@ public class AuthCsdnRequest extends AuthDefaultRequest {
      * @param object 请求响应内容
      */
     private void checkResponse(JsonNode object) {
-        if (containsKey(object, Keys.ERROR_CODE)) {
-            throw new AuthException(getStringValue(object, Keys.ERROR));
+        if (containsKey(object, Keys.RESPONSE_FIELDS.ERROR_CODE)) {
+            throw new AuthException(getStringValue(object, Keys.RESPONSE_FIELDS.ERROR));
         }
     }
 }

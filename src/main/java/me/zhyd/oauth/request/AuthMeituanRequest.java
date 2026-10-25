@@ -38,10 +38,10 @@ public class AuthMeituanRequest extends AuthDefaultRequest {
     public AuthToken getAccessToken(AuthCallback authCallback) {
 
         Map<String, String> params = new HashMap<>(7);
-        params.put(Keys.VARIANT__APP_ID, config.getClientId());
-        params.put(Keys.PARAM__SECRET, config.getClientSecret());
-        params.put(Keys.OAUTH2__CODE, authCallback.getCode());
-        params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2_GRANT_TYPE__AUTHORIZATION_CODE);
+        params.put(Keys.OAUTH2.APP_ID, config.getClientId());
+        params.put(Keys.OAUTH2.SECRET, config.getClientSecret());
+        params.put(Keys.OAUTH2.CODE, authCallback.getCode());
+        params.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE);
 
         String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), params, false).getBody();
 
@@ -49,9 +49,9 @@ public class AuthMeituanRequest extends AuthDefaultRequest {
         this.checkResponse(accessTokenObject);
 
         return AuthToken.builder()
-                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
-                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
-                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2__EXPIRES_IN))
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
+                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2.REFRESH_TOKEN))
+                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2.EXPIRES_IN))
                 .build();
     }
 
@@ -59,9 +59,9 @@ public class AuthMeituanRequest extends AuthDefaultRequest {
     public AuthUser getUserInfo(AuthToken authToken) {
 
         Map<String, String> params = new HashMap<>(5);
-        params.put(Keys.VARIANT__APP_ID, config.getClientId());
-        params.put(Keys.PARAM__SECRET, config.getClientSecret());
-        params.put(Keys.OAUTH2__ACCESS_TOKEN, authToken.getAccessToken());
+        params.put(Keys.OAUTH2.APP_ID, config.getClientId());
+        params.put(Keys.OAUTH2.SECRET, config.getClientSecret());
+        params.put(Keys.OAUTH2.ACCESS_TOKEN, authToken.getAccessToken());
 
         String response = UnifiedHttpClient.getAdapter().post(source.userInfo(), params, false).getBody();
 
@@ -70,10 +70,10 @@ public class AuthMeituanRequest extends AuthDefaultRequest {
 
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
-                .uuid(getStringValue(userInfoObject, Keys.OAUTH2_SCOPE__OPENID))
-                .username(getStringValue(userInfoObject, Keys.NICKNAME))
-                .nickname(getStringValue(userInfoObject, Keys.NICKNAME))
-                .avatar(getStringValue(userInfoObject, Keys.AVATAR))
+                .uuid(getStringValue(userInfoObject, Keys.OAUTH2.SCOPES.OPENID))
+                .username(getStringValue(userInfoObject, Keys.USERINFO.NICKNAME))
+                .nickname(getStringValue(userInfoObject, Keys.USERINFO.NICKNAME))
+                .avatar(getStringValue(userInfoObject, Keys.USERINFO.AVATAR))
                 .gender(AuthUserGender.UNKNOWN)
                 .token(authToken)
                 .source(source.toString())
@@ -84,10 +84,10 @@ public class AuthMeituanRequest extends AuthDefaultRequest {
     public AuthResponse<AuthToken> refresh(AuthToken oldToken) {
 
         Map<String, String> params = new HashMap<>(7);
-        params.put(Keys.VARIANT__APP_ID, config.getClientId());
-        params.put(Keys.PARAM__SECRET, config.getClientSecret());
-        params.put(Keys.OAUTH2__REFRESH_TOKEN, oldToken.getRefreshToken());
-        params.put(Keys.OAUTH2__GRANT_TYPE, Keys.OAUTH2__REFRESH_TOKEN);
+        params.put(Keys.OAUTH2.APP_ID, config.getClientId());
+        params.put(Keys.OAUTH2.SECRET, config.getClientSecret());
+        params.put(Keys.OAUTH2.REFRESH_TOKEN, oldToken.getRefreshToken());
+        params.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.REFRESH_TOKEN);
 
         String response = UnifiedHttpClient.getAdapter().post(source.refresh(), params, false).getBody();
 
@@ -97,15 +97,15 @@ public class AuthMeituanRequest extends AuthDefaultRequest {
         return AuthResponse.<AuthToken>builder()
                 .code(AuthResponseStatus.SUCCESS.getCode())
                 .data(AuthToken.builder()
-                        .accessToken(getStringValue(refreshTokenObject, Keys.OAUTH2__ACCESS_TOKEN))
-                        .expireIn(getIntValue(refreshTokenObject, Keys.OAUTH2__EXPIRES_IN))
-                        .refreshToken(getStringValue(refreshTokenObject, Keys.OAUTH2__REFRESH_TOKEN))
+                        .accessToken(getStringValue(refreshTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
+                        .expireIn(getIntValue(refreshTokenObject, Keys.OAUTH2.EXPIRES_IN))
+                        .refreshToken(getStringValue(refreshTokenObject, Keys.OAUTH2.REFRESH_TOKEN))
                         .build())
                 .build();
     }
 
     private void checkResponse(JsonNode object) {
-        if (containsKey(object, Keys.ERROR_CODE)) {
+        if (containsKey(object, Keys.RESPONSE_FIELDS.ERROR_CODE)) {
             throw new AuthException(getStringValue(object, "erroe_msg"));
         }
     }
@@ -113,7 +113,7 @@ public class AuthMeituanRequest extends AuthDefaultRequest {
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(super.authorize(state))
-                .queryParam(Keys.OAUTH2__SCOPE, "")
+                .queryParam(Keys.OAUTH2.SCOPE, "")
                 .build();
     }
 
