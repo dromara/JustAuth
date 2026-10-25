@@ -8,6 +8,7 @@ import me.zhyd.oauth.constant.Keys;
 import me.zhyd.oauth.constant.MediaType;
 import me.zhyd.oauth.enums.AuthUserGender;
 import me.zhyd.oauth.http.HttpHeader;
+import me.zhyd.oauth.http.UnifiedHttpClient;
 import me.zhyd.oauth.http.UrlBuilder;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthToken;
@@ -46,17 +47,19 @@ public class AuthTopIamRequest extends AbstractAuthServerRequest {
 
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
-        Map<String, String> form = new HashMap<>(4);
-        form.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE);
-        form.put(Keys.OAUTH2.CODE, authCallback.getCode());
-        form.put(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri());
+        Map<String, String> params = new HashMap<>(4);
+        params.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE);
+        params.put(Keys.OAUTH2.CODE, authCallback.getCode());
+        params.put(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri());
 
         HttpHeader header = new HttpHeader()
                 .add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON)
                 .add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED)
                 .add(HttpHeaders.AUTHORIZATION, TokenUtils.basic(config.getClientId(), config.getClientSecret()));
-        JsonNode object = parseResponse(httpClient()
-                .postForm(tokenEndpoint(), form, header));
+
+        String response = UnifiedHttpClient.getAdapter().postForm(tokenEndpoint(), params, header).getBody();
+
+        JsonNode object = toNode(response);
         return buildToken(object);
     }
 
