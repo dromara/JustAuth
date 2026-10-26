@@ -1,9 +1,9 @@
 package org.dromara.anduin.config;
 
 import lombok.*;
+import org.apache.commons.lang3.StringUtils;
 import org.dromara.anduin.http.HttpConfig;
 import org.dromara.anduin.model.AuthCallback;
-import org.apache.commons.lang3.StringUtils;
 import org.dromara.anduin.request.AuthDefaultRequest;
 import org.dromara.anduin.utils.AuthChecker;
 

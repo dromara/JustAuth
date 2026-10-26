@@ -1,11 +1,10 @@
 package org.dromara.anduin.http;
 
 import lombok.Setter;
-import org.dromara.anduin.utils.MapUtil;
-
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.dromara.anduin.utils.MapUtil;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;

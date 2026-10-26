@@ -24,7 +24,7 @@ public class AuthStateCacheTest {
 
         // 没过期
         Assertions.assertEquals("value", AuthDefaultStateCache.INSTANCE.get("key"));
-        
+
         AuthDefaultStateCache.INSTANCE.expire("key");
         // 过期
         Assertions.assertNull(AuthDefaultStateCache.INSTANCE.get("key"));

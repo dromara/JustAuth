@@ -1,5 +1,6 @@
 package org.dromara.anduin.utils;
 
+import org.apache.commons.lang3.StringUtils;
 import org.dromara.anduin.cache.AuthStateCache;
 import org.dromara.anduin.config.AuthConfig;
 import org.dromara.anduin.config.AuthDefaultSource;
@@ -7,7 +8,6 @@ import org.dromara.anduin.config.AuthSource;
 import org.dromara.anduin.enums.AuthResponseStatus;
 import org.dromara.anduin.exception.AuthException;
 import org.dromara.anduin.model.AuthCallback;
-import org.apache.commons.lang3.StringUtils;
 
 import java.net.URI;
 import java.net.URISyntaxException;

@@ -1,8 +1,8 @@
 package org.dromara.anduin.utils;
 
+import org.apache.commons.lang3.StringUtils;
 import org.dromara.anduin.constant.Keys;
 import org.dromara.anduin.exception.AuthException;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
