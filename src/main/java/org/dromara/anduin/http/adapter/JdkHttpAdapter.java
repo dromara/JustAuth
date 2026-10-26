@@ -1,10 +1,10 @@
 package org.dromara.anduin.http.adapter;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.dromara.anduin.exception.AuthHttpException;
 import org.dromara.anduin.http.*;
 import org.dromara.anduin.utils.MapUtil;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Strings;
 
 import java.io.IOException;
 import java.net.Proxy;

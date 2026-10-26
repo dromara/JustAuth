@@ -1,7 +1,7 @@
 package org.dromara.anduin.http;
 
-import org.dromara.anduin.exception.AuthHttpException;
 import org.apache.commons.lang3.StringUtils;
+import org.dromara.anduin.exception.AuthHttpException;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;

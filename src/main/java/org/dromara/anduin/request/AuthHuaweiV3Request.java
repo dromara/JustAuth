@@ -1,5 +1,6 @@
 package org.dromara.anduin.request;
 
+import org.apache.commons.lang3.StringUtils;
 import org.dromara.anduin.cache.AuthStateCache;
 import org.dromara.anduin.config.AuthConfig;
 import org.dromara.anduin.config.AuthDefaultSource;
@@ -18,8 +19,6 @@ import org.dromara.anduin.model.AuthToken;
 import org.dromara.anduin.model.AuthUser;
 import org.dromara.anduin.utils.AuthScopeUtils;
 import org.dromara.anduin.utils.PkceUtil;
-
-import org.apache.commons.lang3.StringUtils;
 import tools.jackson.databind.JsonNode;
 
 import java.nio.charset.StandardCharsets;

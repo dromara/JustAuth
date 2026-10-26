@@ -7,6 +7,7 @@ import com.alipay.api.request.AlipaySystemOauthTokenRequest;
 import com.alipay.api.request.AlipayUserInfoShareRequest;
 import com.alipay.api.response.AlipaySystemOauthTokenResponse;
 import com.alipay.api.response.AlipayUserInfoShareResponse;
+import org.apache.commons.lang3.StringUtils;
 import org.dromara.anduin.cache.AuthStateCache;
 import org.dromara.anduin.config.AuthConfig;
 import org.dromara.anduin.config.AuthDefaultSource;
@@ -22,8 +23,6 @@ import org.dromara.anduin.model.AuthUser;
 import org.dromara.anduin.utils.AuthChecker;
 import org.dromara.anduin.utils.GlobalAuthUtils;
 import org.dromara.anduin.utils.JsonUtils;
-
-import org.apache.commons.lang3.StringUtils;
 
 import java.net.InetSocketAddress;
 
