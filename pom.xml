@@ -29,19 +29,23 @@
 
     <developers>
         <developer>
-            <name>Yadong.Zhang</name>
-            <email>yadong.zhang0415@gmail.com</email>
-            <url>https://www.zhyd.me</url>
+            <id>herodotus-ecosystem</id>
+            <name>码匠君</name>
+            <email>herodotus@aliyun.com</email>
+            <organization>Dromara</organization>
+            <organizationUrl>https://github.com/dante-compass</organizationUrl>
         </developer>
         <developer>
-            <name>Yangkai.Shen</name>
-            <email>shenyangkai1994@gmail.com</email>
-            <url>https://xkcoding.com</url>
+            <id>shimingxy</id>
+            <name>MaxKey</name>
+            <organization>Dromara</organization>
+            <organizationUrl>https://github.com/shimingxy</organizationUrl>
         </developer>
         <developer>
-            <name>Hongwei.Peng</name>
-            <email>pengisgood@gmail.com</email>
-            <url>https://github.com/pengisgood</url>
+            <id>AprilWind123</id>
+            <name>AprilWind</name>
+            <email>2100166581@qq.com</email>
+            <url>https://gitee.com/AprilWind123</url>
         </developer>
     </developers>
 
