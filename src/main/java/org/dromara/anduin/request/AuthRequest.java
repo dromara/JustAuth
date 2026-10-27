@@ -10,7 +10,6 @@ import org.dromara.anduin.model.AuthUser;
 /**
  * JustAuth {@code Request}公共接口，所有平台的{@code Request}都需要实现该接口
  * <p>
- * {@link AuthRequest#authorize()}
  * {@link AuthRequest#authorize(String)}
  * {@link AuthRequest#login(AuthCallback)}
  * {@link AuthRequest#revoke(AuthToken)}
@@ -36,7 +35,6 @@ public interface AuthRequest {
      *
      * @param authCallback 授权成功后的回调参数
      * @return token
-     * @see AuthDefaultRequest#authorize()
      * @see AuthDefaultRequest#authorize(String)
      */
     AuthToken getAccessToken(AuthCallback authCallback);

@@ -70,7 +70,6 @@ public class JdkHttpAdapter implements HttpClientAdapter {
             String body = httpResponse.body();
             return new AdapterHttpResponse(successful, code, headers, body, null);
         } catch (Exception e) {
-            e.printStackTrace();
             return new AdapterHttpResponse(false, 500, null, null, e.getMessage());
         }
     }
@@ -171,13 +170,14 @@ public class JdkHttpAdapter implements HttpClientAdapter {
      */
     @Override
     public AdapterHttpResponse post(String url, String data, HttpHeader header) {
-        HttpRequest.Builder builder = HttpRequest.newBuilder().uri(URI.create(url)).timeout(Duration.ofMillis(httpConfig.getTimeout()));
+        HttpRequest.Builder builder = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .timeout(Duration.ofMillis(httpConfig.getTimeout()));
 
         if (StringUtils.isNotEmpty(data)) {
             builder.POST(HttpRequest.BodyPublishers.ofString(data, StandardCharsets.UTF_8));
             boolean formBody = header != null && header.getHeaders().entrySet().stream()
-                    .anyMatch(entry -> HttpHeaders.CONTENT_TYPE.equalsIgnoreCase(entry.getKey())
-                            && "application/x-www-form-urlencoded".equalsIgnoreCase(entry.getValue()));
+                    .anyMatch(entry -> HttpHeaders.CONTENT_TYPE.equalsIgnoreCase(entry.getKey()) && MediaType.APPLICATION_FORM_URLENCODED.equalsIgnoreCase(entry.getValue()));
             if (!formBody) {
                 builder.header(HttpHeaders.CONTENT_ENCODING, StandardCharsets.UTF_8.displayName());
             }
@@ -224,8 +224,9 @@ public class JdkHttpAdapter implements HttpClientAdapter {
         return this.post(reqUrl, null, header);
     }
 
-    public class JdkHttpProxySelector extends ProxySelector {
-        private HttpConfig httpConfig;
+    public static class JdkHttpProxySelector extends ProxySelector {
+
+        private final HttpConfig httpConfig;
 
         public JdkHttpProxySelector(HttpConfig httpConfig) {
             this.httpConfig = httpConfig;

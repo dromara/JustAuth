@@ -8,6 +8,7 @@ import org.dromara.anduin.config.AuthSource;
 import org.dromara.anduin.constant.Keys;
 import org.dromara.anduin.enums.AuthResponseStatus;
 import org.dromara.anduin.exception.AuthException;
+import org.dromara.anduin.http.HttpHeader;
 import org.dromara.anduin.http.HttpUrlEncoding;
 import org.dromara.anduin.http.UnifiedHttpClient;
 import org.dromara.anduin.http.UrlBuilder;
@@ -327,8 +328,48 @@ public abstract class AuthDefaultRequest implements AuthRequest {
      * @param code code码
      * @return Response
      */
+    protected String doPostAuthorizationCode(String code, HttpHeader header) {
+        return UnifiedHttpClient.getAdapter().post(accessTokenUrl(code), null, header).getBody();
+    }
+
+    /**
+     * 通用的 refreshToken 协议
+     *
+     * @param refreshToken 刷新 Token
+     * @return Response
+     */
+    protected String doPostRefreshToken(String refreshToken) {
+        return UnifiedHttpClient.getAdapter().post(refreshTokenUrl(refreshToken)).getBody();
+    }
+
+    /**
+     * 通用的 refreshToken 协议
+     *
+     * @param refreshToken 刷新 Token
+     * @return Response
+     */
+    protected String doPostRefreshToken(String refreshToken, HttpHeader header) {
+        return UnifiedHttpClient.getAdapter().post(refreshTokenUrl(refreshToken), null, header).getBody();
+    }
+
+    /**
+     * 通用的 authorizationCode 协议
+     *
+     * @param code code码
+     * @return Response
+     */
     protected String doGetAuthorizationCode(String code) {
         return UnifiedHttpClient.getAdapter().get(accessTokenUrl(code)).getBody();
+    }
+
+    /**
+     * 通用的 authorizationCode 协议
+     *
+     * @param code code码
+     * @return Response
+     */
+    protected String doGetAuthorizationCode(String code, HttpHeader header) {
+        return UnifiedHttpClient.getAdapter().get(accessTokenUrl(code), null, header, false).getBody();
     }
 
     /**
@@ -337,7 +378,6 @@ public abstract class AuthDefaultRequest implements AuthRequest {
      * @param authToken token封装
      * @return Response
      */
-    @Deprecated
     protected String doPostUserInfo(AuthToken authToken) {
         return UnifiedHttpClient.getAdapter().post(userInfoUrl(authToken)).getBody();
     }
@@ -352,13 +392,16 @@ public abstract class AuthDefaultRequest implements AuthRequest {
         return UnifiedHttpClient.getAdapter().get(userInfoUrl(authToken)).getBody();
     }
 
+    protected String doGetUserInfo(AuthToken authToken, HttpHeader header) {
+        return UnifiedHttpClient.getAdapter().get(userInfoUrl(authToken), null, header, false).getBody();
+    }
+
     /**
      * 通用的post形式的取消授权方法
      *
      * @param authToken token封装
      * @return Response
      */
-    @Deprecated
     protected String doPostRevoke(AuthToken authToken) {
         return UnifiedHttpClient.getAdapter().post(revokeUrl(authToken)).getBody();
     }

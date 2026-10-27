@@ -7,7 +7,6 @@ import org.dromara.anduin.config.AuthConfig;
 import org.dromara.anduin.config.AuthDefaultSource;
 import org.dromara.anduin.constant.Keys;
 import org.dromara.anduin.exception.AuthException;
-import org.dromara.anduin.http.UnifiedHttpClient;
 import org.dromara.anduin.http.UrlBuilder;
 import org.dromara.anduin.model.AuthCallback;
 import org.dromara.anduin.model.AuthToken;
@@ -35,7 +34,7 @@ public class AuthQQMiniProgramRequest extends AuthDefaultRequest {
     public AuthToken getAccessToken(AuthCallback authCallback) {
         // 参见 https://q.qq.com/wiki/develop/miniprogram/server/open_port/port_login.html#code2session 文档
         // 使用 code 获取对应的 openId、unionId 等字段
-        String response = UnifiedHttpClient.getAdapter().get(accessTokenUrl(authCallback.getCode())).getBody();
+        String response = doGetAuthorizationCode(authCallback.getCode());
 
         JSCode2SessionResponse accessTokenObject = JsonUtils.toObject(response, JSCode2SessionResponse.class);
         assert accessTokenObject != null;

@@ -45,11 +45,7 @@ public class AuthXmlyRequest extends AuthDefaultRequest {
      */
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
-
-        Map<String, String> params = authorizationCodeRequestParams(authCallback);
-        params.put(DEVICE_ID, config.getDeviceId());
-
-        String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), params, true).getBody();
+        String response = doPostAuthorizationCode(authCallback.getCode());
 
         JsonNode accessTokenObject = toNode(response);
         this.checkResponse(accessTokenObject);
@@ -112,6 +108,18 @@ public class AuthXmlyRequest extends AuthDefaultRequest {
                 .source(source.toString())
                 .token(authToken)
                 .gender(AuthUserGender.UNKNOWN)
+                .build();
+    }
+
+    @Override
+    public String accessTokenUrl(String code) {
+        return UrlBuilder.fromBaseUrl(source.accessToken())
+                .queryParam(Keys.OAUTH2.CODE, code)
+                .queryParam(Keys.OAUTH2.CLIENT_ID, config.getClientId())
+                .queryParam(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret())
+                .queryParam(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE)
+                .queryParam(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri())
+                .queryParam(DEVICE_ID, config.getDeviceId())
                 .build();
     }
 

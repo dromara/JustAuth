@@ -45,8 +45,7 @@ public class AuthSlackRequest extends AuthDefaultRequest {
         HttpHeader header = new HttpHeader();
         header.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
 
-        String response = UnifiedHttpClient.getAdapter()
-                .get(accessTokenUrl(authCallback.getCode()), null, header, false).getBody();
+        String response = doGetAuthorizationCode(authCallback.getCode(), header);
 
         JsonNode accessTokenObject = toNode(response);
         this.checkResponse(accessTokenObject);

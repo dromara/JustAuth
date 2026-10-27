@@ -1,6 +1,7 @@
 package org.dromara.anduin.http;
 
 import com.google.common.net.HttpHeaders;
+import org.dromara.anduin.constant.MediaType;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -35,7 +36,7 @@ public interface HttpClientAdapter {
                 }
             });
         }
-        formHeader.add(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded");
+        formHeader.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
         return post(url, body, formHeader);
     }
 
@@ -45,7 +46,7 @@ public interface HttpClientAdapter {
      * @param url URL
      * @return 结果
      */
-    public AdapterHttpResponse get(String url);
+    AdapterHttpResponse get(String url);
 
     /**
      * GET 请求
@@ -55,7 +56,7 @@ public interface HttpClientAdapter {
      * @param encode 是否需要 url encode
      * @return 结果
      */
-    public AdapterHttpResponse get(String url, Map<String, String> params, boolean encode);
+    AdapterHttpResponse get(String url, Map<String, String> params, boolean encode);
 
     /**
      * GET 请求
@@ -66,7 +67,7 @@ public interface HttpClientAdapter {
      * @param encode 是否需要 url encode
      * @return 结果
      */
-    public AdapterHttpResponse get(String url, Map<String, String> params, HttpHeader header, boolean encode);
+    AdapterHttpResponse get(String url, Map<String, String> params, HttpHeader header, boolean encode);
 
     /**
      * POST 请求
@@ -74,7 +75,7 @@ public interface HttpClientAdapter {
      * @param url URL
      * @return 结果
      */
-    public AdapterHttpResponse post(String url);
+    AdapterHttpResponse post(String url);
 
     /**
      * POST 请求
@@ -83,7 +84,7 @@ public interface HttpClientAdapter {
      * @param data JSON 参数
      * @return 结果
      */
-    public AdapterHttpResponse post(String url, String data);
+    AdapterHttpResponse post(String url, String data);
 
     /**
      * POST 请求
@@ -93,7 +94,7 @@ public interface HttpClientAdapter {
      * @param header 请求头
      * @return 结果
      */
-    public AdapterHttpResponse post(String url, String data, HttpHeader header);
+    AdapterHttpResponse post(String url, String data, HttpHeader header);
 
     /**
      * POST 请求
@@ -103,7 +104,7 @@ public interface HttpClientAdapter {
      * @param encode 是否需要 url encode
      * @return 结果
      */
-    public AdapterHttpResponse post(String url, Map<String, String> params, boolean encode);
+    AdapterHttpResponse post(String url, Map<String, String> params, boolean encode);
 
     /**
      * POST 请求
@@ -114,5 +115,5 @@ public interface HttpClientAdapter {
      * @param encode 是否需要 url encode
      * @return 结果
      */
-    public AdapterHttpResponse post(String url, Map<String, String> params, HttpHeader header, boolean encode);
+    AdapterHttpResponse post(String url, Map<String, String> params, HttpHeader header, boolean encode);
 }

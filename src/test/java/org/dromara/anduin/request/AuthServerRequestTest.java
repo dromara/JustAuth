@@ -1,9 +1,11 @@
 package org.dromara.anduin.request;
 
+import com.google.common.net.HttpHeaders;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import org.dromara.anduin.AuthRequestBuilder;
 import org.dromara.anduin.config.AuthConfig;
+import org.dromara.anduin.constant.MediaType;
 import org.dromara.anduin.exception.AuthException;
 import org.dromara.anduin.http.AdapterHttpResponse;
 import org.dromara.anduin.http.HttpConfig;
@@ -111,8 +113,8 @@ public class AuthServerRequestTest {
             Map<String, String> form = readForm(exchange);
             Assertions.assertNull(exchange.getRequestURI().getQuery());
             Assertions.assertEquals("POST", exchange.getRequestMethod());
-            Assertions.assertEquals(List.of("application/x-www-form-urlencoded"),
-                    exchange.getRequestHeaders().get("Content-Type"));
+            Assertions.assertEquals(List.of(MediaType.APPLICATION_FORM_URLENCODED),
+                    exchange.getRequestHeaders().get(HttpHeaders.CONTENT_TYPE));
             Assertions.assertEquals("client-id", form.get("client_id"));
             Assertions.assertEquals("secret +&=中文", form.get("client_secret"));
             Assertions.assertEquals("authorization-code", form.get("code"));

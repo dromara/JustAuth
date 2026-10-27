@@ -48,7 +48,7 @@ public class AuthFigmaRequest extends AuthDefaultRequest {
         header.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
         header.add(HttpHeaders.AUTHORIZATION, AccessTokenUtils.basic(config.getClientId(), config.getClientSecret()));
 
-        String response = UnifiedHttpClient.getAdapter().post(super.accessTokenUrl(authCallback.getCode()), null, header, true).getBody();
+        String response = doPostAuthorizationCode(authCallback.getCode(), header);
 
         JsonNode accessTokenObject = toNode(response);
 
@@ -68,7 +68,7 @@ public class AuthFigmaRequest extends AuthDefaultRequest {
         HttpHeader header = new HttpHeader();
         header.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
 
-        String response = UnifiedHttpClient.getAdapter().post(this.refreshTokenUrl(authToken.getRefreshToken()), null, header, false).getBody();
+        String response = doPostRefreshToken(authToken.getRefreshToken(), header);
 
         JsonNode refreshTokenObject = toNode(response);
 

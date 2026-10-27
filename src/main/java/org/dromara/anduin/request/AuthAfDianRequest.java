@@ -5,14 +5,11 @@ import org.dromara.anduin.config.AuthConfig;
 import org.dromara.anduin.config.AuthDefaultSource;
 import org.dromara.anduin.constant.Keys;
 import org.dromara.anduin.enums.AuthUserGender;
-import org.dromara.anduin.http.UnifiedHttpClient;
 import org.dromara.anduin.http.UrlBuilder;
 import org.dromara.anduin.model.AuthCallback;
 import org.dromara.anduin.model.AuthToken;
 import org.dromara.anduin.model.AuthUser;
 import tools.jackson.databind.JsonNode;
-
-import java.util.Map;
 
 /**
  * 爱发电
@@ -31,9 +28,7 @@ public class AuthAfDianRequest extends AuthDefaultRequest {
 
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
-        Map<String, String> params = authorizationCodeRequestParams(authCallback);
-
-        String response = UnifiedHttpClient.getAdapter().post(AuthDefaultSource.AFDIAN.accessToken(), params, false).getBody();
+        String response = doPostAuthorizationCode(authCallback.getCode());
 
         JsonNode accessTokenObject = toNode(response);
 

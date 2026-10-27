@@ -6,7 +6,6 @@ import org.dromara.anduin.config.AuthDefaultSource;
 import org.dromara.anduin.constant.Keys;
 import org.dromara.anduin.enums.AuthUserGender;
 import org.dromara.anduin.enums.scope.AuthProginnScope;
-import org.dromara.anduin.http.UnifiedHttpClient;
 import org.dromara.anduin.http.UrlBuilder;
 import org.dromara.anduin.model.AuthCallback;
 import org.dromara.anduin.model.AuthToken;
@@ -33,7 +32,7 @@ public class AuthProginnRequest extends AuthDefaultRequest {
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
 
-        String response = UnifiedHttpClient.getAdapter().post(AuthDefaultSource.PROGINN.accessToken(), authorizationCodeRequestParams(authCallback), false).getBody();
+        String response = doPostAuthorizationCode(authCallback.getCode());
 
         JsonNode accessTokenObject = toNode(response);
         validateResponse(accessTokenObject);

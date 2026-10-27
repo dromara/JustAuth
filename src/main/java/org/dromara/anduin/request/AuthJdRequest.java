@@ -41,14 +41,7 @@ public class AuthJdRequest extends AuthDefaultRequest {
 
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
-
-        Map<String, String> params = new HashMap<>(7);
-        params.put(Keys.OAUTH2.APP_KEY, config.getClientId());
-        params.put("app_secret", config.getClientSecret());
-        params.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE);
-        params.put(Keys.OAUTH2.CODE, authCallback.getCode());
-
-        String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), params, false).getBody();
+        String response = doPostAuthorizationCode(authCallback.getCode());
 
         JsonNode accessTokenObject = toNode(response);
 
@@ -65,16 +58,7 @@ public class AuthJdRequest extends AuthDefaultRequest {
 
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
-        UrlBuilder urlBuilder = UrlBuilder.fromBaseUrl(source.userInfo())
-                .queryParam(Keys.OAUTH2.ACCESS_TOKEN, authToken.getAccessToken())
-                .queryParam(Keys.OAUTH2.APP_KEY, config.getClientId())
-                .queryParam("method", "jingdong.user.getUserInfoByOpenId")
-                .queryParam("360buy_param_json", "{\"openId\":\"" + authToken.getOpenId() + "\"}")
-                .queryParam("timestamp", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
-                .queryParam("v", "2.0");
-        urlBuilder.queryParam("sign", GlobalAuthUtils.generateJdSignature(config.getClientSecret(), urlBuilder.getReadOnlyParams()));
-
-        String response = UnifiedHttpClient.getAdapter().post(urlBuilder.build(true)).getBody();
+        String response = doPostUserInfo(authToken);
 
         JsonNode responseObject = toNode(response);
         this.checkResponse(responseObject);
@@ -148,4 +132,26 @@ public class AuthJdRequest extends AuthDefaultRequest {
                 .build();
     }
 
+    @Override
+    public String accessTokenUrl(String code) {
+        return UrlBuilder.fromBaseUrl(source.accessToken())
+                .queryParam(Keys.OAUTH2.APP_KEY, config.getClientId())
+                .queryParam("app_secret", config.getClientSecret())
+                .queryParam(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE)
+                .queryParam(Keys.OAUTH2.CODE, code)
+                .build();
+    }
+
+    @Override
+    public String userInfoUrl(AuthToken authToken) {
+        UrlBuilder urlBuilder = UrlBuilder.fromBaseUrl(source.userInfo())
+                .queryParam(Keys.OAUTH2.ACCESS_TOKEN, authToken.getAccessToken())
+                .queryParam(Keys.OAUTH2.APP_KEY, config.getClientId())
+                .queryParam("method", "jingdong.user.getUserInfoByOpenId")
+                .queryParam("360buy_param_json", "{\"openId\":\"" + authToken.getOpenId() + "\"}")
+                .queryParam("timestamp", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+                .queryParam("v", "2.0");
+        urlBuilder.queryParam("sign", GlobalAuthUtils.generateJdSignature(config.getClientSecret(), urlBuilder.getReadOnlyParams()));
+        return urlBuilder.build(true);
+    }
 }

@@ -10,7 +10,6 @@ import org.dromara.anduin.enums.AuthResponseStatus;
 import org.dromara.anduin.enums.AuthUserGender;
 import org.dromara.anduin.enums.scope.AuthLineScope;
 import org.dromara.anduin.http.HttpHeader;
-import org.dromara.anduin.http.UnifiedHttpClient;
 import org.dromara.anduin.http.UrlBuilder;
 import org.dromara.anduin.model.AuthCallback;
 import org.dromara.anduin.model.AuthResponse;
@@ -19,9 +18,6 @@ import org.dromara.anduin.model.AuthUser;
 import org.dromara.anduin.utils.AccessTokenUtils;
 import org.dromara.anduin.utils.AuthScopeUtils;
 import tools.jackson.databind.JsonNode;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * LINE 登录, line.biz
@@ -41,19 +37,11 @@ public class AuthLineRequest extends AuthDefaultRequest {
 
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
-
-        String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), authorizationCodeRequestParams(authCallback), false).getBody();
+        String response = doPostAuthorizationCode(authCallback.getCode());
 
         JsonNode accessTokenObject = toNode(response);
 
-        return AuthToken.builder()
-                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
-                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2.REFRESH_TOKEN))
-                .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2.EXPIRES_IN))
-                .idToken(getStringValue(accessTokenObject, Keys.OIDC.ID_TOKEN))
-                .scope(getStringValue(accessTokenObject, Keys.OAUTH2.SCOPE))
-                .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2.TOKEN_TYPE))
-                .build();
+        return generateToken(accessTokenObject);
     }
 
     @Override
@@ -63,7 +51,7 @@ public class AuthLineRequest extends AuthDefaultRequest {
         header.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
         header.add(HttpHeaders.AUTHORIZATION, AccessTokenUtils.bearer(authToken.getAccessToken()));
 
-        String response = UnifiedHttpClient.getAdapter().get(source.userInfo(), null, header, false).getBody();
+        String response = doGetUserInfo(authToken, header);
 
         JsonNode userInfoObject = toNode(response);
 
@@ -82,12 +70,7 @@ public class AuthLineRequest extends AuthDefaultRequest {
 
     @Override
     public AuthResponse<?> revoke(AuthToken authToken) {
-        Map<String, String> params = new HashMap<>(5);
-        params.put(Keys.OAUTH2.ACCESS_TOKEN, authToken.getAccessToken());
-        params.put(Keys.OAUTH2.CLIENT_ID, config.getClientId());
-        params.put(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret());
-
-        String response = UnifiedHttpClient.getAdapter().post(source.revoke(), params, false).getBody();
+        String response = doPostRevoke(authToken);
 
         JsonNode object = toNode(response);
         // 返回1表示取消授权成功，否则失败
@@ -97,25 +80,41 @@ public class AuthLineRequest extends AuthDefaultRequest {
 
     @Override
     public AuthResponse<AuthToken> refresh(AuthToken oldToken) {
-        Map<String, String> params = new HashMap<>();
-        params.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.REFRESH_TOKEN);
-        params.put(Keys.OAUTH2.REFRESH_TOKEN, oldToken.getRefreshToken());
-        params.put(Keys.OAUTH2.CLIENT_ID, config.getClientId());
-        params.put(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret());
+        String response = doPostRefreshToken(oldToken.getRefreshToken());
 
-        String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), params, false).getBody();
-
-        JsonNode accessTokenObject = toNode(response);
+        JsonNode refreshTokenObject = toNode(response);
         return AuthResponse.<AuthToken>builder()
                 .code(AuthResponseStatus.SUCCESS.getCode())
-                .data(AuthToken.builder()
-                        .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
-                        .expireIn(getIntValue(accessTokenObject, Keys.OAUTH2.EXPIRES_IN))
-                        .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2.REFRESH_TOKEN))
-                        .scope(getStringValue(accessTokenObject, Keys.OAUTH2.SCOPE))
-                        .idToken(getStringValue(accessTokenObject, Keys.OIDC.ID_TOKEN))
-                        .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2.TOKEN_TYPE))
-                        .build())
+                .data(generateToken(refreshTokenObject))
+                .build();
+    }
+
+    private AuthToken generateToken(JsonNode jsonNode) {
+        return AuthToken.builder()
+                .accessToken(getStringValue(jsonNode, Keys.OAUTH2.ACCESS_TOKEN))
+                .expireIn(getIntValue(jsonNode, Keys.OAUTH2.EXPIRES_IN))
+                .refreshToken(getStringValue(jsonNode, Keys.OAUTH2.REFRESH_TOKEN))
+                .scope(getStringValue(jsonNode, Keys.OAUTH2.SCOPE))
+                .idToken(getStringValue(jsonNode, Keys.OIDC.ID_TOKEN))
+                .tokenType(getStringValue(jsonNode, Keys.OAUTH2.TOKEN_TYPE))
+                .build();
+    }
+
+    @Override
+    public String authorize(String state) {
+        return UrlBuilder.fromBaseUrl(super.authorize(state))
+                .queryParam("nonce", state)
+                .queryParam(Keys.OAUTH2.SCOPE, this.getScopes(" ", true, AuthScopeUtils.getDefaultScopes(AuthLineScope.values())))
+                .build();
+    }
+
+    @Override
+    protected String refreshTokenUrl(String refreshToken) {
+        return UrlBuilder.fromBaseUrl(source.refresh())
+                .queryParam(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.REFRESH_TOKEN)
+                .queryParam(Keys.OAUTH2.REFRESH_TOKEN, refreshToken)
+                .queryParam(Keys.OAUTH2.CLIENT_ID, config.getClientId())
+                .queryParam(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret())
                 .build();
     }
 
@@ -127,10 +126,11 @@ public class AuthLineRequest extends AuthDefaultRequest {
     }
 
     @Override
-    public String authorize(String state) {
-        return UrlBuilder.fromBaseUrl(super.authorize(state))
-                .queryParam("nonce", state)
-                .queryParam(Keys.OAUTH2.SCOPE, this.getScopes(" ", true, AuthScopeUtils.getDefaultScopes(AuthLineScope.values())))
+    public String revokeUrl(AuthToken authToken) {
+        return UrlBuilder.fromBaseUrl(source.revoke())
+                .queryParam(Keys.OAUTH2.ACCESS_TOKEN, authToken.getAccessToken())
+                .queryParam(Keys.OAUTH2.CLIENT_ID, config.getClientId())
+                .queryParam(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret())
                 .build();
     }
 }

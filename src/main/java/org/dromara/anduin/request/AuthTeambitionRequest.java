@@ -10,6 +10,7 @@ import org.dromara.anduin.enums.AuthUserGender;
 import org.dromara.anduin.exception.AuthException;
 import org.dromara.anduin.http.HttpHeader;
 import org.dromara.anduin.http.UnifiedHttpClient;
+import org.dromara.anduin.http.UrlBuilder;
 import org.dromara.anduin.model.AuthCallback;
 import org.dromara.anduin.model.AuthResponse;
 import org.dromara.anduin.model.AuthToken;
@@ -42,22 +43,12 @@ public class AuthTeambitionRequest extends AuthDefaultRequest {
      */
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
-
-        Map<String, String> params = new HashMap<>(7);
-        params.put(Keys.OAUTH2.CLIENT_ID, config.getClientId());
-        params.put(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret());
-        params.put(Keys.OAUTH2.CODE, authCallback.getCode());
-        params.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.CODE);
-
-        String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), params, false).getBody();
+        String response = doPostAuthorizationCode(authCallback.getCode());
 
         JsonNode accessTokenObject = toNode(response);
         this.checkResponse(accessTokenObject);
 
-        return AuthToken.builder()
-                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
-                .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2.REFRESH_TOKEN))
-                .build();
+        return generateToken(accessTokenObject);
     }
 
     @Override
@@ -105,10 +96,24 @@ public class AuthTeambitionRequest extends AuthDefaultRequest {
 
         return AuthResponse.<AuthToken>builder()
                 .code(AuthResponseStatus.SUCCESS.getCode())
-                .data(AuthToken.builder()
-                        .accessToken(getStringValue(refreshTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
-                        .refreshToken(getStringValue(refreshTokenObject, Keys.OAUTH2.REFRESH_TOKEN))
-                        .build())
+                .data(generateToken(refreshTokenObject))
+                .build();
+    }
+
+    private AuthToken generateToken(JsonNode jsonNode) {
+        return AuthToken.builder()
+                .accessToken(getStringValue(jsonNode, Keys.OAUTH2.ACCESS_TOKEN))
+                .refreshToken(getStringValue(jsonNode, Keys.OAUTH2.REFRESH_TOKEN))
+                .build();
+    }
+
+    @Override
+    protected String accessTokenUrl(String code) {
+        return UrlBuilder.fromBaseUrl(source.accessToken())
+                .queryParam(Keys.OAUTH2.CLIENT_ID, config.getClientId())
+                .queryParam(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret())
+                .queryParam(Keys.OAUTH2.CODE, code)
+                .queryParam(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.CODE)
                 .build();
     }
 
