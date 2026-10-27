@@ -228,21 +228,6 @@ public abstract class AuthDefaultRequest implements AuthRequest {
     }
 
     /**
-     * 返回授权url，可自行跳转页面
-     * <p>
-     * 不建议使用该方式获取授权地址，不带{@code state}的授权地址，容易受到csrf攻击。
-     * 建议使用{@link AuthDefaultRequest#authorize(String)}方法生成授权地址，在回调方法中对{@code state}进行校验
-     *
-     * @return 返回授权地址
-     * @see AuthDefaultRequest#authorize(String)
-     */
-    @Deprecated
-    @Override
-    public String authorize() {
-        return this.authorize(null);
-    }
-
-    /**
      * 返回带{@code state}参数的授权url，授权回调时会带上这个{@code state}
      *
      * @param state state 验证授权流程的参数，可以防止csrf
