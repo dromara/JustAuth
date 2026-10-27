@@ -12,4 +12,4 @@ assignees: ''
 
 ## Environment
 
-- Anduin version(e.g. `2.2.0`): 
+- Anduin Version(e.g. `2.2.0`): 
