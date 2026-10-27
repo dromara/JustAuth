@@ -1,33 +1,27 @@
 <p align="center">
-	<img src="https://gitee.com/yadong.zhang/static/raw/master/JustAuth/Justauth.png" width="200">
+	
 </p>
 <p align="center">
 	<strong>Social Login, so easy.</strong>
 </p>
 <p align="center">
-	<a target="_blank" href="https://search.maven.org/search?q=JustAuth">
-		<img src="https://img.shields.io/github/v/release/dromara/JustAuth?style=flat-square" ></img>
+	<a target="_blank" href="https://search.maven.org/search?q=dromara-anduin">
+		<img src="https://img.shields.io/github/v/release/dromara/anduin?style=flat-square" ></img>
 	</a>
 	<a target="_blank" href="https://www.oracle.com/technetwork/java/javase/downloads/index.html">
 		<img src="https://img.shields.io/badge/JDK-17+-green.svg" ></img>
-	</a>
-	<a href='https://gitee.com/yadong.zhang/JustAuth/stargazers'>
-	  <img src='https://gitee.com/yadong.zhang/JustAuth/badge/star.svg?theme=gvp' alt='star'></img>
-	</a>
-	<a target="_blank" href='https://github.com/zhangyd-c/JustAuth'>
-		<img src="https://img.shields.io/github/stars/zhangyd-c/JustAuth.svg?style=social" alt="github star"></img>
 	</a>
 </p>
 
 -------------------------------------------------------------------------------
 
-## Dromara JustAuth
+## Dromara Anduin
 
-JustAuth，如你所见，它仅仅是一个**第三方授权登录**的**工具类库**，它可以让我们脱离繁琐的第三方登录 SDK，让登录变得**So easy!**
+Anduin，如你所见，它仅仅是一个**第三方授权登录**的**工具类库**，它可以让我们脱离繁琐的第三方登录 SDK，让登录变得**So easy!**
 
-JustAuth 集成了诸如：Github、Gitee、支付宝、新浪微博、微信、Google、Facebook、Twitter、StackOverflow等国内外数十家第三方平台。
+Anduin 集成了诸如：Github、Gitee、支付宝、新浪微博、微信、Google、Facebook、Twitter、StackOverflow等国内外数十家第三方平台。
 
-JustAuth 是Dromara开源社区维护的开源项目，基于`yadong.zhang/JustAuth v1.16.7`，MIT 协议
+Dromara Anduin 是Dromara开源社区维护的开源项目，基于`yadong.zhang/JustAuth v1.16.7`，MIT 协议
 
 
 ## 特点
@@ -37,7 +31,7 @@ JustAuth 是Dromara开源社区维护的开源项目，基于`yadong.zhang/JustA
 - 自定义 OAuth 平台，更容易适配自有的 OAuth 服务。
 - 自定义 Http 实现，选择权完全交给开发者，不会单独依赖某一具体实现。
 - 自定义 Scope，支持更完善的授权体系。
-- 持续扩展中（[开发计划](https://gitee.com/dromara/JustAuth/issues)）。
+- 持续扩展中（[开发计划](https://gitee.com/dromara/anduin/issues)）。
 
 
 ## 快速开始
@@ -47,8 +41,8 @@ JustAuth 是Dromara开源社区维护的开源项目，基于`yadong.zhang/JustA
 ### 引入依赖
 ```xml
 <dependency>
-    <groupId>org.dromara.justauth</groupId>
-    <artifactId>JustAuth</artifactId>
+    <groupId>org.dromara.anduin</groupId>
+    <artifactId>dromara-anduin</artifactId>
     <version>{latest-version}</version>
 </dependency>
 ```
@@ -133,4 +127,4 @@ AuthRequest authRequest = AuthRequestBuilder.builder()
 
 ## 更新日志
 
-- [CHANGELOGS](https://gitee.com/dromara/JustAuth/blob/master/CHANGELOGS.md)
+- [CHANGELOGS](https://gitee.com/dromara/anduin/blob/master/CHANGELOGS.md)

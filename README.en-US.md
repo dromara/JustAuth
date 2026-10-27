@@ -1,33 +1,27 @@
 <p align="center">
-	<img src="https://gitee.com/yadong.zhang/static/raw/master/JustAuth/Justauth.png" width="200">
+
 </p>
 <p align="center">
 	<strong>Social Login, so easy.</strong>
 </p>
 <p align="center">
-	<a target="_blank" href="https://search.maven.org/search?q=JustAuth">
-		<img src="https://img.shields.io/github/v/release/dromara/JustAuth?style=flat-square" ></img>
+	<a target="_blank" href="https://search.maven.org/search?q=dromara-anduin">
+		<img src="https://img.shields.io/github/v/release/dromara/anduin?style=flat-square" ></img>
 	</a>
 	<a target="_blank" href="https://www.oracle.com/technetwork/java/javase/downloads/index.html">
 		<img src="https://img.shields.io/badge/JDK-17+-green.svg" ></img>
-	</a>
-	<a href='https://gitee.com/yadong.zhang/JustAuth/stargazers'>
-	  <img src='https://gitee.com/yadong.zhang/JustAuth/badge/star.svg?theme=gvp' alt='star'></img>
-	</a>
-	<a target="_blank" href='https://github.com/zhangyd-c/JustAuth'>
-		<img src="https://img.shields.io/github/stars/zhangyd-c/JustAuth.svg?style=social" alt="github star"></img>
 	</a>
 </p>
 
 -------------------------------------------------------------------------------
 
-`Dromara JustAuth`, as you see, It is just a Java library of third-party authorized login, It's smaller and easier to use. JustAuth is the best third-party login tool written in JAVA.
+`Dromara Anduin`, as you see, It is just a Java library of third-party authorized login, It's smaller and easier to use. Anduin is the best third-party login tool written in JAVA.
 
-JustAuth is an open-source project maintained by the Dromara community, based on `yadong.zhang/JustAuth v1.16.7`, and released under the MIT License.
+Anduin is an open-source project maintained by the Dromara community, based on `yadong.zhang/JustAuth v1.16.7`, and released under the MIT License.
 
 ## Features
 
-1. **Multiple platform**: Has integrated more than a dozen third-party platforms.([plan](https://gitee.com/dromara/JustAuth/issues))
+1. **Multiple platform**: Has integrated more than a dozen third-party platforms.([plan](https://gitee.com/dromara/anduin/issues))
 2. **Minimalist**: The minimalist design is very simple to use.
 
 ## Quick start
@@ -36,18 +30,18 @@ JustAuth is an open-source project maintained by the Dromara community, based on
 
 ### Add maven dependency
 
-- Add JustAuth dependency
+- Add Anduin dependency
 
 These artifacts are available from Maven Central:
 ```xml
 <dependency>
-    <groupId>org.dromara.justauth</groupId>
-    <artifactId>JustAuth</artifactId>
+    <groupId>org.dromara.anduin</groupId>
+    <artifactId>dromara-anduin</artifactId>
     <version>{latest-version}</version>
 </dependency>
 ```
 
-### Using JustAuth API
+### Using Anduin API
 
 #### Simple
 
@@ -130,7 +124,7 @@ I look forward to your joining us.
 
 ## Change Logs
 
-[CHANGELOGS](https://gitee.com/dromara/JustAuth/blob/master/CHANGELOGS.md)
+[CHANGELOGS](https://gitee.com/dromara/anduin/blob/master/CHANGELOGS.md)
 
 ## References
 
