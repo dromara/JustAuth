@@ -50,7 +50,6 @@ public class AuthHuaweiV3Request extends AuthDefaultRequest {
      *
      * @param authCallback 授权成功后的回调参数
      * @return token
-     * @see AuthDefaultRequest#authorize()
      * @see AuthDefaultRequest#authorize(String)
      */
     @Override

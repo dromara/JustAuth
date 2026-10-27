@@ -1,4 +1,4 @@
-## 1.0.0
+## 2.2.0
 - 提取授权码模式获取 Token 参数定义通用方法，去除大量重复代码
 - 提取验证响应通用方法，去除大量重复代码
 - jjwt-jackson 替换为 jjwt-gson，消息对 jackson2 版本的依赖
@@ -64,4 +64,4 @@
 - 其他
   -  补充单侧，[Gitee#39](https://gitee.com/yadong.zhang/JustAuth/pulls/39)
 
-## 老版本 [yadong.zhang/JustAuth/CHANGELOGS](https://gitee.com/yadong.zhang/JustAuth/blob/master/CHANGELOGS.md)
+## fork版本 [yadong.zhang/JustAuth/CHANGELOGS](https://gitee.com/yadong.zhang/JustAuth/blob/master/CHANGELOGS.md)

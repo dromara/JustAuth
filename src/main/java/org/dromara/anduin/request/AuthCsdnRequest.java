@@ -35,7 +35,9 @@ public class AuthCsdnRequest extends AuthDefaultRequest {
         JsonNode accessTokenObject = toNode(response);
         this.checkResponse(accessTokenObject);
 
-        return AuthToken.builder().accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN)).build();
+        return AuthToken.builder()
+                .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
+                .build();
     }
 
     @Override

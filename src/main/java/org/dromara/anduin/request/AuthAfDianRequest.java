@@ -37,7 +37,7 @@ public class AuthAfDianRequest extends AuthDefaultRequest {
 
         JsonNode accessTokenObject = toNode(response);
 
-        JsonNode data = getObjectNode(accessTokenObject, Keys.RESPONSE_FIELDS.DATA);
+        JsonNode data = getDataNode(accessTokenObject);
         String userId = getStringValue(data, Keys.USERINFO.USER_ID);
 
         return AuthToken.builder().userId(userId).build();
