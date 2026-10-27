@@ -56,12 +56,7 @@ public class AuthHuaweiV3Request extends AuthDefaultRequest {
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
 
-        Map<String, String> params = new HashMap<>(8);
-        params.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE);
-        params.put(Keys.OAUTH2.CODE, authCallback.getCode());
-        params.put(Keys.OAUTH2.CLIENT_ID, config.getClientId());
-        params.put(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret());
-        params.put(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri());
+        Map<String, String> params = authorizationCodeRequestParams(authCallback);
 
         if (config.isPkce()) {
             String cacheKey = this.source.getName().concat(":code_verifier:").concat(authCallback.getState());
@@ -69,10 +64,10 @@ public class AuthHuaweiV3Request extends AuthDefaultRequest {
             params.put("code_verifier", codeVerifier);
         }
 
-        HttpHeader httpHeader = new HttpHeader();
-        httpHeader.add(HttpConstants.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
+        HttpHeader header = new HttpHeader();
+        header.add(HttpConstants.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
 
-        String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), params, httpHeader, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), params, header, false).getBody();
 
         return getAuthToken(response);
     }
@@ -93,10 +88,10 @@ public class AuthHuaweiV3Request extends AuthDefaultRequest {
             params.put("getNickName", "1");
             params.put("nsp_svc", "GOpen.User.getInfo");
 
-            HttpHeader httpHeader = new HttpHeader();
-            httpHeader.add(HttpConstants.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
+            HttpHeader header = new HttpHeader();
+            header.add(HttpConstants.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
 
-            String response = UnifiedHttpClient.getAdapter().post(source.userInfo(), params, httpHeader, false).getBody();
+            String response = UnifiedHttpClient.getAdapter().post(source.userInfo(), params, header, false).getBody();
 
             JsonNode userInfoObject = toNode(response);
             this.checkResponse(userInfoObject);
@@ -143,9 +138,10 @@ public class AuthHuaweiV3Request extends AuthDefaultRequest {
         form.put(Keys.OAUTH2.REFRESH_TOKEN, authToken.getRefreshToken());
         form.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.REFRESH_TOKEN);
 
-        HttpHeader httpHeader = new HttpHeader();
-        httpHeader.add(HttpConstants.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
-        String response = UnifiedHttpClient.getAdapter().post(source.refresh(), form, httpHeader, false).getBody();
+        HttpHeader header = new HttpHeader();
+        header.add(HttpConstants.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
+
+        String response = UnifiedHttpClient.getAdapter().post(source.refresh(), form, header, false).getBody();
         return AuthResponse.<AuthToken>builder().code(SUCCESS.getCode()).data(getAuthToken(response)).build();
     }
 

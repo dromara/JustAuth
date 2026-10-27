@@ -14,9 +14,9 @@ import org.dromara.anduin.model.AuthCallback;
 import org.dromara.anduin.model.AuthResponse;
 import org.dromara.anduin.model.AuthToken;
 import org.dromara.anduin.model.AuthUser;
+import org.dromara.anduin.utils.AccessTokenUtils;
 import org.dromara.anduin.utils.AuthScopeUtils;
 import org.dromara.anduin.utils.PkceUtil;
-import org.dromara.anduin.utils.TokenUtils;
 import tools.jackson.databind.JsonNode;
 
 import java.util.HashMap;
@@ -77,12 +77,7 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
      */
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
-        Map<String, String> params = new HashMap<>(9);
-        params.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE);
-        params.put(Keys.OAUTH2.CODE, authCallback.getCode());
-        params.put(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri());
-        params.put(Keys.OAUTH2.CLIENT_ID, config.getClientId());
-        params.put(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret());
+        Map<String, String> params = authorizationCodeRequestParams(authCallback);
 
         if (config.isPkce()) {
             String cacheKey = this.source.getName().concat(":code_verifier:").concat(authCallback.getState());
@@ -108,14 +103,14 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
     }
 
     private AuthToken getToken(Map<String, String> param, String url) {
-        HttpHeader httpHeader = new HttpHeader();
-        httpHeader.add(HttpHeaders.HOST, "api.amazon.com");
-        httpHeader.add(HttpConstants.CONTENT_TYPE, "application/x-www-form-urlencoded;charset=UTF-8");
+        HttpHeader header = new HttpHeader();
+        header.add(HttpHeaders.HOST, "api.amazon.com");
+        header.add(HttpConstants.CONTENT_TYPE, "application/x-www-form-urlencoded;charset=UTF-8");
 
-        String response = UnifiedHttpClient.getAdapter().post(url, param, httpHeader, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(url, param, header, false).getBody();
 
         JsonNode accessTokenObject = toNode(response);
-        this.checkResponse(accessTokenObject);
+        validateResponse(accessTokenObject);
 
         return AuthToken.builder()
                 .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
@@ -123,17 +118,6 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
                 .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2.REFRESH_TOKEN))
                 .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2.TOKEN_TYPE))
                 .build();
-    }
-
-    /**
-     * 校验响应内容是否正确
-     *
-     * @param jsonNode 响应内容
-     */
-    private void checkResponse(JsonNode jsonNode) {
-        if (containsKey(jsonNode, Keys.RESPONSE_FIELDS.ERROR)) {
-            throw new AuthException(getStringValue(jsonNode, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION).concat(" ") + getStringValue(jsonNode, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
-        }
     }
 
     /**
@@ -147,14 +131,14 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
         String accessToken = authToken.getAccessToken();
         this.checkToken(accessToken);
 
-        HttpHeader httpHeader = new HttpHeader();
-        httpHeader.add(HttpHeaders.HOST, "api.amazon.com");
-        httpHeader.add(HttpHeaders.AUTHORIZATION, TokenUtils.bearer(accessToken));
+        HttpHeader header = new HttpHeader();
+        header.add(HttpHeaders.HOST, "api.amazon.com");
+        header.add(HttpHeaders.AUTHORIZATION, AccessTokenUtils.bearer(accessToken));
 
-        String response = UnifiedHttpClient.getAdapter().get(this.source.userInfo(), new HashMap<>(0), httpHeader, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().get(this.source.userInfo(), new HashMap<>(0), header, false).getBody();
 
         JsonNode userInfoObject = toNode(response);
-        this.checkResponse(userInfoObject);
+        validateResponse(userInfoObject);
 
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)

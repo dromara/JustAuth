@@ -8,7 +8,7 @@ package org.dromara.anduin.constant;
  */
 public interface Keys {
 
-    public interface OAUTH2 {
+    interface OAUTH2 {
         String APPID = "appid";
         String APP_ID = "app_id";
         String APP_KEY = "app_key";
@@ -29,11 +29,11 @@ public interface Keys {
         String TOKEN_TYPE = "token_type";
         String OPEN_ID = "open_id";
 
-        public interface GRANT_TYPES {
+        interface GRANT_TYPES {
             String AUTHORIZATION_CODE = "authorization_code";
         }
 
-        public interface SCOPES {
+        interface SCOPES {
             String ADDRESS = "address";
             String EMAIL = "email";
             String OPENID = "openid";
@@ -44,11 +44,11 @@ public interface Keys {
         }
     }
 
-    public interface OIDC {
+    interface OIDC {
         String ID_TOKEN = "id_token";
     }
 
-    public interface USERINFO {
+    interface USERINFO {
         String UNIONID = "unionid";
         String UNION_ID = "union_id";
 
@@ -91,13 +91,13 @@ public interface Keys {
 
     }
 
-    public interface PARAM {
+    interface PARAM {
         String CLIENT_ID = "clientId";
         String CLIENT_SECRET = "clientSecret";
 
     }
 
-    public interface RESPONSE_FIELDS {
+    interface RESPONSE_FIELDS {
         String DATA = "data";
         String RESULT = "result";
         String DESCRIPTION = "description";
@@ -109,6 +109,5 @@ public interface Keys {
         String ERR_NO = "error_no";
         String ERR_DESC = "error_desc";
     }
-
 
 }

@@ -6,7 +6,6 @@ import org.dromara.anduin.constant.Keys;
 import org.dromara.anduin.constant.MediaType;
 import org.dromara.anduin.enums.AuthUserGender;
 import org.dromara.anduin.enums.scope.AuthStackoverflowScope;
-import org.dromara.anduin.exception.AuthException;
 import org.dromara.anduin.http.HttpConstants;
 import org.dromara.anduin.http.HttpHeader;
 import org.dromara.anduin.http.UnifiedHttpClient;
@@ -44,13 +43,13 @@ public class AuthStackOverflowRequest extends AuthDefaultRequest {
 
         Map<String, String> form = MapUtil.parseStringToMap(accessTokenUrl, false);
 
-        HttpHeader httpHeader = new HttpHeader();
-        httpHeader.add(HttpConstants.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
+        HttpHeader header = new HttpHeader();
+        header.add(HttpConstants.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
 
-        String response = UnifiedHttpClient.getAdapter().post(accessTokenUrl, form, httpHeader, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(accessTokenUrl, form, header, false).getBody();
 
         JsonNode accessTokenObject = toNode(response);
-        this.checkResponse(accessTokenObject);
+        validateResponse(accessTokenObject);
 
         return AuthToken.builder()
                 .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
@@ -67,7 +66,7 @@ public class AuthStackOverflowRequest extends AuthDefaultRequest {
                 .build();
         String response = UnifiedHttpClient.getAdapter().get(userInfoUrl).getBody();
         JsonNode object = toNode(response);
-        this.checkResponse(object);
+        validateResponse(object);
 
         JsonNode items = getArrayNode(object, "items");
         JsonNode userInfoObject = items.asArray().get(0);
@@ -97,16 +96,5 @@ public class AuthStackOverflowRequest extends AuthDefaultRequest {
         return UrlBuilder.fromBaseUrl(super.authorize(state))
                 .queryParam(Keys.OAUTH2.SCOPE, this.getScopes(",", false, AuthScopeUtils.getDefaultScopes(AuthStackoverflowScope.values())))
                 .build();
-    }
-
-    /**
-     * 检查响应内容是否正确
-     *
-     * @param object 请求响应内容
-     */
-    private void checkResponse(JsonNode object) {
-        if (containsKey(object, Keys.RESPONSE_FIELDS.ERROR)) {
-            throw new AuthException(getStringValue(object, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
-        }
     }
 }

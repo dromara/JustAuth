@@ -12,7 +12,6 @@ import org.dromara.anduin.model.AuthToken;
 import org.dromara.anduin.model.AuthUser;
 import tools.jackson.databind.JsonNode;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -32,12 +31,7 @@ public class AuthAfDianRequest extends AuthDefaultRequest {
 
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
-        Map<String, String> params = new HashMap<>();
-        params.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE);
-        params.put(Keys.OAUTH2.CLIENT_ID, config.getClientId());
-        params.put(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret());
-        params.put(Keys.OAUTH2.CODE, authCallback.getCode());
-        params.put(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri());
+        Map<String, String> params = authorizationCodeRequestParams(authCallback);
 
         String response = UnifiedHttpClient.getAdapter().post(AuthDefaultSource.AFDIAN.accessToken(), params, false).getBody();
 
@@ -67,6 +61,7 @@ public class AuthAfDianRequest extends AuthDefaultRequest {
      */
     @Override
     public String authorize(String state) {
+
         return UrlBuilder.fromBaseUrl(source.authorize())
                 .queryParam(Keys.OAUTH2.RESPONSE_TYPE, Keys.OAUTH2.CODE)
                 .queryParam(Keys.OAUTH2.SCOPE, "basic")

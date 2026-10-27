@@ -22,7 +22,9 @@ import org.dromara.anduin.utils.JsonUtils;
 import org.dromara.anduin.utils.UuidUtils;
 import tools.jackson.databind.JsonNode;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 默认的request处理类
@@ -49,6 +51,132 @@ public abstract class AuthDefaultRequest implements AuthRequest {
         }
         // 校验配置合法性
         this.checkConfig(config);
+    }
+
+    /**
+     * 将 JSON 字符串转换为 {@link JsonNode}
+     *
+     * @param json JSON 字符串
+     * @return JSON 节点 {@link JsonNode}
+     */
+    protected JsonNode toNode(String json) {
+        return JsonUtils.toNode(json);
+    }
+
+    /**
+     * 获取 {@link JsonNode} 中指定的对象类型数据节点
+     *
+     * @param jsonNode Node {@link JsonNode}
+     * @param key      数据节点对应的 Key 值
+     * @return 数据节点 {@link JsonNode}
+     */
+    protected JsonNode getObjectNode(JsonNode jsonNode, String key) {
+        return JsonNodeUtils.findObjectNode(jsonNode, key);
+    }
+
+    /**
+     * 获取 {@link JsonNode} 中指定的数组类型数据节点
+     *
+     * @param jsonNode Node {@link JsonNode}
+     * @param key      数据节点对应的 Key 值
+     * @return 数据节点 {@link JsonNode}
+     */
+    protected JsonNode getArrayNode(JsonNode jsonNode, String key) {
+        return JsonNodeUtils.findArrayNode(jsonNode, key);
+    }
+
+    /**
+     * 获取 {@link JsonNode} 中 data 属性对应的数据节点
+     *
+     * @param jsonNode Node {@link JsonNode}
+     * @return 数据节点 {@link JsonNode}
+     */
+    protected JsonNode getDataNode(JsonNode jsonNode) {
+        return getObjectNode(jsonNode, Keys.RESPONSE_FIELDS.DATA);
+    }
+
+    /**
+     * 获取 {@link JsonNode} 中指定的 String 类型值
+     *
+     * @param jsonNode Node {@link JsonNode}
+     * @param key      数据节点对应的 Key 值
+     * @return 字符串值
+     */
+    protected String getStringValue(JsonNode jsonNode, String key) {
+        return JsonNodeUtils.findStringValue(jsonNode, key);
+    }
+
+    /**
+     * 获取 {@link JsonNode} 中指定的 Boolean 类型值
+     *
+     * @param jsonNode Node {@link JsonNode}
+     * @param key      数据节点对应的 Key 值
+     * @return 布尔值
+     */
+    protected boolean getBooleanValue(JsonNode jsonNode, String key) {
+        return JsonNodeUtils.findBooleanValue(jsonNode, key);
+    }
+
+    /**
+     * 获取 {@link JsonNode} 中指定的 Boolean 类型值
+     *
+     * @param jsonNode Node {@link JsonNode}
+     * @param key      数据节点对应的 Key 值
+     * @return 整型值
+     */
+    protected int getIntValue(JsonNode jsonNode, String key) {
+        return JsonNodeUtils.findIntValue(jsonNode, key);
+    }
+
+    /**
+     * 获取 {@link JsonNode} 中指定的 Long 类型值
+     *
+     * @param jsonNode Node {@link JsonNode}
+     * @param key      数据节点对应的 Key 值
+     * @return 值
+     */
+    protected long getLongValue(JsonNode jsonNode, String key) {
+        return JsonNodeUtils.findLongValue(jsonNode, key);
+    }
+
+    /**
+     * 检测 {@link JsonNode} 中是否包含指定 Key
+     *
+     * @param jsonNode Node {@link JsonNode}
+     * @param key      数据节点对应的 Key 值
+     * @return {@code true} 包含，{@code false} 未包含
+     */
+    protected boolean containsKey(JsonNode jsonNode, String key) {
+        return JsonNodeUtils.containsKey(jsonNode, key);
+    }
+
+    /**
+     * 验证响应是否正确。验证数据中是否包含 error 属性，如果包含，则从中读取 error_description 的值，并抛出异常
+     * <p>
+     * 将包含 error 属性和 error_description 属性的错误响应，认为是标准的错误响应
+     *
+     * @param jsonNode 响应数据节点 {@link JsonNode}
+     */
+    protected void validateResponse(JsonNode jsonNode) {
+        if (containsKey(jsonNode, Keys.RESPONSE_FIELDS.ERROR)) {
+            throw new AuthException(getStringValue(jsonNode, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
+        }
+    }
+
+    /**
+     * 获取标准的 OAuth2 协议授权码模式请求参数 Map。
+     *
+     * @param authCallback 认证回调 {@link AuthCallback}
+     * @return 请求参数 Map
+     */
+    protected Map<String, String> authorizationCodeRequestParams(AuthCallback authCallback) {
+        Map<String, String> params = new HashMap<>();
+        params.put(Keys.OAUTH2.CODE, authCallback.getCode());
+        params.put(Keys.OAUTH2.CLIENT_ID, config.getClientId());
+        params.put(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret());
+        params.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE);
+        params.put(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri());
+        return params;
     }
 
     /**
@@ -79,60 +207,6 @@ public abstract class AuthDefaultRequest implements AuthRequest {
         AuthChecker.checkCode(source, authCallback);
     }
 
-    /**
-     * 将 JSON 字符串转换为 {@link JsonNode}
-     *
-     * @param json JSON 字符串
-     * @return JSON 节点 {@link JsonNode}
-     */
-    protected JsonNode toNode(String json) {
-        return JsonUtils.toNode(json);
-    }
-
-    /**
-     * 获取 {@link JsonNode} 中指定的数据节点
-     *
-     * @param jsonNode Node {@link JsonNode}
-     * @param key      数据节点对应的 Key 值
-     * @return 数据节点 {@link JsonNode}
-     */
-    protected JsonNode getObjectNode(JsonNode jsonNode, String key) {
-        return JsonNodeUtils.findObjectNode(jsonNode, key);
-    }
-
-    protected JsonNode getArrayNode(JsonNode jsonNode, String key) {
-        return JsonNodeUtils.findArrayNode(jsonNode, key);
-    }
-
-    /**
-     * 获取 {@link JsonNode} 中 data 属性对应的数据节点
-     *
-     * @param jsonNode Node {@link JsonNode}
-     * @return 数据节点 {@link JsonNode}
-     */
-    protected JsonNode getDataNode(JsonNode jsonNode) {
-        return getObjectNode(jsonNode, Keys.RESPONSE_FIELDS.DATA);
-    }
-
-    protected String getStringValue(JsonNode jsonNode, String key) {
-        return JsonNodeUtils.findStringValue(jsonNode, key);
-    }
-
-    protected boolean getBooleanValue(JsonNode jsonNode, String key) {
-        return JsonNodeUtils.findBooleanValue(jsonNode, key);
-    }
-
-    protected int getIntValue(JsonNode jsonNode, String key) {
-        return JsonNodeUtils.findIntValue(jsonNode, key);
-    }
-
-    protected long getLongValue(JsonNode jsonNode, String key) {
-        return JsonNodeUtils.findLongValue(jsonNode, key);
-    }
-
-    protected boolean containsKey(JsonNode jsonNode, String key) {
-        return JsonNodeUtils.containsKey(jsonNode, key);
-    }
 
     /**
      * 处理{@link AuthDefaultRequest#login(AuthCallback)} 发生异常的情况，统一响应参数
@@ -342,5 +416,4 @@ public abstract class AuthDefaultRequest implements AuthRequest {
     protected void checkConfig(AuthConfig config) {
         AuthChecker.checkConfig(config, source);
     }
-
 }

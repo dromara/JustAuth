@@ -48,9 +48,7 @@ public class AuthMiRequest extends AuthDefaultRequest {
         String jsonStr = response.replace(PREFIX, HttpConstants.EMPTY);
 
         JsonNode accessTokenObject = toNode(jsonStr);
-        if (containsKey(accessTokenObject, Keys.RESPONSE_FIELDS.ERROR)) {
-            throw new AuthException(getStringValue(accessTokenObject, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
-        }
+        validateResponse(accessTokenObject);
 
         return AuthToken.builder()
                 .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))

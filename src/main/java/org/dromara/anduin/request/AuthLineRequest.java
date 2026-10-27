@@ -16,8 +16,8 @@ import org.dromara.anduin.model.AuthCallback;
 import org.dromara.anduin.model.AuthResponse;
 import org.dromara.anduin.model.AuthToken;
 import org.dromara.anduin.model.AuthUser;
+import org.dromara.anduin.utils.AccessTokenUtils;
 import org.dromara.anduin.utils.AuthScopeUtils;
-import org.dromara.anduin.utils.TokenUtils;
 import tools.jackson.databind.JsonNode;
 
 import java.util.HashMap;
@@ -41,14 +41,8 @@ public class AuthLineRequest extends AuthDefaultRequest {
 
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
-        Map<String, String> params = new HashMap<>();
-        params.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE);
-        params.put(Keys.OAUTH2.CODE, authCallback.getCode());
-        params.put(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri());
-        params.put(Keys.OAUTH2.CLIENT_ID, config.getClientId());
-        params.put(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret());
 
-        String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), params, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), authorizationCodeRequestParams(authCallback), false).getBody();
 
         JsonNode accessTokenObject = toNode(response);
 
@@ -64,9 +58,12 @@ public class AuthLineRequest extends AuthDefaultRequest {
 
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
-        String response = UnifiedHttpClient.getAdapter().get(source.userInfo(), null, new HttpHeader()
-                .add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED)
-                .add(HttpHeaders.AUTHORIZATION, TokenUtils.bearer(authToken.getAccessToken())), false).getBody();
+
+        HttpHeader header = new HttpHeader();
+        header.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
+        header.add(HttpHeaders.AUTHORIZATION, AccessTokenUtils.bearer(authToken.getAccessToken()));
+
+        String response = UnifiedHttpClient.getAdapter().get(source.userInfo(), null, header, false).getBody();
 
         JsonNode userInfoObject = toNode(response);
 

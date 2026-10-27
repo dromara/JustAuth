@@ -17,9 +17,9 @@ import org.dromara.anduin.model.AuthCallback;
 import org.dromara.anduin.model.AuthResponse;
 import org.dromara.anduin.model.AuthToken;
 import org.dromara.anduin.model.AuthUser;
+import org.dromara.anduin.utils.AccessTokenUtils;
 import org.dromara.anduin.utils.GlobalAuthUtils;
 import org.dromara.anduin.utils.JsonUtils;
-import org.dromara.anduin.utils.TokenUtils;
 import tools.jackson.databind.JsonNode;
 
 import java.util.HashMap;
@@ -63,12 +63,14 @@ public class AuthFeishuRequest extends AuthDefaultRequest {
 
         String url = "https://open.feishu.cn/open-apis/auth/v3/" + APP_ACCESS_TOKEN + "/internal/";
 
-        Map<String, Object> params = new HashMap<>();
+        HttpHeader header = new HttpHeader();
+        header.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+
+        Map<String, String> params = new HashMap<>();
         params.put(Keys.OAUTH2.APP_ID, config.getClientId());
         params.put("app_secret", config.getClientSecret());
 
-        String response = UnifiedHttpClient.getAdapter().post(url, JsonUtils.toJson(params), new HttpHeader()
-                .add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(url, params, header, false).getBody();
 
         JsonNode accessTokenObject = toNode(response);
         this.checkResponse(accessTokenObject);
@@ -93,7 +95,7 @@ public class AuthFeishuRequest extends AuthDefaultRequest {
         String accessToken = authToken.getAccessToken();
         String response = UnifiedHttpClient.getAdapter().get(source.userInfo(), null, new HttpHeader()
                 .add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-                .add(HttpHeaders.AUTHORIZATION, TokenUtils.bearer(accessToken)), false).getBody();
+                .add(HttpHeaders.AUTHORIZATION, AccessTokenUtils.bearer(accessToken)), false).getBody();
 
         JsonNode responseObject = toNode(response);
         this.checkResponse(responseObject);

@@ -7,15 +7,14 @@ import org.dromara.anduin.config.AuthDefaultSource;
 import org.dromara.anduin.constant.Keys;
 import org.dromara.anduin.enums.AuthUserGender;
 import org.dromara.anduin.enums.scope.AuthGoogleScope;
-import org.dromara.anduin.exception.AuthException;
 import org.dromara.anduin.http.HttpHeader;
 import org.dromara.anduin.http.UnifiedHttpClient;
 import org.dromara.anduin.http.UrlBuilder;
 import org.dromara.anduin.model.AuthCallback;
 import org.dromara.anduin.model.AuthToken;
 import org.dromara.anduin.model.AuthUser;
+import org.dromara.anduin.utils.AccessTokenUtils;
 import org.dromara.anduin.utils.AuthScopeUtils;
-import org.dromara.anduin.utils.TokenUtils;
 import tools.jackson.databind.JsonNode;
 
 /**
@@ -39,7 +38,7 @@ public class AuthGoogleRequest extends AuthDefaultRequest {
         String response = doPostAuthorizationCode(authCallback.getCode());
 
         JsonNode accessTokenObject = toNode(response);
-        this.checkResponse(accessTokenObject);
+        validateResponse(accessTokenObject);
 
         return AuthToken.builder()
                 .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
@@ -52,13 +51,13 @@ public class AuthGoogleRequest extends AuthDefaultRequest {
 
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
-        HttpHeader httpHeader = new HttpHeader();
-        httpHeader.add(HttpHeaders.AUTHORIZATION, TokenUtils.bearer(authToken.getAccessToken()));
+        HttpHeader header = new HttpHeader();
+        header.add(HttpHeaders.AUTHORIZATION, AccessTokenUtils.bearer(authToken.getAccessToken()));
 
-        String response = UnifiedHttpClient.getAdapter().post(userInfoUrl(authToken), null, httpHeader).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(userInfoUrl(authToken), null, header).getBody();
 
         JsonNode userInfoObject = toNode(response);
-        this.checkResponse(userInfoObject);
+        validateResponse(userInfoObject);
 
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
@@ -99,16 +98,5 @@ public class AuthGoogleRequest extends AuthDefaultRequest {
     @Override
     protected String userInfoUrl(AuthToken authToken) {
         return UrlBuilder.fromBaseUrl(source.userInfo()).queryParam(Keys.OAUTH2.ACCESS_TOKEN, authToken.getAccessToken()).build();
-    }
-
-    /**
-     * 检查响应内容是否正确
-     *
-     * @param object 请求响应内容
-     */
-    private void checkResponse(JsonNode object) {
-        if (containsKey(object, Keys.RESPONSE_FIELDS.ERROR) || containsKey(object, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION)) {
-            throw new AuthException(containsKey(object, Keys.RESPONSE_FIELDS.ERROR) + ":" + getStringValue(object, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
-        }
     }
 }

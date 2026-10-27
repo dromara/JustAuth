@@ -7,7 +7,6 @@ import org.dromara.anduin.config.AuthDefaultSource;
 import org.dromara.anduin.constant.Keys;
 import org.dromara.anduin.enums.AuthResponseStatus;
 import org.dromara.anduin.enums.AuthUserGender;
-import org.dromara.anduin.exception.AuthException;
 import org.dromara.anduin.http.UnifiedHttpClient;
 import org.dromara.anduin.http.UrlBuilder;
 import org.dromara.anduin.model.AuthCallback;
@@ -39,7 +38,7 @@ public class AuthTaobaoRequest extends AuthDefaultRequest {
     }
 
     private AuthToken getAuthToken(JsonNode object) {
-        this.checkResponse(object);
+        validateResponse(object);
 
         return AuthToken.builder()
                 .accessToken(getStringValue(object, Keys.OAUTH2.ACCESS_TOKEN))
@@ -52,19 +51,11 @@ public class AuthTaobaoRequest extends AuthDefaultRequest {
                 .build();
     }
 
-    private void checkResponse(JsonNode object) {
-        if (containsKey(object, Keys.RESPONSE_FIELDS.ERROR)) {
-            throw new AuthException(getStringValue(object, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
-        }
-    }
-
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
         String response = doPostAuthorizationCode(authToken.getAccessCode());
         JsonNode accessTokenObject = toNode(response);
-        if (containsKey(accessTokenObject, Keys.RESPONSE_FIELDS.ERROR)) {
-            throw new AuthException(getStringValue(accessTokenObject, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
-        }
+        validateResponse(accessTokenObject);
         authToken = this.getAuthToken(accessTokenObject);
 
         String nick = GlobalAuthUtils.urlDecode(getStringValue(accessTokenObject, "taobao_user_nick"));

@@ -14,7 +14,7 @@ import org.dromara.anduin.model.AuthCallback;
 import org.dromara.anduin.model.AuthResponse;
 import org.dromara.anduin.model.AuthToken;
 import org.dromara.anduin.model.AuthUser;
-import org.dromara.anduin.utils.TokenUtils;
+import org.dromara.anduin.utils.AccessTokenUtils;
 import tools.jackson.databind.JsonNode;
 
 import java.util.HashMap;
@@ -64,10 +64,10 @@ public class AuthTeambitionRequest extends AuthDefaultRequest {
     public AuthUser getUserInfo(AuthToken authToken) {
         String accessToken = authToken.getAccessToken();
 
-        HttpHeader httpHeader = new HttpHeader();
-        httpHeader.add(HttpHeaders.AUTHORIZATION, TokenUtils.oauth2(accessToken));
+        HttpHeader header = new HttpHeader();
+        header.add(HttpHeaders.AUTHORIZATION, AccessTokenUtils.oauth2(accessToken));
 
-        String response = UnifiedHttpClient.getAdapter().get(source.userInfo(), null, httpHeader, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().get(source.userInfo(), null, header, false).getBody();
 
         JsonNode userInfoObject = toNode(response);
         this.checkResponse(userInfoObject);

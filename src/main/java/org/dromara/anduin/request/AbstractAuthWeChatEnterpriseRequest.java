@@ -13,7 +13,6 @@ import org.dromara.anduin.http.UrlBuilder;
 import org.dromara.anduin.model.AuthCallback;
 import org.dromara.anduin.model.AuthToken;
 import org.dromara.anduin.model.AuthUser;
-import org.dromara.anduin.utils.JsonUtils;
 import tools.jackson.databind.JsonNode;
 
 import java.util.HashMap;
@@ -152,9 +151,11 @@ public abstract class AbstractAuthWeChatEnterpriseRequest extends AuthDefaultReq
             String userDetailUrl = UrlBuilder.fromBaseUrl("https://qyapi.weixin.qq.com/cgi-bin/auth/getuserdetail")
                     .queryParam(Keys.OAUTH2.ACCESS_TOKEN, accessToken)
                     .build();
-            Map<String, Object> param = new HashMap<>();
-            param.put("user_ticket", userTicket);
-            String userDetailResponse = UnifiedHttpClient.getAdapter().post(userDetailUrl, JsonUtils.toJson(param)).getBody();
+
+            Map<String, String> params = new HashMap<>();
+            params.put("user_ticket", userTicket);
+
+            String userDetailResponse = UnifiedHttpClient.getAdapter().post(userDetailUrl, params, false).getBody();
 
             JsonNode userDetail = checkResponse(userDetailResponse);
 

@@ -16,8 +16,8 @@ import org.dromara.anduin.model.AuthCallback;
 import org.dromara.anduin.model.AuthResponse;
 import org.dromara.anduin.model.AuthToken;
 import org.dromara.anduin.model.AuthUser;
+import org.dromara.anduin.utils.AccessTokenUtils;
 import org.dromara.anduin.utils.AuthScopeUtils;
-import org.dromara.anduin.utils.TokenUtils;
 import tools.jackson.databind.JsonNode;
 
 /**
@@ -44,9 +44,9 @@ public class AuthFigmaRequest extends AuthDefaultRequest {
 
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
-        HttpHeader header = new HttpHeader()
-                .add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED)
-                .add(HttpHeaders.AUTHORIZATION, TokenUtils.basic(config.getClientId(), config.getClientSecret()));
+        HttpHeader header = new HttpHeader();
+        header.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
+        header.add(HttpHeaders.AUTHORIZATION, AccessTokenUtils.basic(config.getClientId(), config.getClientSecret()));
 
         String response = UnifiedHttpClient.getAdapter().post(super.accessTokenUrl(authCallback.getCode()), null, header, true).getBody();
 
@@ -65,7 +65,9 @@ public class AuthFigmaRequest extends AuthDefaultRequest {
 
     @Override
     public AuthResponse<AuthToken> refresh(AuthToken authToken) {
-        HttpHeader header = new HttpHeader().add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
+        HttpHeader header = new HttpHeader();
+        header.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
+
         String response = UnifiedHttpClient.getAdapter().post(this.refreshTokenUrl(authToken.getRefreshToken()), null, header, false).getBody();
 
         JsonNode refreshTokenObject = toNode(response);
@@ -96,7 +98,7 @@ public class AuthFigmaRequest extends AuthDefaultRequest {
 
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
-        HttpHeader header = new HttpHeader().add(HttpHeaders.AUTHORIZATION, TokenUtils.bearer(authToken.getAccessToken()));
+        HttpHeader header = new HttpHeader().add(HttpHeaders.AUTHORIZATION, AccessTokenUtils.bearer(authToken.getAccessToken()));
         String response = UnifiedHttpClient.getAdapter().get(super.userInfoUrl(authToken), null, header, false).getBody();
         JsonNode userInfoObject = toNode(response);
 

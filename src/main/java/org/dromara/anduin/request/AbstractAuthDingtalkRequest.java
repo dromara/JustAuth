@@ -12,7 +12,6 @@ import org.dromara.anduin.model.AuthCallback;
 import org.dromara.anduin.model.AuthToken;
 import org.dromara.anduin.model.AuthUser;
 import org.dromara.anduin.utils.GlobalAuthUtils;
-import org.dromara.anduin.utils.JsonUtils;
 import tools.jackson.databind.JsonNode;
 
 import java.util.HashMap;
@@ -46,10 +45,10 @@ public abstract class AbstractAuthDingtalkRequest extends AuthDefaultRequest {
     public AuthUser getUserInfo(AuthToken authToken) {
         String code = authToken.getAccessCode();
 
-        Map<String, Object> param = new HashMap<>();
-        param.put("tmp_auth_code", code);
+        Map<String, String> params = new HashMap<>();
+        params.put("tmp_auth_code", code);
 
-        String response = UnifiedHttpClient.getAdapter().post(userInfoUrl(authToken), JsonUtils.toJson(param)).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(userInfoUrl(authToken), params, false).getBody();
 
         JsonNode responseObject = toNode(response);
         if (getIntValue(responseObject, Keys.RESPONSE_FIELDS.ERRCODE) != 0) {

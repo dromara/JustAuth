@@ -13,7 +13,7 @@ import org.dromara.anduin.http.UrlBuilder;
 import org.dromara.anduin.model.AuthCallback;
 import org.dromara.anduin.model.AuthToken;
 import org.dromara.anduin.model.AuthUser;
-import org.dromara.anduin.utils.TokenUtils;
+import org.dromara.anduin.utils.AccessTokenUtils;
 import tools.jackson.databind.JsonNode;
 
 import java.util.HashMap;
@@ -52,10 +52,10 @@ public class AuthTopIamRequest extends AbstractAuthServerRequest {
         params.put(Keys.OAUTH2.CODE, authCallback.getCode());
         params.put(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri());
 
-        HttpHeader header = new HttpHeader()
-                .add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON)
-                .add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED)
-                .add(HttpHeaders.AUTHORIZATION, TokenUtils.basic(config.getClientId(), config.getClientSecret()));
+        HttpHeader header = new HttpHeader();
+        header.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON);
+        header.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
+        header.add(HttpHeaders.AUTHORIZATION, AccessTokenUtils.basic(config.getClientId(), config.getClientSecret()));
 
         String response = UnifiedHttpClient.getAdapter().postForm(tokenEndpoint(), params, header).getBody();
 
@@ -65,18 +65,19 @@ public class AuthTopIamRequest extends AbstractAuthServerRequest {
 
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
-        HttpHeader header = new HttpHeader()
-                .add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON)
-                .add(HttpHeaders.AUTHORIZATION, TokenUtils.bearer(authToken.getAccessToken()));
+        HttpHeader header = new HttpHeader();
+        header.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON);
+        header.add(HttpHeaders.AUTHORIZATION, AccessTokenUtils.bearer(authToken.getAccessToken()));
+
         JsonNode object = parseResponse(httpClient()
                 .get(userInfoUrl(authToken), null, header, false));
         return AuthUser.builder()
                 .rawUserInfo(object)
-                .uuid(stringValue(object, Keys.USERINFO.SUB))
-                .username(stringValue(object, "preferred_username"))
+                .uuid(getStringValue(object, Keys.USERINFO.SUB))
+                .username(getStringValue(object, "preferred_username"))
                 .nickname(firstNotEmpty(object, Keys.USERINFO.NICKNAME, Keys.USERINFO.NAME, "preferred_username"))
-                .avatar(stringValue(object, "picture"))
-                .email(stringValue(object, Keys.USERINFO.EMAIL))
+                .avatar(getStringValue(object, "picture"))
+                .email(getStringValue(object, Keys.USERINFO.EMAIL))
                 .gender(AuthUserGender.UNKNOWN)
                 .token(authToken)
                 .source(source.toString())

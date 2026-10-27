@@ -6,7 +6,6 @@ import org.dromara.anduin.config.AuthDefaultSource;
 import org.dromara.anduin.constant.Keys;
 import org.dromara.anduin.enums.AuthUserGender;
 import org.dromara.anduin.enums.scope.AuthProginnScope;
-import org.dromara.anduin.exception.AuthException;
 import org.dromara.anduin.http.UnifiedHttpClient;
 import org.dromara.anduin.http.UrlBuilder;
 import org.dromara.anduin.model.AuthCallback;
@@ -14,9 +13,6 @@ import org.dromara.anduin.model.AuthToken;
 import org.dromara.anduin.model.AuthUser;
 import org.dromara.anduin.utils.AuthScopeUtils;
 import tools.jackson.databind.JsonNode;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 程序员客栈
@@ -37,17 +33,10 @@ public class AuthProginnRequest extends AuthDefaultRequest {
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
 
-        Map<String, String> params = new HashMap<>();
-        params.put(Keys.OAUTH2.CODE, authCallback.getCode());
-        params.put(Keys.OAUTH2.CLIENT_ID, config.getClientId());
-        params.put(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret());
-        params.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE);
-        params.put(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri());
-
-        String response = UnifiedHttpClient.getAdapter().post(AuthDefaultSource.PROGINN.accessToken(), params, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(AuthDefaultSource.PROGINN.accessToken(), authorizationCodeRequestParams(authCallback), false).getBody();
 
         JsonNode accessTokenObject = toNode(response);
-        this.checkResponse(accessTokenObject);
+        validateResponse(accessTokenObject);
 
         return AuthToken.builder()
                 .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
@@ -63,7 +52,7 @@ public class AuthProginnRequest extends AuthDefaultRequest {
         String userInfo = doGetUserInfo(authToken);
 
         JsonNode userInfoObject = toNode(userInfo);
-        this.checkResponse(userInfoObject);
+        validateResponse(userInfoObject);
 
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
@@ -76,17 +65,6 @@ public class AuthProginnRequest extends AuthDefaultRequest {
                 .token(authToken)
                 .source(source.toString())
                 .build();
-    }
-
-    /**
-     * 检查响应内容是否正确
-     *
-     * @param object 请求响应内容
-     */
-    private void checkResponse(JsonNode object) {
-        if (containsKey(object, Keys.RESPONSE_FIELDS.ERROR)) {
-            throw new AuthException(getStringValue(object, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
-        }
     }
 
     /**

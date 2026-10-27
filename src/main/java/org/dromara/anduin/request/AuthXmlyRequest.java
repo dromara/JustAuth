@@ -14,7 +14,6 @@ import org.dromara.anduin.model.AuthUser;
 import org.dromara.anduin.utils.GlobalAuthUtils;
 import tools.jackson.databind.JsonNode;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
@@ -47,13 +46,9 @@ public class AuthXmlyRequest extends AuthDefaultRequest {
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
 
-        Map<String, String> params = new HashMap<>(9);
-        params.put(Keys.OAUTH2.CODE, authCallback.getCode());
-        params.put(Keys.OAUTH2.CLIENT_ID, config.getClientId());
-        params.put(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret());
+        Map<String, String> params = authorizationCodeRequestParams(authCallback);
         params.put(DEVICE_ID, config.getDeviceId());
-        params.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE);
-        params.put(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri());
+
         String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), params, true).getBody();
 
         JsonNode accessTokenObject = toNode(response);
@@ -103,6 +98,7 @@ public class AuthXmlyRequest extends AuthDefaultRequest {
         params.put("pack_id", config.getPackId());
         params.put(Keys.OAUTH2.ACCESS_TOKEN, authToken.getAccessToken());
         params.put("sig", GlobalAuthUtils.generateXmlySignature(params, config.getClientSecret()));
+
         String rawUserInfo = UnifiedHttpClient.getAdapter().get(source.userInfo(), params, false).getBody();
 
         JsonNode userInfoObject = toNode(rawUserInfo);

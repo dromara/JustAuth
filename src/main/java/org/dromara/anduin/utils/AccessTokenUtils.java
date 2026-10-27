@@ -6,7 +6,7 @@ package org.dromara.anduin.utils;
  * @author : gengwei.zheng
  * @date : 2025/9/11 11:37
  */
-public class TokenUtils {
+public class AccessTokenUtils {
 
     private static final String BEARER = "Bearer ";
     private static final String BASIC = "Basic ";
