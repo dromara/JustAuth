@@ -76,10 +76,10 @@ public abstract class AbstractAuthMicrosoftRequest extends AuthDefaultRequest {
         String tokenType = authToken.getTokenType();
         String jwt = tokenType + " " + token;
 
-        HttpHeader httpHeader = new HttpHeader();
-        httpHeader.add(HttpHeaders.AUTHORIZATION, jwt);
+        HttpHeader header = new HttpHeader();
+        header.add(HttpHeaders.AUTHORIZATION, jwt);
 
-        String response = UnifiedHttpClient.getAdapter().get(userInfoUrl(authToken), null, httpHeader, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().get(userInfoUrl(authToken), null, header, false).getBody();
 
         JsonNode userInfoObject = toNode(response);
         validateResponse(userInfoObject);

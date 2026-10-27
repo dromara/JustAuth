@@ -22,7 +22,9 @@ import org.dromara.anduin.utils.JsonUtils;
 import org.dromara.anduin.utils.UuidUtils;
 import tools.jackson.databind.JsonNode;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 默认的request处理类
@@ -49,34 +51,6 @@ public abstract class AuthDefaultRequest implements AuthRequest {
         }
         // 校验配置合法性
         this.checkConfig(config);
-    }
-
-    /**
-     * 统一的登录入口。当通过{@link AuthDefaultRequest#authorize(String)}授权成功后，会跳转到调用方的相关回调方法中
-     * 方法的入参可以使用{@code AuthCallback}，{@code AuthCallback}类中封装好了OAuth2授权回调所需要的参数
-     *
-     * @param authCallback 用于接收回调参数的实体
-     * @return AuthResponse
-     */
-    @Override
-    public AuthResponse<AuthUser> login(AuthCallback authCallback) {
-        try {
-            checkCode(authCallback);
-            if (!config.isIgnoreCheckState()) {
-                AuthChecker.checkState(authCallback.getState(), source, authStateCache);
-            }
-
-            AuthToken authToken = this.getAccessToken(authCallback);
-            AuthUser user = this.getUserInfo(authToken);
-            return AuthResponse.<AuthUser>builder().code(AuthResponseStatus.SUCCESS.getCode()).data(user).build();
-        } catch (Exception e) {
-            Log.error("Failed to login with oauth authorization.", e);
-            return this.responseError(e);
-        }
-    }
-
-    protected void checkCode(AuthCallback authCallback) {
-        AuthChecker.checkCode(source, authCallback);
     }
 
     /**
@@ -175,6 +149,64 @@ public abstract class AuthDefaultRequest implements AuthRequest {
     protected boolean containsKey(JsonNode jsonNode, String key) {
         return JsonNodeUtils.containsKey(jsonNode, key);
     }
+
+    /**
+     * 验证响应是否正确。验证数据中是否包含 error 属性，如果包含，则从中读取 error_description 的值，并抛出异常
+     * <p>
+     * 将包含 error 属性和 error_description 属性的错误响应，认为是标准的错误响应
+     *
+     * @param jsonNode 响应数据节点 {@link JsonNode}
+     */
+    protected void validateResponse(JsonNode jsonNode) {
+        if (containsKey(jsonNode, Keys.RESPONSE_FIELDS.ERROR)) {
+            throw new AuthException(getStringValue(jsonNode, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
+        }
+    }
+
+    /**
+     * 获取标准的 OAuth2 协议授权码模式请求参数 Map。
+     *
+     * @param authCallback 认证回调 {@link AuthCallback}
+     * @return 请求参数 Map
+     */
+    protected Map<String, String> authorizationCodeRequestParams(AuthCallback authCallback) {
+        Map<String, String> params = new HashMap<>();
+        params.put(Keys.OAUTH2.CODE, authCallback.getCode());
+        params.put(Keys.OAUTH2.CLIENT_ID, config.getClientId());
+        params.put(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret());
+        params.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE);
+        params.put(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri());
+        return params;
+    }
+
+    /**
+     * 统一的登录入口。当通过{@link AuthDefaultRequest#authorize(String)}授权成功后，会跳转到调用方的相关回调方法中
+     * 方法的入参可以使用{@code AuthCallback}，{@code AuthCallback}类中封装好了OAuth2授权回调所需要的参数
+     *
+     * @param authCallback 用于接收回调参数的实体
+     * @return AuthResponse
+     */
+    @Override
+    public AuthResponse<AuthUser> login(AuthCallback authCallback) {
+        try {
+            checkCode(authCallback);
+            if (!config.isIgnoreCheckState()) {
+                AuthChecker.checkState(authCallback.getState(), source, authStateCache);
+            }
+
+            AuthToken authToken = this.getAccessToken(authCallback);
+            AuthUser user = this.getUserInfo(authToken);
+            return AuthResponse.<AuthUser>builder().code(AuthResponseStatus.SUCCESS.getCode()).data(user).build();
+        } catch (Exception e) {
+            Log.error("Failed to login with oauth authorization.", e);
+            return this.responseError(e);
+        }
+    }
+
+    protected void checkCode(AuthCallback authCallback) {
+        AuthChecker.checkCode(source, authCallback);
+    }
+
 
     /**
      * 处理{@link AuthDefaultRequest#login(AuthCallback)} 发生异常的情况，统一响应参数
@@ -384,18 +416,4 @@ public abstract class AuthDefaultRequest implements AuthRequest {
     protected void checkConfig(AuthConfig config) {
         AuthChecker.checkConfig(config, source);
     }
-
-    /**
-     * 验证响应是否正确。验证数据中是否包含 error 属性，如果包含，则从中读取 error_description 的值，并抛出异常
-     * <p>
-     * 将包含 error 属性和 error_description 属性的错误响应，认为是标准的错误响应
-     *
-     * @param jsonNode 响应数据节点 {@link JsonNode}
-     */
-    protected void validateResponse(JsonNode jsonNode) {
-        if (containsKey(jsonNode, Keys.RESPONSE_FIELDS.ERROR)) {
-            throw new AuthException(getStringValue(jsonNode, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
-        }
-    }
-
 }

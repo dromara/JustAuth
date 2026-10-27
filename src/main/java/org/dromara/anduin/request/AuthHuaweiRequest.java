@@ -51,12 +51,8 @@ public class AuthHuaweiRequest extends AuthDefaultRequest {
      */
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
-        Map<String, String> params = new HashMap<>(8);
-        params.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE);
-        params.put(Keys.OAUTH2.CODE, authCallback.getAuthorization_code());
-        params.put(Keys.OAUTH2.CLIENT_ID, config.getClientId());
-        params.put(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret());
-        params.put(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri());
+
+        Map<String, String> params = authorizationCodeRequestParams(authCallback);
 
         String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), params, false).getBody();
 

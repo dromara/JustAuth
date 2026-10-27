@@ -14,7 +14,6 @@ import org.dromara.anduin.model.AuthUser;
 import org.dromara.anduin.utils.TokenUtils;
 import tools.jackson.databind.JsonNode;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -34,16 +33,11 @@ public class AuthMaxKeyRequest extends AbstractAuthServerRequest {
 
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
-        Map<String, String> params = new HashMap<>(8);
-        params.put(Keys.OAUTH2.CLIENT_ID, config.getClientId());
-        params.put(Keys.OAUTH2.CLIENT_SECRET, config.getClientSecret());
-        params.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE);
-        params.put(Keys.OAUTH2.CODE, authCallback.getCode());
-        params.put(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri());
+        Map<String, String> params = authorizationCodeRequestParams(authCallback);
 
-        HttpHeader header = new HttpHeader()
-                .add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON)
-                .add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
+        HttpHeader header = new HttpHeader();
+        header.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON);
+        header.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
 
         JsonNode object = parseResponse(httpClient().postForm(tokenEndpoint(), params, header));
         return buildToken(object);
@@ -58,7 +52,7 @@ public class AuthMaxKeyRequest extends AbstractAuthServerRequest {
                 .get(userInfoUrl(authToken), null, header, false));
         return AuthUser.builder()
                 .rawUserInfo(object)
-                .uuid(firstNotEmpty(object, "userId", Keys.USERINFO.USERID, Keys.USERINFO.SUB))
+                .uuid(String.valueOf(getIntValue(object, "userId")))
                 .username(getStringValue(object, Keys.USERINFO.USERNAME))
                 .nickname(getStringValue(object, "displayName"))
                 .avatar(getStringValue(object, Keys.USERINFO.AVATAR_URL))
