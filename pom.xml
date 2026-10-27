@@ -6,7 +6,7 @@
 
     <groupId>org.dromara.anduin</groupId>
     <artifactId>dromara-anduin</artifactId>
-    <version>2.1.0</version>
+    <version>1.0.0</version>
 
     <name>anduin</name>
     <url>https://github.com/dromara/anduin</url>
