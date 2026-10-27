@@ -43,7 +43,7 @@
   - lombok  1.18.48
   - slf4j  2.0.20
 
-## 1.16.7 2024/12/14 yadong.zhang/JustAuth
+## fork版本 1.16.7 2024/12/14 yadong.zhang/JustAuth
 
 - 新增
   - 添加`微信小程序`登录能力，对接文档：[点击查看](https://justauth.cn/guide/oauth/wechat_mini_program/)。
@@ -64,4 +64,4 @@
 - 其他
   -  补充单侧，[Gitee#39](https://gitee.com/yadong.zhang/JustAuth/pulls/39)
 
-## fork版本 [yadong.zhang/JustAuth/CHANGELOGS](https://gitee.com/yadong.zhang/JustAuth/blob/master/CHANGELOGS.md)
+## 1.16.7之前版本 [yadong.zhang/JustAuth/CHANGELOGS](https://gitee.com/yadong.zhang/JustAuth/blob/master/CHANGELOGS.md)
