@@ -1,6 +1,7 @@
 package org.dromara.anduin.http;
 
 import lombok.Setter;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
@@ -61,6 +62,21 @@ public class UrlBuilder {
         }
         String valueAsString = (value != null ? value.toString() : null);
         this.params.put(key, valueAsString);
+
+        return this;
+    }
+
+    /**
+     * 添加参数
+     *
+     * @param params 参数 Map
+     * @return this UrlBuilder
+     */
+    public UrlBuilder queryParams(Map<String, String> params) {
+        if (MapUtils.isEmpty(params)) {
+            throw new RuntimeException("参数名不能为空");
+        }
+        this.params.putAll(params);
 
         return this;
     }
