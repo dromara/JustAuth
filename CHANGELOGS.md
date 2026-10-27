@@ -64,4 +64,4 @@
 - 其他
   -  补充单侧，[Gitee#39](https://gitee.com/yadong.zhang/JustAuth/pulls/39)
 
-## 老版本 [yadong.zhang/JustAuth/CHANGELOGS](https://gitee.com/yadong.zhang/JustAuth/blob/master/CHANGELOGS.md)
+## fork版本 [yadong.zhang/JustAuth/CHANGELOGS](https://gitee.com/yadong.zhang/JustAuth/blob/master/CHANGELOGS.md)
