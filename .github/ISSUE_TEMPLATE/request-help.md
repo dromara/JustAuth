@@ -12,4 +12,4 @@ assignees: ''
 
 ## Environment
 
-- JustAuth version(e.g. `1.15.1`): 
+- Anduin version(e.g. `2.2.0`): 
