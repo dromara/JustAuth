@@ -1,3 +1,10 @@
+## 1.0.0
+- 提取授权码模式获取 Token 参数定义通用方法，去除大量重复代码
+- 提取验证响应通用方法，去除大量重复代码
+- jjwt-jackson 替换为 jjwt-gson，消息对 jackson2 版本的依赖
+- JsonUtils 改用内容 Log 输出，去除对 slf4j 的依赖
+- 删除无用的代码和文件
+
 ## 2.1.0 2026/10/25
 - JDK升级至17
 - 优化 pom 配置 2. 改用 fastjson2 替换原有 fastjson 3. 升级依赖组件和 Maven 组件版本
@@ -35,9 +42,6 @@
   - junit  6.1.3
   - lombok  1.18.48
   - slf4j  2.0.20
-
-
-
 
 ## 1.16.7 2024/12/14 yadong.zhang/JustAuth
 
