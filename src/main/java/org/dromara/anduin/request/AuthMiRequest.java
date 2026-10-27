@@ -8,7 +8,6 @@ import org.dromara.anduin.enums.AuthResponseStatus;
 import org.dromara.anduin.enums.AuthUserGender;
 import org.dromara.anduin.enums.scope.AuthMiScope;
 import org.dromara.anduin.exception.AuthException;
-import org.dromara.anduin.http.HttpConstants;
 import org.dromara.anduin.http.UnifiedHttpClient;
 import org.dromara.anduin.http.UrlBuilder;
 import org.dromara.anduin.log.Log;
@@ -45,7 +44,7 @@ public class AuthMiRequest extends AuthDefaultRequest {
 
     private AuthToken getToken(String accessTokenUrl) {
         String response = UnifiedHttpClient.getAdapter().get(accessTokenUrl).getBody();
-        String jsonStr = response.replace(PREFIX, HttpConstants.EMPTY);
+        String jsonStr = response.replace(PREFIX, "");
 
         JsonNode accessTokenObject = toNode(jsonStr);
         validateResponse(accessTokenObject);

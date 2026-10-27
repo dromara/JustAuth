@@ -130,7 +130,7 @@ abstract class AbstractAuthServerRequest extends AuthDefaultRequest {
             return UnifiedHttpClient.getAdapter();
         }
         if (httpConfig.getTimeout() <= 0) {
-            httpConfig = new HttpConfig(HttpConstants.DEFAULT_TIMEOUT, httpConfig.getProxy());
+            httpConfig = new HttpConfig(3000, httpConfig.getProxy());
         }
         return new JdkHttpAdapter(httpConfig);
     }

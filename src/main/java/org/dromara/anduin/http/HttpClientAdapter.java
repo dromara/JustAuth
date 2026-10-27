@@ -1,6 +1,9 @@
 package org.dromara.anduin.http;
 
+import com.google.common.net.HttpHeaders;
+
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -20,19 +23,19 @@ public interface HttpClientAdapter {
      */
     default AdapterHttpResponse postForm(String url, Map<String, String> params, HttpHeader header) {
         String body = params == null ? "" : params.entrySet().stream()
-                .map(entry -> URLEncoder.encode(entry.getKey(), HttpConstants.DEFAULT_ENCODING) + "="
+                .map(entry -> URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8) + "="
                         + URLEncoder.encode(entry.getValue() == null ? "" : entry.getValue(),
-                        HttpConstants.DEFAULT_ENCODING))
+                        StandardCharsets.UTF_8))
                 .collect(Collectors.joining("&"));
         HttpHeader formHeader = new HttpHeader();
         if (header != null) {
             header.getHeaders().forEach((key, value) -> {
-                if (!HttpConstants.CONTENT_TYPE.equalsIgnoreCase(key)) {
+                if (!HttpHeaders.CONTENT_TYPE.equalsIgnoreCase(key)) {
                     formHeader.add(key, value);
                 }
             });
         }
-        formHeader.add(HttpConstants.CONTENT_TYPE, "application/x-www-form-urlencoded");
+        formHeader.add(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded");
         return post(url, body, formHeader);
     }
 

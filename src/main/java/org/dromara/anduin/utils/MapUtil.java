@@ -2,13 +2,18 @@ package org.dromara.anduin.utils;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.dromara.anduin.http.HttpConstants;
 import org.dromara.anduin.http.HttpUrlEncoding;
 
 import java.util.*;
 import java.util.function.BiConsumer;
 
 public class MapUtil {
+
+    /**
+     * 空字符串
+     */
+    private static final String EMPTY = "";
+
     /**
      * 遍历
      *
@@ -70,7 +75,7 @@ public class MapUtil {
         }
 
         if (!str.contains("&")) {
-            params.put(decode(str, decode), HttpConstants.EMPTY);
+            params.put(decode(str, decode), EMPTY);
             return params;
         }
 
@@ -96,7 +101,7 @@ public class MapUtil {
             else if (c == '&') {
                 if (null == name && pos != i) {
                     // 对于像&a&这类无参数值的字符串，我们将name为a的值设为""
-                    addParam(params, str.substring(pos, i), HttpConstants.EMPTY, decode);
+                    addParam(params, str.substring(pos, i), EMPTY, decode);
                 } else if (name != null) {
                     addParam(params, name, str.substring(pos, i), decode);
                     name = null;
@@ -108,12 +113,12 @@ public class MapUtil {
         // 处理结尾
         if (pos != i) {
             if (name == null) {
-                addParam(params, str.substring(pos, i), HttpConstants.EMPTY, decode);
+                addParam(params, str.substring(pos, i), EMPTY, decode);
             } else {
                 addParam(params, name, str.substring(pos, i), decode);
             }
         } else if (name != null) {
-            addParam(params, name, HttpConstants.EMPTY, decode);
+            addParam(params, name, EMPTY, decode);
         }
 
         return params;

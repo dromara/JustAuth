@@ -1,9 +1,14 @@
 package org.dromara.anduin.http.adapter;
 
+import com.google.common.net.HttpHeaders;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.dromara.anduin.constant.MediaType;
 import org.dromara.anduin.exception.AuthHttpException;
-import org.dromara.anduin.http.*;
+import org.dromara.anduin.http.AdapterHttpResponse;
+import org.dromara.anduin.http.HttpClientAdapter;
+import org.dromara.anduin.http.HttpConfig;
+import org.dromara.anduin.http.HttpHeader;
 import org.dromara.anduin.utils.MapUtil;
 
 import java.io.IOException;
@@ -14,6 +19,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
@@ -25,6 +31,9 @@ import java.util.Map;
  * @author AprilWind
  */
 public class JdkHttpAdapter implements HttpClientAdapter {
+
+    private static final String USER_AGENT_DATA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 HttpClientAdapter";
+
     HttpConfig httpConfig;
     private final HttpClient.Builder clientBuilder;
 
@@ -79,7 +88,7 @@ public class JdkHttpAdapter implements HttpClientAdapter {
      * @param builder HttpRequest.Builder
      */
     private void addHeader(HttpRequest.Builder builder) {
-        builder.header(HttpConstants.USER_AGENT, HttpConstants.USER_AGENT_DATA);
+        builder.header(HttpHeaders.USER_AGENT, USER_AGENT_DATA);
     }
 
     /**
@@ -165,16 +174,15 @@ public class JdkHttpAdapter implements HttpClientAdapter {
         HttpRequest.Builder builder = HttpRequest.newBuilder().uri(URI.create(url)).timeout(Duration.ofMillis(httpConfig.getTimeout()));
 
         if (StringUtils.isNotEmpty(data)) {
-            builder.POST(HttpRequest.BodyPublishers.ofString(data, HttpConstants.DEFAULT_ENCODING));
+            builder.POST(HttpRequest.BodyPublishers.ofString(data, StandardCharsets.UTF_8));
             boolean formBody = header != null && header.getHeaders().entrySet().stream()
-                    .anyMatch(entry -> HttpConstants.CONTENT_TYPE.equalsIgnoreCase(entry.getKey())
+                    .anyMatch(entry -> HttpHeaders.CONTENT_TYPE.equalsIgnoreCase(entry.getKey())
                             && "application/x-www-form-urlencoded".equalsIgnoreCase(entry.getValue()));
             if (!formBody) {
-                builder.header(HttpConstants.CONTENT_ENCODING, HttpConstants.DEFAULT_ENCODING.displayName());
+                builder.header(HttpHeaders.CONTENT_ENCODING, StandardCharsets.UTF_8.displayName());
             }
-            if (header == null || header.getHeaders().keySet().stream()
-                    .noneMatch(HttpConstants.CONTENT_TYPE::equalsIgnoreCase)) {
-                builder.header(HttpConstants.CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON);
+            if (header == null || header.getHeaders().keySet().stream().noneMatch(HttpHeaders.CONTENT_TYPE::equalsIgnoreCase)) {
+                builder.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8);
             }
         } else {
             builder.POST(HttpRequest.BodyPublishers.noBody());

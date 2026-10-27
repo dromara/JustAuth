@@ -5,7 +5,6 @@ import org.dromara.anduin.cache.AuthStateCache;
 import org.dromara.anduin.config.AuthConfig;
 import org.dromara.anduin.constant.Keys;
 import org.dromara.anduin.constant.MediaType;
-import org.dromara.anduin.http.HttpConstants;
 import org.dromara.anduin.http.HttpHeader;
 import org.dromara.anduin.http.UnifiedHttpClient;
 import org.dromara.anduin.http.UrlBuilder;
@@ -104,7 +103,7 @@ public class AuthTwitterRequest extends AuthDefaultRequest {
 
         HttpHeader header = new HttpHeader();
         header.add(HttpHeaders.AUTHORIZATION, headerString);
-        header.add(HttpConstants.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
+        header.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
 
         Map<String, String> params = new HashMap<>(3);
         params.put("oauth_verifier", authCallback.getOauth_verifier());

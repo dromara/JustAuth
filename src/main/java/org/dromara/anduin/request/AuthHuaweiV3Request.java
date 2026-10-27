@@ -1,5 +1,6 @@
 package org.dromara.anduin.request;
 
+import com.google.common.net.HttpHeaders;
 import org.apache.commons.lang3.StringUtils;
 import org.dromara.anduin.cache.AuthStateCache;
 import org.dromara.anduin.config.AuthConfig;
@@ -9,7 +10,6 @@ import org.dromara.anduin.constant.MediaType;
 import org.dromara.anduin.enums.AuthUserGender;
 import org.dromara.anduin.enums.scope.AuthHuaweiV3Scope;
 import org.dromara.anduin.exception.AuthException;
-import org.dromara.anduin.http.HttpConstants;
 import org.dromara.anduin.http.HttpHeader;
 import org.dromara.anduin.http.UnifiedHttpClient;
 import org.dromara.anduin.http.UrlBuilder;
@@ -64,7 +64,7 @@ public class AuthHuaweiV3Request extends AuthDefaultRequest {
         }
 
         HttpHeader header = new HttpHeader();
-        header.add(HttpConstants.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
+        header.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
 
         String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), params, header, false).getBody();
 
@@ -88,7 +88,7 @@ public class AuthHuaweiV3Request extends AuthDefaultRequest {
             params.put("nsp_svc", "GOpen.User.getInfo");
 
             HttpHeader header = new HttpHeader();
-            header.add(HttpConstants.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
+            header.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
 
             String response = UnifiedHttpClient.getAdapter().post(source.userInfo(), params, header, false).getBody();
 
@@ -138,7 +138,7 @@ public class AuthHuaweiV3Request extends AuthDefaultRequest {
         form.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.REFRESH_TOKEN);
 
         HttpHeader header = new HttpHeader();
-        header.add(HttpConstants.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
+        header.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
 
         String response = UnifiedHttpClient.getAdapter().post(source.refresh(), form, header, false).getBody();
         return AuthResponse.<AuthToken>builder().code(SUCCESS.getCode()).data(getAuthToken(response)).build();

@@ -1,6 +1,5 @@
 package org.dromara.anduin.http;
 
-import lombok.Setter;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -12,31 +11,28 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * <p>
- * 构造URL
- * </p>
+ * <p> 构造URL </p>
  *
- * @author yangkai.shen (https://xkcoding.com)
+ * @author yangkai.shen (<a href="https://xkcoding.com">...</a>)
  * @since 1.9.0
  */
-@Setter
 public class UrlBuilder {
 
     private final Map<String, String> params = new LinkedHashMap<>(7);
-    private String baseUrl;
+    private final String baseUrl;
 
-    private UrlBuilder() {
-
+    public UrlBuilder(String baseUrl) {
+        this.baseUrl = baseUrl;
     }
 
     /**
+     * 构造函数
+     *
      * @param baseUrl 基础路径
      * @return the new {@code UrlBuilder}
      */
     public static UrlBuilder fromBaseUrl(String baseUrl) {
-        UrlBuilder builder = new UrlBuilder();
-        builder.setBaseUrl(baseUrl);
-        return builder;
+        return new UrlBuilder(baseUrl);
     }
 
     /**
@@ -100,6 +96,7 @@ public class UrlBuilder {
         if (ObjectUtils.isEmpty(this.params)) {
             return this.baseUrl;
         }
+
         String baseUrl = Strings.CS.appendIfMissing(this.baseUrl, "?", "&");
         String paramString = MapUtil.parseMapToString(this.params, encode);
         return baseUrl + paramString;

@@ -64,17 +64,15 @@ public class AuthWeChatEnterpriseThirdQrcodeRequest extends AbstractAuthWeChatEn
 
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
-        try {
-            String response = doGetAuthorizationCode(accessTokenUrl());
-            JsonNode object = this.checkResponse(response);
-            return AuthToken.builder()
-                    .accessToken(getStringValue(object, "provider_access_token"))
-                    .expireIn(getIntValue(object, Keys.OAUTH2.EXPIRES_IN))
-                    .code(authCallback.getCode())
-                    .build();
-        } catch (Exception e) {
-            throw new AuthException("企业微信获取token失败", e);
-        }
+        String response = doGetAuthorizationCode(accessTokenUrl());
+
+        JsonNode object = this.checkResponse(response);
+
+        return AuthToken.builder()
+                .accessToken(getStringValue(object, "provider_access_token"))
+                .expireIn(getIntValue(object, Keys.OAUTH2.EXPIRES_IN))
+                .code(authCallback.getCode())
+                .build();
     }
 
     @Override

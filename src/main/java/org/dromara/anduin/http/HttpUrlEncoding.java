@@ -6,6 +6,7 @@ import org.dromara.anduin.exception.AuthHttpException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 public class HttpUrlEncoding {
 
@@ -20,7 +21,7 @@ public class HttpUrlEncoding {
             return "";
         }
         try {
-            String encoded = URLEncoder.encode(value, HttpConstants.DEFAULT_ENCODING.displayName());
+            String encoded = URLEncoder.encode(value, StandardCharsets.UTF_8.displayName());
             return encoded.replace("+", "%20").replace("*", "%2A").replace("~", "%7E").replace("/", "%2F");
         } catch (UnsupportedEncodingException e) {
             throw new AuthHttpException("Failed To Encode Uri", e);
@@ -40,7 +41,7 @@ public class HttpUrlEncoding {
             return url;
         }
         try {
-            return URLDecoder.decode(url, HttpConstants.DEFAULT_ENCODING.displayName());
+            return URLDecoder.decode(url, StandardCharsets.UTF_8.displayName());
         } catch (UnsupportedEncodingException e) {
             throw new AuthHttpException("Unsupported encoding", e);
         }

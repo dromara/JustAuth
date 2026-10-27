@@ -1,12 +1,12 @@
 package org.dromara.anduin.request;
 
+import com.google.common.net.HttpHeaders;
 import org.dromara.anduin.cache.AuthStateCache;
 import org.dromara.anduin.config.AuthConfig;
 import org.dromara.anduin.constant.Keys;
 import org.dromara.anduin.constant.MediaType;
 import org.dromara.anduin.enums.AuthUserGender;
 import org.dromara.anduin.enums.scope.AuthStackoverflowScope;
-import org.dromara.anduin.http.HttpConstants;
 import org.dromara.anduin.http.HttpHeader;
 import org.dromara.anduin.http.UnifiedHttpClient;
 import org.dromara.anduin.http.UrlBuilder;
@@ -44,7 +44,7 @@ public class AuthStackOverflowRequest extends AuthDefaultRequest {
         Map<String, String> form = MapUtil.parseStringToMap(accessTokenUrl, false);
 
         HttpHeader header = new HttpHeader();
-        header.add(HttpConstants.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
+        header.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
 
         String response = UnifiedHttpClient.getAdapter().post(accessTokenUrl, form, header, false).getBody();
 

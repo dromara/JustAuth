@@ -9,7 +9,10 @@ import org.dromara.anduin.enums.AuthResponseStatus;
 import org.dromara.anduin.enums.AuthUserGender;
 import org.dromara.anduin.enums.scope.AuthAmazonScope;
 import org.dromara.anduin.exception.AuthException;
-import org.dromara.anduin.http.*;
+import org.dromara.anduin.http.HttpHeader;
+import org.dromara.anduin.http.HttpUrlEncoding;
+import org.dromara.anduin.http.UnifiedHttpClient;
+import org.dromara.anduin.http.UrlBuilder;
 import org.dromara.anduin.model.AuthCallback;
 import org.dromara.anduin.model.AuthResponse;
 import org.dromara.anduin.model.AuthToken;
@@ -105,7 +108,7 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
     private AuthToken getToken(Map<String, String> param, String url) {
         HttpHeader header = new HttpHeader();
         header.add(HttpHeaders.HOST, "api.amazon.com");
-        header.add(HttpConstants.CONTENT_TYPE, "application/x-www-form-urlencoded;charset=UTF-8");
+        header.add(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded;charset=UTF-8");
 
         String response = UnifiedHttpClient.getAdapter().post(url, param, header, false).getBody();
 

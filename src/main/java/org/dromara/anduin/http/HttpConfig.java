@@ -13,7 +13,7 @@ public class HttpConfig {
     /**
      * 超时时长，单位毫秒
      */
-    int timeout = HttpConstants.DEFAULT_TIMEOUT;
+    int timeout = 3000;
 
     /**
      * 代理配置
