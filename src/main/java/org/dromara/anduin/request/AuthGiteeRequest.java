@@ -6,7 +6,6 @@ import org.dromara.anduin.config.AuthDefaultSource;
 import org.dromara.anduin.constant.Keys;
 import org.dromara.anduin.enums.AuthUserGender;
 import org.dromara.anduin.enums.scope.AuthGiteeScope;
-import org.dromara.anduin.exception.AuthException;
 import org.dromara.anduin.http.UrlBuilder;
 import org.dromara.anduin.model.AuthCallback;
 import org.dromara.anduin.model.AuthToken;
@@ -35,7 +34,7 @@ public class AuthGiteeRequest extends AuthDefaultRequest {
         String response = doPostAuthorizationCode(authCallback.getCode());
 
         JsonNode accessTokenObject = toNode(response);
-        this.checkResponse(accessTokenObject);
+        validateResponse(accessTokenObject);
 
         return AuthToken.builder()
                 .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
@@ -51,7 +50,7 @@ public class AuthGiteeRequest extends AuthDefaultRequest {
         String userInfo = doGetUserInfo(authToken);
 
         JsonNode userInfoObject = toNode(userInfo);
-        this.checkResponse(userInfoObject);
+        validateResponse(userInfoObject);
 
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
@@ -68,17 +67,6 @@ public class AuthGiteeRequest extends AuthDefaultRequest {
                 .token(authToken)
                 .source(source.toString())
                 .build();
-    }
-
-    /**
-     * 检查响应内容是否正确
-     *
-     * @param object 请求响应内容
-     */
-    private void checkResponse(JsonNode object) {
-        if (containsKey(object, Keys.RESPONSE_FIELDS.ERROR)) {
-            throw new AuthException(getStringValue(object, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
-        }
     }
 
     /**

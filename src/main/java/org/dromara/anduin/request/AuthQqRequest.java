@@ -93,9 +93,8 @@ public class AuthQqRequest extends AuthDefaultRequest {
         String openId = removeSuffix.trim();
 
         JsonNode object = toNode(openId);
-        if (containsKey(object, Keys.RESPONSE_FIELDS.ERROR)) {
-            throw new AuthException(object.get(Keys.RESPONSE_FIELDS.ERROR) + ":" + object.get(Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
-        }
+        validateResponse(object);
+
         authToken.setOpenId(getStringValue(object, Keys.OAUTH2.SCOPES.OPENID));
         if (containsKey(object, Keys.USERINFO.UNIONID)) {
             authToken.setUnionId(getStringValue(object, Keys.USERINFO.UNIONID));

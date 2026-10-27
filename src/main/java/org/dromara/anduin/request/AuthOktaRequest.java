@@ -9,7 +9,6 @@ import org.dromara.anduin.constant.MediaType;
 import org.dromara.anduin.enums.AuthResponseStatus;
 import org.dromara.anduin.enums.AuthUserGender;
 import org.dromara.anduin.enums.scope.AuthOktaScope;
-import org.dromara.anduin.exception.AuthException;
 import org.dromara.anduin.http.HttpHeader;
 import org.dromara.anduin.http.UnifiedHttpClient;
 import org.dromara.anduin.http.UrlBuilder;
@@ -57,7 +56,7 @@ public class AuthOktaRequest extends AuthDefaultRequest {
         String response = UnifiedHttpClient.getAdapter().post(tokenUrl, null, header, false).getBody();
 
         JsonNode accessTokenObject = toNode(response);
-        this.checkResponse(accessTokenObject);
+        validateResponse(accessTokenObject);
 
         return AuthToken.builder()
                 .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
@@ -92,7 +91,7 @@ public class AuthOktaRequest extends AuthDefaultRequest {
         String response = UnifiedHttpClient.getAdapter().post(userInfoUrl(authToken), null, header, false).getBody();
 
         JsonNode userInfoObject = toNode(response);
-        this.checkResponse(userInfoObject);
+        validateResponse(userInfoObject);
 
         JsonNode address = getObjectNode(userInfoObject, Keys.USERINFO.ADDRESS);
         return AuthUser.builder()
@@ -119,12 +118,6 @@ public class AuthOktaRequest extends AuthDefaultRequest {
         UnifiedHttpClient.getAdapter().post(revokeUrl(authToken), params, header, false);
         AuthResponseStatus status = AuthResponseStatus.SUCCESS;
         return AuthResponse.builder().code(status.getCode()).msg(status.getMsg()).build();
-    }
-
-    private void checkResponse(JsonNode object) {
-        if (containsKey(object, Keys.RESPONSE_FIELDS.ERROR)) {
-            throw new AuthException(getStringValue(object, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
-        }
     }
 
     @Override

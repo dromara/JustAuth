@@ -5,7 +5,6 @@ import org.dromara.anduin.config.AuthConfig;
 import org.dromara.anduin.config.AuthDefaultSource;
 import org.dromara.anduin.constant.Keys;
 import org.dromara.anduin.enums.AuthUserGender;
-import org.dromara.anduin.exception.AuthException;
 import org.dromara.anduin.http.UrlBuilder;
 import org.dromara.anduin.model.AuthCallback;
 import org.dromara.anduin.model.AuthToken;
@@ -33,7 +32,7 @@ public class AuthOschinaRequest extends AuthDefaultRequest {
         String response = doPostAuthorizationCode(authCallback.getCode());
 
         JsonNode accessTokenObject = toNode(response);
-        this.checkResponse(accessTokenObject);
+        validateResponse(accessTokenObject);
 
         return AuthToken.builder()
                 .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
@@ -48,7 +47,7 @@ public class AuthOschinaRequest extends AuthDefaultRequest {
         String response = doGetUserInfo(authToken);
 
         JsonNode userInfoObject = toNode(response);
-        this.checkResponse(userInfoObject);
+        validateResponse(userInfoObject);
 
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)
@@ -95,16 +94,5 @@ public class AuthOschinaRequest extends AuthDefaultRequest {
                 .queryParam(Keys.OAUTH2.ACCESS_TOKEN, authToken.getAccessToken())
                 .queryParam("dataType", "json")
                 .build();
-    }
-
-    /**
-     * 检查响应内容是否正确
-     *
-     * @param object 请求响应内容
-     */
-    private void checkResponse(JsonNode object) {
-        if (containsKey(object, Keys.RESPONSE_FIELDS.ERROR)) {
-            throw new AuthException(getStringValue(object, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
-        }
     }
 }

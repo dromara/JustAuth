@@ -72,9 +72,8 @@ public class AuthGitlabRequest extends AuthDefaultRequest {
 
     private void checkResponse(JsonNode object) {
         // oauth/token 验证异常
-        if (containsKey(object, Keys.RESPONSE_FIELDS.ERROR)) {
-            throw new AuthException(getStringValue(object, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
-        }
+        validateResponse(object);
+
         // user 验证异常
         if (containsKey(object, Keys.USERINFO.MESSAGE)) {
             throw new AuthException(getStringValue(object, Keys.USERINFO.MESSAGE));

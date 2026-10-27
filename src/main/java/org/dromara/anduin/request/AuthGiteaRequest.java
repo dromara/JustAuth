@@ -58,7 +58,7 @@ public class AuthGiteaRequest extends AbstractAuthServerRequest {
                 .username(firstNotEmpty(object, Keys.USERINFO.NAME, "login"))
                 .nickname(firstNotEmpty(object, "preferred_username", "full_name", "login"))
                 .avatar(firstNotEmpty(object, "picture", Keys.USERINFO.AVATAR_URL))
-                .email(stringValue(object, Keys.USERINFO.EMAIL))
+                .email(getStringValue(object, Keys.USERINFO.EMAIL))
                 .gender(AuthUserGender.UNKNOWN)
                 .token(authToken)
                 .source(source.toString())

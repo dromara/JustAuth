@@ -54,6 +54,7 @@ public class AuthXmlyRequest extends AuthDefaultRequest {
         params.put(DEVICE_ID, config.getDeviceId());
         params.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE);
         params.put(Keys.OAUTH2.REDIRECT_URI, config.getRedirectUri());
+
         String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), params, true).getBody();
 
         JsonNode accessTokenObject = toNode(response);

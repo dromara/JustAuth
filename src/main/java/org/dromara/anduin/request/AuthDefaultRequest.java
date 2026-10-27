@@ -90,7 +90,7 @@ public abstract class AuthDefaultRequest implements AuthRequest {
     }
 
     /**
-     * 获取 {@link JsonNode} 中指定的数据节点
+     * 获取 {@link JsonNode} 中指定的对象类型数据节点
      *
      * @param jsonNode Node {@link JsonNode}
      * @param key      数据节点对应的 Key 值
@@ -100,6 +100,13 @@ public abstract class AuthDefaultRequest implements AuthRequest {
         return JsonNodeUtils.findObjectNode(jsonNode, key);
     }
 
+    /**
+     * 获取 {@link JsonNode} 中指定的数组类型数据节点
+     *
+     * @param jsonNode Node {@link JsonNode}
+     * @param key      数据节点对应的 Key 值
+     * @return 数据节点 {@link JsonNode}
+     */
     protected JsonNode getArrayNode(JsonNode jsonNode, String key) {
         return JsonNodeUtils.findArrayNode(jsonNode, key);
     }
@@ -114,22 +121,57 @@ public abstract class AuthDefaultRequest implements AuthRequest {
         return getObjectNode(jsonNode, Keys.RESPONSE_FIELDS.DATA);
     }
 
+    /**
+     * 获取 {@link JsonNode} 中指定的 String 类型值
+     *
+     * @param jsonNode Node {@link JsonNode}
+     * @param key      数据节点对应的 Key 值
+     * @return 字符串值
+     */
     protected String getStringValue(JsonNode jsonNode, String key) {
         return JsonNodeUtils.findStringValue(jsonNode, key);
     }
 
+    /**
+     * 获取 {@link JsonNode} 中指定的 Boolean 类型值
+     *
+     * @param jsonNode Node {@link JsonNode}
+     * @param key      数据节点对应的 Key 值
+     * @return 布尔值
+     */
     protected boolean getBooleanValue(JsonNode jsonNode, String key) {
         return JsonNodeUtils.findBooleanValue(jsonNode, key);
     }
 
+    /**
+     * 获取 {@link JsonNode} 中指定的 Boolean 类型值
+     *
+     * @param jsonNode Node {@link JsonNode}
+     * @param key      数据节点对应的 Key 值
+     * @return 整型值
+     */
     protected int getIntValue(JsonNode jsonNode, String key) {
         return JsonNodeUtils.findIntValue(jsonNode, key);
     }
 
+    /**
+     * 获取 {@link JsonNode} 中指定的 Long 类型值
+     *
+     * @param jsonNode Node {@link JsonNode}
+     * @param key      数据节点对应的 Key 值
+     * @return 值
+     */
     protected long getLongValue(JsonNode jsonNode, String key) {
         return JsonNodeUtils.findLongValue(jsonNode, key);
     }
 
+    /**
+     * 检测 {@link JsonNode} 中是否包含指定 Key
+     *
+     * @param jsonNode Node {@link JsonNode}
+     * @param key      数据节点对应的 Key 值
+     * @return {@code true} 包含，{@code false} 未包含
+     */
     protected boolean containsKey(JsonNode jsonNode, String key) {
         return JsonNodeUtils.containsKey(jsonNode, key);
     }
@@ -341,6 +383,19 @@ public abstract class AuthDefaultRequest implements AuthRequest {
 
     protected void checkConfig(AuthConfig config) {
         AuthChecker.checkConfig(config, source);
+    }
+
+    /**
+     * 验证响应是否正确。验证数据中是否包含 error 属性，如果包含，则从中读取 error_description 的值，并抛出异常
+     * <p>
+     * 将包含 error 属性和 error_description 属性的错误响应，认为是标准的错误响应
+     *
+     * @param jsonNode 响应数据节点 {@link JsonNode}
+     */
+    protected void validateResponse(JsonNode jsonNode) {
+        if (containsKey(jsonNode, Keys.RESPONSE_FIELDS.ERROR)) {
+            throw new AuthException(getStringValue(jsonNode, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
+        }
     }
 
 }

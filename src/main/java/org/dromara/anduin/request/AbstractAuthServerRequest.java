@@ -35,11 +35,11 @@ abstract class AbstractAuthServerRequest extends AuthDefaultRequest {
      */
     protected AuthToken buildToken(JsonNode object) {
         return AuthToken.builder()
-                .accessToken(stringValue(object, Keys.OAUTH2.ACCESS_TOKEN))
-                .refreshToken(stringValue(object, Keys.OAUTH2.REFRESH_TOKEN))
-                .idToken(stringValue(object, Keys.OIDC.ID_TOKEN))
-                .tokenType(stringValue(object, Keys.OAUTH2.TOKEN_TYPE))
-                .scope(stringValue(object, Keys.OAUTH2.SCOPE))
+                .accessToken(getStringValue(object, Keys.OAUTH2.ACCESS_TOKEN))
+                .refreshToken(getStringValue(object, Keys.OAUTH2.REFRESH_TOKEN))
+                .idToken(getStringValue(object, Keys.OIDC.ID_TOKEN))
+                .tokenType(getStringValue(object, Keys.OAUTH2.TOKEN_TYPE))
+                .scope(getStringValue(object, Keys.OAUTH2.SCOPE))
                 .expireIn(getIntValue(object, Keys.OAUTH2.EXPIRES_IN))
                 .build();
     }
@@ -54,11 +54,11 @@ abstract class AbstractAuthServerRequest extends AuthDefaultRequest {
             throw new AuthException("Empty response from OAuth server");
         }
         if (object.has(Keys.RESPONSE_FIELDS.ERROR)) {
-            String message = stringValue(object, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION);
-            throw new AuthException(message == null ? stringValue(object, Keys.RESPONSE_FIELDS.ERROR) : message);
+            String message = getStringValue(object, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION);
+            throw new AuthException(message == null ? getStringValue(object, Keys.RESPONSE_FIELDS.ERROR) : message);
         }
         if (object.has(Keys.USERINFO.MESSAGE)) {
-            throw new AuthException(stringValue(object, Keys.USERINFO.MESSAGE));
+            throw new AuthException(getStringValue(object, Keys.USERINFO.MESSAGE));
         }
     }
 
@@ -103,18 +103,6 @@ abstract class AbstractAuthServerRequest extends AuthDefaultRequest {
     }
 
     /**
-     * 读取标量字段，兼容用户标识为数字的平台。
-     *
-     * @param object 响应对象
-     * @param key    字段名称
-     * @return 字段文本，不存在或非标量时返回 null
-     */
-    protected String stringValue(JsonNode object, String key) {
-        JsonNode value = object.get(key);
-        return value == null || value.isNull() || value.isContainer() ? null : value.asString();
-    }
-
-    /**
      * 按顺序读取第一个非空字段。
      *
      * @param object 响应对象
@@ -123,7 +111,7 @@ abstract class AbstractAuthServerRequest extends AuthDefaultRequest {
      */
     protected String firstNotEmpty(JsonNode object, String... keys) {
         for (String key : keys) {
-            String value = stringValue(object, key);
+            String value = getStringValue(object, key);
             if (value != null && !value.isEmpty()) {
                 return value;
             }

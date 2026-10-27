@@ -115,7 +115,7 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
         String response = UnifiedHttpClient.getAdapter().post(url, param, httpHeader, false).getBody();
 
         JsonNode accessTokenObject = toNode(response);
-        this.checkResponse(accessTokenObject);
+        validateResponse(accessTokenObject);
 
         return AuthToken.builder()
                 .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
@@ -123,17 +123,6 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
                 .refreshToken(getStringValue(accessTokenObject, Keys.OAUTH2.REFRESH_TOKEN))
                 .tokenType(getStringValue(accessTokenObject, Keys.OAUTH2.TOKEN_TYPE))
                 .build();
-    }
-
-    /**
-     * 校验响应内容是否正确
-     *
-     * @param jsonNode 响应内容
-     */
-    private void checkResponse(JsonNode jsonNode) {
-        if (containsKey(jsonNode, Keys.RESPONSE_FIELDS.ERROR)) {
-            throw new AuthException(getStringValue(jsonNode, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION).concat(" ") + getStringValue(jsonNode, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
-        }
     }
 
     /**
@@ -154,7 +143,7 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
         String response = UnifiedHttpClient.getAdapter().get(this.source.userInfo(), new HashMap<>(0), httpHeader, false).getBody();
 
         JsonNode userInfoObject = toNode(response);
-        this.checkResponse(userInfoObject);
+        validateResponse(userInfoObject);
 
         return AuthUser.builder()
                 .rawUserInfo(userInfoObject)

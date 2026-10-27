@@ -8,7 +8,6 @@ import org.dromara.anduin.constant.Keys;
 import org.dromara.anduin.constant.MediaType;
 import org.dromara.anduin.enums.AuthUserGender;
 import org.dromara.anduin.enums.scope.AuthLinkedinScope;
-import org.dromara.anduin.exception.AuthException;
 import org.dromara.anduin.http.HttpHeader;
 import org.dromara.anduin.http.UnifiedHttpClient;
 import org.dromara.anduin.http.UrlBuilder;
@@ -54,7 +53,7 @@ public class AuthLinkedinRequest extends AuthDefaultRequest {
 
         JsonNode userInfoObject = toNode(response);
 
-        this.checkResponse(userInfoObject);
+        validateResponse(userInfoObject);
 
         String userName = getUserName(userInfoObject);
         // 获取用户头像
@@ -145,7 +144,7 @@ public class AuthLinkedinRequest extends AuthDefaultRequest {
                 .getBody();
         JsonNode emailObj = toNode(emailResponse);
 
-        this.checkResponse(emailObj);
+        validateResponse(emailObj);
 
         JsonNode elements = getArrayNode(emailObj, "elements");
         if (elements == null || elements.isEmpty()) {
@@ -168,17 +167,6 @@ public class AuthLinkedinRequest extends AuthDefaultRequest {
     }
 
     /**
-     * 检查响应内容是否正确
-     *
-     * @param object 请求响应内容
-     */
-    private void checkResponse(JsonNode object) {
-        if (containsKey(object, Keys.RESPONSE_FIELDS.ERROR)) {
-            throw new AuthException(getStringValue(object, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION), source);
-        }
-    }
-
-    /**
      * 获取token，适用于获取access_token和刷新token
      *
      * @param accessTokenUrl 实际请求token的地址
@@ -192,7 +180,7 @@ public class AuthLinkedinRequest extends AuthDefaultRequest {
         String response = UnifiedHttpClient.getAdapter().post(accessTokenUrl, null, httpHeader).getBody();
 
         JsonNode accessTokenObject = toNode(response);
-        this.checkResponse(accessTokenObject);
+        validateResponse(accessTokenObject);
 
         return AuthToken.builder()
                 .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))

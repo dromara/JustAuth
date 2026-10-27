@@ -43,9 +43,7 @@ public class AuthWeiboRequest extends AuthDefaultRequest {
         String response = doPostAuthorizationCode(authCallback.getCode());
 
         JsonNode accessTokenObject = toNode(response);
-        if (containsKey(accessTokenObject, Keys.RESPONSE_FIELDS.ERROR)) {
-            throw new AuthException(getStringValue(accessTokenObject, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
-        }
+        validateResponse(accessTokenObject);
 
         return AuthToken.builder()
                 .accessToken(getStringValue(accessTokenObject, Keys.OAUTH2.ACCESS_TOKEN))
@@ -64,6 +62,7 @@ public class AuthWeiboRequest extends AuthDefaultRequest {
         HttpHeader httpHeader = new HttpHeader();
         httpHeader.add(HttpHeaders.AUTHORIZATION, TokenUtils.oauth2(oauthParam));
         httpHeader.add("API-RemoteIP", IpUtils.getLocalIp());
+
         String userInfo = UnifiedHttpClient.getAdapter().get(userInfoUrl(authToken), null, httpHeader, false).getBody();
 
         JsonNode userInfoObject = toNode(userInfo);

@@ -131,8 +131,7 @@ public class AuthElemeRequest extends AuthDefaultRequest {
         String response = UnifiedHttpClient.getAdapter().post(source.refresh(), params, httpHeader, false).getBody();
 
         JsonNode refreshTokenObject = toNode(response);
-
-        this.checkResponse(refreshTokenObject);
+        validateResponse(refreshTokenObject);
 
         return AuthResponse.<AuthToken>builder()
                 .code(AuthResponseStatus.SUCCESS.getCode())
@@ -166,11 +165,4 @@ public class AuthElemeRequest extends AuthDefaultRequest {
     private String getRequestId() {
         return (UuidUtils.getUUID() + "|" + System.currentTimeMillis()).toUpperCase();
     }
-
-    private void checkResponse(JsonNode object) {
-        if (containsKey(object, Keys.RESPONSE_FIELDS.ERROR)) {
-            throw new AuthException(getStringValue(object, Keys.RESPONSE_FIELDS.ERROR_DESCRIPTION));
-        }
-    }
-
 }

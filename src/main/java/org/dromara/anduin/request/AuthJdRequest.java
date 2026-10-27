@@ -47,6 +47,7 @@ public class AuthJdRequest extends AuthDefaultRequest {
         params.put("app_secret", config.getClientSecret());
         params.put(Keys.OAUTH2.GRANT_TYPE, Keys.OAUTH2.GRANT_TYPES.AUTHORIZATION_CODE);
         params.put(Keys.OAUTH2.CODE, authCallback.getCode());
+
         String response = UnifiedHttpClient.getAdapter().post(source.accessToken(), params, false).getBody();
 
         JsonNode accessTokenObject = toNode(response);
