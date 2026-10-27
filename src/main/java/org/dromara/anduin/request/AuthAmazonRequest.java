@@ -14,9 +14,9 @@ import org.dromara.anduin.model.AuthCallback;
 import org.dromara.anduin.model.AuthResponse;
 import org.dromara.anduin.model.AuthToken;
 import org.dromara.anduin.model.AuthUser;
+import org.dromara.anduin.utils.AccessTokenUtils;
 import org.dromara.anduin.utils.AuthScopeUtils;
 import org.dromara.anduin.utils.PkceUtil;
-import org.dromara.anduin.utils.TokenUtils;
 import tools.jackson.databind.JsonNode;
 
 import java.util.HashMap;
@@ -103,11 +103,11 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
     }
 
     private AuthToken getToken(Map<String, String> param, String url) {
-        HttpHeader httpHeader = new HttpHeader();
-        httpHeader.add(HttpHeaders.HOST, "api.amazon.com");
-        httpHeader.add(HttpConstants.CONTENT_TYPE, "application/x-www-form-urlencoded;charset=UTF-8");
+        HttpHeader header = new HttpHeader();
+        header.add(HttpHeaders.HOST, "api.amazon.com");
+        header.add(HttpConstants.CONTENT_TYPE, "application/x-www-form-urlencoded;charset=UTF-8");
 
-        String response = UnifiedHttpClient.getAdapter().post(url, param, httpHeader, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(url, param, header, false).getBody();
 
         JsonNode accessTokenObject = toNode(response);
         validateResponse(accessTokenObject);
@@ -131,11 +131,11 @@ public class AuthAmazonRequest extends AuthDefaultRequest {
         String accessToken = authToken.getAccessToken();
         this.checkToken(accessToken);
 
-        HttpHeader httpHeader = new HttpHeader();
-        httpHeader.add(HttpHeaders.HOST, "api.amazon.com");
-        httpHeader.add(HttpHeaders.AUTHORIZATION, TokenUtils.bearer(accessToken));
+        HttpHeader header = new HttpHeader();
+        header.add(HttpHeaders.HOST, "api.amazon.com");
+        header.add(HttpHeaders.AUTHORIZATION, AccessTokenUtils.bearer(accessToken));
 
-        String response = UnifiedHttpClient.getAdapter().get(this.source.userInfo(), new HashMap<>(0), httpHeader, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().get(this.source.userInfo(), new HashMap<>(0), header, false).getBody();
 
         JsonNode userInfoObject = toNode(response);
         validateResponse(userInfoObject);

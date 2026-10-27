@@ -14,9 +14,9 @@ import org.dromara.anduin.http.UrlBuilder;
 import org.dromara.anduin.model.AuthCallback;
 import org.dromara.anduin.model.AuthToken;
 import org.dromara.anduin.model.AuthUser;
+import org.dromara.anduin.utils.AccessTokenUtils;
 import org.dromara.anduin.utils.AuthScopeUtils;
 import org.dromara.anduin.utils.GlobalAuthUtils;
-import org.dromara.anduin.utils.TokenUtils;
 import tools.jackson.databind.JsonNode;
 
 import java.util.Map;
@@ -54,7 +54,7 @@ public class AuthGithubRequest extends AuthDefaultRequest {
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
         HttpHeader header = new HttpHeader();
-        header.add(HttpHeaders.AUTHORIZATION, TokenUtils.token(authToken.getAccessToken()));
+        header.add(HttpHeaders.AUTHORIZATION, AccessTokenUtils.token(authToken.getAccessToken()));
         String response = UnifiedHttpClient.getAdapter().get(UrlBuilder.fromBaseUrl(source.userInfo()).build(), null, header, false).getBody();
 
         JsonNode userInfoObject = toNode(response);

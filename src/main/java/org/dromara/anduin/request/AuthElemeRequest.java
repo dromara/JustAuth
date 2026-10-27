@@ -15,9 +15,9 @@ import org.dromara.anduin.model.AuthCallback;
 import org.dromara.anduin.model.AuthResponse;
 import org.dromara.anduin.model.AuthToken;
 import org.dromara.anduin.model.AuthUser;
+import org.dromara.anduin.utils.AccessTokenUtils;
 import org.dromara.anduin.utils.GlobalAuthUtils;
 import org.dromara.anduin.utils.JsonUtils;
-import org.dromara.anduin.utils.TokenUtils;
 import org.dromara.anduin.utils.UuidUtils;
 import tools.jackson.databind.JsonNode;
 
@@ -84,17 +84,17 @@ public class AuthElemeRequest extends AuthDefaultRequest {
 
         String requestId = this.getRequestId();
 
-        Map<String, Object> paramsMap = new HashMap<>();
-        paramsMap.put("nop", "1.0.0");
-        paramsMap.put(Keys.USERINFO.ID, requestId);
-        paramsMap.put("action", action);
-        paramsMap.put("token", authToken.getAccessToken());
-        paramsMap.put("metas", metasHashMap);
-        paramsMap.put("params", parameters);
-        paramsMap.put("signature", signature);
+        Map<String, Object> params = new HashMap<>();
+        params.put("nop", "1.0.0");
+        params.put(Keys.USERINFO.ID, requestId);
+        params.put("action", action);
+        params.put("token", authToken.getAccessToken());
+        params.put("metas", metasHashMap);
+        params.put("params", parameters);
+        params.put("signature", signature);
 
         HttpHeader httpHeader = this.buildHeader(CONTENT_TYPE_JSON, requestId, false);
-        String response = UnifiedHttpClient.getAdapter().post(source.userInfo(), JsonUtils.toJson(paramsMap), httpHeader).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(source.userInfo(), JsonUtils.toJson(params), httpHeader).getBody();
 
         JsonNode responseObject = toNode(response);
 
@@ -150,16 +150,18 @@ public class AuthElemeRequest extends AuthDefaultRequest {
     }
 
     private HttpHeader buildHeader(String contentType, String requestId, boolean auth) {
-        HttpHeader httpHeader = new HttpHeader();
-        httpHeader.add(HttpHeaders.ACCEPT, "text/xml,text/javascript,text/html");
-        httpHeader.add(HttpHeaders.CONTENT_TYPE, contentType);
-        httpHeader.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
-        httpHeader.add(HttpHeaders.USER_AGENT, "eleme-openapi-java-sdk");
-        httpHeader.add("x-eleme-requestid", requestId);
+
+        HttpHeader header = new HttpHeader();
+        header.add(HttpHeaders.ACCEPT, "text/xml,text/javascript,text/html");
+        header.add(HttpHeaders.CONTENT_TYPE, contentType);
+        header.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
+        header.add(HttpHeaders.USER_AGENT, "eleme-openapi-java-sdk");
+        header.add("x-eleme-requestid", requestId);
+
         if (auth) {
-            httpHeader.add(HttpHeaders.AUTHORIZATION, TokenUtils.basic(config.getClientId(), config.getClientSecret()));
+            header.add(HttpHeaders.AUTHORIZATION, AccessTokenUtils.basic(config.getClientId(), config.getClientSecret()));
         }
-        return httpHeader;
+        return header;
     }
 
     private String getRequestId() {

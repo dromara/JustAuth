@@ -61,6 +61,7 @@ public class AuthAfDianRequest extends AuthDefaultRequest {
      */
     @Override
     public String authorize(String state) {
+
         return UrlBuilder.fromBaseUrl(source.authorize())
                 .queryParam(Keys.OAUTH2.RESPONSE_TYPE, Keys.OAUTH2.CODE)
                 .queryParam(Keys.OAUTH2.SCOPE, "basic")

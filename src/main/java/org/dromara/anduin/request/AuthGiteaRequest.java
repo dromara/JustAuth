@@ -11,7 +11,7 @@ import org.dromara.anduin.http.HttpHeader;
 import org.dromara.anduin.model.AuthCallback;
 import org.dromara.anduin.model.AuthToken;
 import org.dromara.anduin.model.AuthUser;
-import org.dromara.anduin.utils.TokenUtils;
+import org.dromara.anduin.utils.AccessTokenUtils;
 import tools.jackson.databind.JsonNode;
 
 import java.util.Map;
@@ -62,7 +62,7 @@ public class AuthGiteaRequest extends AbstractAuthServerRequest {
     private JsonNode getUserInfoObject(AuthToken authToken) {
         HttpHeader header = new HttpHeader()
                 .add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON)
-                .add(HttpHeaders.AUTHORIZATION, TokenUtils.bearer(authToken.getAccessToken()));
+                .add(HttpHeaders.AUTHORIZATION, AccessTokenUtils.bearer(authToken.getAccessToken()));
         return parseResponse(httpClient()
                 .get(userInfoUrl(authToken), null, header, false));
     }

@@ -14,8 +14,8 @@ import org.dromara.anduin.http.UrlBuilder;
 import org.dromara.anduin.model.AuthCallback;
 import org.dromara.anduin.model.AuthToken;
 import org.dromara.anduin.model.AuthUser;
+import org.dromara.anduin.utils.AccessTokenUtils;
 import org.dromara.anduin.utils.AuthScopeUtils;
-import org.dromara.anduin.utils.TokenUtils;
 import tools.jackson.databind.JsonNode;
 
 
@@ -44,12 +44,12 @@ public class AuthLinkedinRequest extends AuthDefaultRequest {
     public AuthUser getUserInfo(AuthToken authToken) {
         String accessToken = authToken.getAccessToken();
 
-        HttpHeader httpHeader = new HttpHeader();
-        httpHeader.add(HttpHeaders.HOST, "api.linkedin.com");
-        httpHeader.add(HttpHeaders.CONNECTION, "Keep-Alive");
-        httpHeader.add(HttpHeaders.AUTHORIZATION, TokenUtils.bearer(accessToken));
+        HttpHeader header = new HttpHeader();
+        header.add(HttpHeaders.HOST, "api.linkedin.com");
+        header.add(HttpHeaders.CONNECTION, "Keep-Alive");
+        header.add(HttpHeaders.AUTHORIZATION, AccessTokenUtils.bearer(accessToken));
 
-        String response = UnifiedHttpClient.getAdapter().get(userInfoUrl(authToken), null, httpHeader, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().get(userInfoUrl(authToken), null, header, false).getBody();
 
         JsonNode userInfoObject = toNode(response);
 
@@ -135,12 +135,13 @@ public class AuthLinkedinRequest extends AuthDefaultRequest {
      * @return 用户的邮箱地址
      */
     private String getUserEmail(String accessToken) {
-        HttpHeader httpHeader = new HttpHeader();
-        httpHeader.add(HttpHeaders.HOST, "api.linkedin.com");
-        httpHeader.add("Connection", "Keep-Alive");
-        httpHeader.add("Authorization", "Bearer " + accessToken);
 
-        String emailResponse = UnifiedHttpClient.getAdapter().get("https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))", null, httpHeader, false)
+        HttpHeader header = new HttpHeader();
+        header.add(HttpHeaders.HOST, "api.linkedin.com");
+        header.add(HttpHeaders.CONNECTION, HttpHeaders.KEEP_ALIVE);
+        header.add(HttpHeaders.AUTHORIZATION, AccessTokenUtils.bearer(accessToken));
+
+        String emailResponse = UnifiedHttpClient.getAdapter().get("https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))", null, header, false)
                 .getBody();
         JsonNode emailObj = toNode(emailResponse);
 
@@ -173,11 +174,12 @@ public class AuthLinkedinRequest extends AuthDefaultRequest {
      * @return token对象
      */
     private AuthToken getToken(String accessTokenUrl) {
-        HttpHeader httpHeader = new HttpHeader();
-        httpHeader.add(HttpHeaders.HOST, "www.linkedin.com");
-        httpHeader.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
 
-        String response = UnifiedHttpClient.getAdapter().post(accessTokenUrl, null, httpHeader).getBody();
+        HttpHeader header = new HttpHeader();
+        header.add(HttpHeaders.HOST, "www.linkedin.com");
+        header.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
+
+        String response = UnifiedHttpClient.getAdapter().post(accessTokenUrl, null, header).getBody();
 
         JsonNode accessTokenObject = toNode(response);
         validateResponse(accessTokenObject);

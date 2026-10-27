@@ -51,11 +51,9 @@ public abstract class AbstractAuthMicrosoftRequest extends AuthDefaultRequest {
      * @return token对象
      */
     private AuthToken getToken(String accessTokenUrl) {
-        HttpHeader httpHeader = new HttpHeader();
-
         Map<String, String> form = MapUtil.parseStringToMap(accessTokenUrl, false);
 
-        String response = UnifiedHttpClient.getAdapter().post(accessTokenUrl, form, httpHeader, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(accessTokenUrl, form, false).getBody();
 
         JsonNode accessTokenObject = toNode(response);
         validateResponse(accessTokenObject);

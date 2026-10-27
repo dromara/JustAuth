@@ -18,8 +18,8 @@ import org.dromara.anduin.model.AuthCallback;
 import org.dromara.anduin.model.AuthResponse;
 import org.dromara.anduin.model.AuthToken;
 import org.dromara.anduin.model.AuthUser;
+import org.dromara.anduin.utils.AccessTokenUtils;
 import org.dromara.anduin.utils.AuthScopeUtils;
-import org.dromara.anduin.utils.TokenUtils;
 import tools.jackson.databind.JsonNode;
 
 import java.util.List;
@@ -42,8 +42,8 @@ public class AuthSlackRequest extends AuthDefaultRequest {
 
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
-        HttpHeader header = new HttpHeader()
-                .add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
+        HttpHeader header = new HttpHeader();
+        header.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
 
         String response = UnifiedHttpClient.getAdapter()
                 .get(accessTokenUrl(authCallback.getCode()), null, header, false).getBody();
@@ -64,7 +64,7 @@ public class AuthSlackRequest extends AuthDefaultRequest {
     public AuthUser getUserInfo(AuthToken authToken) {
         HttpHeader header = new HttpHeader()
                 .add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED)
-                .add(HttpHeaders.AUTHORIZATION, TokenUtils.bearer(authToken.getAccessToken()));
+                .add(HttpHeaders.AUTHORIZATION, AccessTokenUtils.bearer(authToken.getAccessToken()));
 
         String userInfo = UnifiedHttpClient.getAdapter()
                 .get(userInfoUrl(authToken), null, header, false).getBody();
@@ -89,7 +89,7 @@ public class AuthSlackRequest extends AuthDefaultRequest {
     public AuthResponse<?> revoke(AuthToken authToken) {
         HttpHeader header = new HttpHeader()
                 .add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED)
-                .add(HttpHeaders.AUTHORIZATION, TokenUtils.bearer(authToken.getAccessToken()));
+                .add(HttpHeaders.AUTHORIZATION, AccessTokenUtils.bearer(authToken.getAccessToken()));
         String userInfo = UnifiedHttpClient.getAdapter()
                 .get(source.revoke(), null, header, false).getBody();
 

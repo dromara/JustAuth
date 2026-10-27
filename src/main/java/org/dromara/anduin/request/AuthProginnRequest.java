@@ -14,8 +14,6 @@ import org.dromara.anduin.model.AuthUser;
 import org.dromara.anduin.utils.AuthScopeUtils;
 import tools.jackson.databind.JsonNode;
 
-import java.util.Map;
-
 /**
  * 程序员客栈
  *
@@ -35,9 +33,7 @@ public class AuthProginnRequest extends AuthDefaultRequest {
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
 
-        Map<String, String> params = authorizationCodeRequestParams(authCallback);
-
-        String response = UnifiedHttpClient.getAdapter().post(AuthDefaultSource.PROGINN.accessToken(), params, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(AuthDefaultSource.PROGINN.accessToken(), authorizationCodeRequestParams(authCallback), false).getBody();
 
         JsonNode accessTokenObject = toNode(response);
         validateResponse(accessTokenObject);

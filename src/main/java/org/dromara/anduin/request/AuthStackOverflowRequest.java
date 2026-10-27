@@ -43,10 +43,10 @@ public class AuthStackOverflowRequest extends AuthDefaultRequest {
 
         Map<String, String> form = MapUtil.parseStringToMap(accessTokenUrl, false);
 
-        HttpHeader httpHeader = new HttpHeader();
-        httpHeader.add(HttpConstants.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
+        HttpHeader header = new HttpHeader();
+        header.add(HttpConstants.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
 
-        String response = UnifiedHttpClient.getAdapter().post(accessTokenUrl, form, httpHeader, false).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(accessTokenUrl, form, header, false).getBody();
 
         JsonNode accessTokenObject = toNode(response);
         validateResponse(accessTokenObject);

@@ -16,8 +16,8 @@ import org.dromara.anduin.model.AuthCallback;
 import org.dromara.anduin.model.AuthResponse;
 import org.dromara.anduin.model.AuthToken;
 import org.dromara.anduin.model.AuthUser;
+import org.dromara.anduin.utils.AccessTokenUtils;
 import org.dromara.anduin.utils.AuthScopeUtils;
-import org.dromara.anduin.utils.TokenUtils;
 import tools.jackson.databind.JsonNode;
 
 import java.util.HashMap;
@@ -48,10 +48,10 @@ public class AuthOktaRequest extends AuthDefaultRequest {
     }
 
     private AuthToken getAuthToken(String tokenUrl) {
-        HttpHeader header = new HttpHeader()
-                .add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON)
-                .add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED)
-                .add(HttpHeaders.AUTHORIZATION, TokenUtils.basic(config.getClientId(), config.getClientSecret()));
+        HttpHeader header = new HttpHeader();
+        header.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON);
+        header.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
+        header.add(HttpHeaders.AUTHORIZATION, AccessTokenUtils.basic(config.getClientId(), config.getClientSecret()));
 
         String response = UnifiedHttpClient.getAdapter().post(tokenUrl, null, header, false).getBody();
 
@@ -86,7 +86,7 @@ public class AuthOktaRequest extends AuthDefaultRequest {
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
         HttpHeader header = new HttpHeader()
-                .add(HttpHeaders.AUTHORIZATION, TokenUtils.bearer(authToken.getAccessToken()));
+                .add(HttpHeaders.AUTHORIZATION, AccessTokenUtils.bearer(authToken.getAccessToken()));
 
         String response = UnifiedHttpClient.getAdapter().post(userInfoUrl(authToken), null, header, false).getBody();
 
@@ -114,7 +114,7 @@ public class AuthOktaRequest extends AuthDefaultRequest {
         params.put("token_type_hint", Keys.OAUTH2.ACCESS_TOKEN);
 
         HttpHeader header = new HttpHeader()
-                .add(HttpHeaders.AUTHORIZATION, TokenUtils.basic(config.getClientId(), config.getClientSecret()));
+                .add(HttpHeaders.AUTHORIZATION, AccessTokenUtils.basic(config.getClientId(), config.getClientSecret()));
         UnifiedHttpClient.getAdapter().post(revokeUrl(authToken), params, header, false);
         AuthResponseStatus status = AuthResponseStatus.SUCCESS;
         return AuthResponse.builder().code(status.getCode()).msg(status.getMsg()).build();

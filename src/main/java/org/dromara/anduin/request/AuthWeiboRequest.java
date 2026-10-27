@@ -16,9 +16,9 @@ import org.dromara.anduin.model.AuthCallback;
 import org.dromara.anduin.model.AuthResponse;
 import org.dromara.anduin.model.AuthToken;
 import org.dromara.anduin.model.AuthUser;
+import org.dromara.anduin.utils.AccessTokenUtils;
 import org.dromara.anduin.utils.AuthScopeUtils;
 import org.dromara.anduin.utils.IpUtils;
-import org.dromara.anduin.utils.TokenUtils;
 import tools.jackson.databind.JsonNode;
 
 
@@ -59,11 +59,11 @@ public class AuthWeiboRequest extends AuthDefaultRequest {
         String uid = authToken.getUid();
         String oauthParam = String.format("uid=%s&access_token=%s", uid, accessToken);
 
-        HttpHeader httpHeader = new HttpHeader();
-        httpHeader.add(HttpHeaders.AUTHORIZATION, TokenUtils.oauth2(oauthParam));
-        httpHeader.add("API-RemoteIP", IpUtils.getLocalIp());
+        HttpHeader header = new HttpHeader();
+        header.add(HttpHeaders.AUTHORIZATION, AccessTokenUtils.oauth2(oauthParam));
+        header.add("API-RemoteIP", IpUtils.getLocalIp());
 
-        String userInfo = UnifiedHttpClient.getAdapter().get(userInfoUrl(authToken), null, httpHeader, false).getBody();
+        String userInfo = UnifiedHttpClient.getAdapter().get(userInfoUrl(authToken), null, header, false).getBody();
 
         JsonNode userInfoObject = toNode(userInfo);
         if (containsKey(userInfoObject, Keys.RESPONSE_FIELDS.ERROR)) {

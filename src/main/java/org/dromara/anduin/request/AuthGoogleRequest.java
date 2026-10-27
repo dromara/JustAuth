@@ -13,8 +13,8 @@ import org.dromara.anduin.http.UrlBuilder;
 import org.dromara.anduin.model.AuthCallback;
 import org.dromara.anduin.model.AuthToken;
 import org.dromara.anduin.model.AuthUser;
+import org.dromara.anduin.utils.AccessTokenUtils;
 import org.dromara.anduin.utils.AuthScopeUtils;
-import org.dromara.anduin.utils.TokenUtils;
 import tools.jackson.databind.JsonNode;
 
 /**
@@ -51,10 +51,10 @@ public class AuthGoogleRequest extends AuthDefaultRequest {
 
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
-        HttpHeader httpHeader = new HttpHeader();
-        httpHeader.add(HttpHeaders.AUTHORIZATION, TokenUtils.bearer(authToken.getAccessToken()));
+        HttpHeader header = new HttpHeader();
+        header.add(HttpHeaders.AUTHORIZATION, AccessTokenUtils.bearer(authToken.getAccessToken()));
 
-        String response = UnifiedHttpClient.getAdapter().post(userInfoUrl(authToken), null, httpHeader).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(userInfoUrl(authToken), null, header).getBody();
 
         JsonNode userInfoObject = toNode(response);
         validateResponse(userInfoObject);

@@ -60,7 +60,7 @@ public class AuthDingTalkV2Request extends AuthDefaultRequest {
         params.put(Keys.PARAM.CLIENT_SECRET, config.getClientSecret());
         params.put(Keys.OAUTH2.CODE, authCallback.getCode());
 
-        String response = UnifiedHttpClient.getAdapter().post(this.source.accessToken(), JsonUtils.toJson(params)).getBody();
+        String response = UnifiedHttpClient.getAdapter().post(this.source.accessToken(), params, false).getBody();
 
         JsonNode accessTokenObject = toNode(response);
         if (!containsKey(accessTokenObject, "accessToken")) {
