@@ -33,7 +33,6 @@ Dromara Anduin 是Dromara开源社区维护的开源项目，基于`yadong.zhang
 - 自定义 Scope，支持更完善的授权体系。
 - 持续扩展中（[开发计划](https://gitee.com/dromara/anduin/issues)）。
 
-
 ## 快速开始
 
 ### JDK 版本要求 >= 17

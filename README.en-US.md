@@ -121,7 +121,6 @@ AuthRequest authRequest = AuthRequestBuilder.builder()
 
 I look forward to your joining us.
 
-
 ## Change Logs
 
 [CHANGELOGS](https://gitee.com/dromara/anduin/blob/master/CHANGELOGS.md)
