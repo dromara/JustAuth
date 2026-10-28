@@ -124,6 +124,49 @@ AuthRequest authRequest = AuthRequestBuilder.builder()
     .build();
 ```
 
+### 使用 AuthClient 统一门面
+
+`AuthClient` 无需 Spring 等框架依赖。初始化一次后，统一按平台名生成授权地址和处理登录回调；Spring 项目也可以自行将其注册为 Bean。
+
+```java
+import java.util.Map;
+import org.dromara.anduin.AuthClient;
+import org.dromara.anduin.config.AuthConfig;
+import org.dromara.anduin.model.AuthCallback;
+import org.dromara.anduin.model.AuthResponse;
+import org.dromara.anduin.model.AuthUser;
+import org.dromara.anduin.utils.AuthStateUtils;
+
+Map<String, AuthConfig> configs = Map.of("gitee", AuthConfig.builder()
+        .clientId("clientId")
+        .clientSecret("clientSecret")
+        .redirectUri("https://example.com/oauth/callback")
+        .build());
+
+AuthClient client = new AuthClient(configs);
+// 集群部署时传入实现 AuthStateCache 的共享缓存：
+// AuthClient client = new AuthClient(configs, sharedStateCache);
+
+// 授权入口：将浏览器重定向到此 URL
+String url = client.authorize("gitee", AuthStateUtils.createState());
+
+// 回调入口：使用平台实际返回的 code、state
+AuthResponse<AuthUser> response = client.login("gitee", code, state);
+if (!response.ok()) {
+    throw new IllegalStateException(response.getMsg());
+}
+AuthUser authUser = response.getData();
+// 业务方根据 authUser.getSource() 和 authUser.getUuid() 查询本地账号绑定，
+// 校验本地账号状态后，再创建应用会话或签发 token。
+```
+
+- 特殊平台回调应完整绑定到 `AuthCallback`，再调用 `client.login(source, callback)`；不要丢弃 Twitter 的 `oauth_token` / `oauth_verifier`、Apple 的 `user` 等字段。`code/state` 重载仅适用于普通授权码回调。
+- 使用 `client.getAuthRequest(source)` 可访问底层刷新 token、撤销授权等能力。每次调用创建新的请求实例，不缓存请求对象。
+- 未配置缓存时沿用 SDK 的进程内 state 缓存；集群部署必须通过双参数构造方法提供共享缓存，授权和回调使用同一缓存。门面不会关闭或覆盖现有 state 校验配置。
+- 门面仅支持 SDK 内置平台；自定义平台需实现对应请求并使用底层 `AuthRequestBuilder` 扩展入口。平台名忽略大小写，遵循现有 `AuthRequestBuilder` 的平台名称，不提供若依平台别名；重复的大小写配置键会被拒绝。
+- 构建时复制配置 Map 的结构，但不深拷贝 `AuthConfig`。构建后不要并发修改配置对象；配置变更时创建新的客户端。
+- 第三方认证成功不等于本地账号登录完成；本地绑定、账号状态及应用会话由业务方负责。原有 Builder 和直接使用 `AuthRequest` 的方式不受影响。
+
 ## 更新日志
 
 - [CHANGELOGS](https://gitee.com/dromara/anduin/blob/master/CHANGELOGS.md)
