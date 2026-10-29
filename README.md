@@ -46,7 +46,7 @@ Dromara Anduin 是Dromara开源社区维护的开源项目，基于`yadong.zhang
 </dependency>
 ```
 
-### 使用JustAuth API
+### 使用 Anduin API
 
 #### 普通方式
 
@@ -66,7 +66,7 @@ authRequest.authorize("your state");
 
 //3. 授权登录回调
 // 授权登录后会返回code（auth_code（仅限支付宝））、state，1.8.0版本后，可以用AuthCallback类作为回调接口的参数
-// 注：JustAuth默认保存state的时效为3分钟，3分钟内未使用则会自动清除过期的state
+// 注：Anduin 默认 state 缓存写入后 5 分钟过期；校验不等于原子消费，详见集成说明
 AuthCallback callback = AuthCallback.builder()
         .code("code")
         .state("state")
@@ -166,6 +166,13 @@ AuthUser authUser = response.getData();
 - 门面仅支持 SDK 内置平台；自定义平台需实现对应请求并使用底层 `AuthRequestBuilder` 扩展入口。平台名忽略大小写，遵循现有 `AuthRequestBuilder` 的平台名称，不提供若依平台别名；重复的大小写配置键会被拒绝。
 - 构建时复制配置 Map 的结构，但不深拷贝 `AuthConfig`。构建后不要并发修改配置对象；配置变更时创建新的客户端。
 - 第三方认证成功不等于本地账号登录完成；本地绑定、账号状态及应用会话由业务方负责。原有 Builder 和直接使用 `AuthRequest` 的方式不受影响。
+
+### 平台能力、依赖与部署说明
+
+- [完整内置平台能力表与集成指南](docs/integration.md)：逐个平台列出授权、登录、刷新、撤销实现，追溯继承方法，并区分源码支持、离线测试与真实平台验证。
+- Commons Lang、Commons Collections、Guava、Jackson 3 和 Caffeine 作为核心依赖传递引入；支付宝 SDK、Apple 的 JJWT/Bouncy Castle 为可选平台依赖，使用相应平台前按指南在消费方显式声明。
+- 默认缓存为进程内共享缓存，写入后 **5 分钟**过期，不支持跨节点共享。集群需实现 `AuthStateCache` 并注入双参数构造方法；指南提供不依赖框架的 Redis 命令伪代码和 TTL、日志及 state 非原子消费约束。
+- 注意当前 AFDIAN 映射、QQ 小程序 Builder 入口、Apple 配置生命周期等限制；不能将“有实现”理解为“已完成真实平台联调”。
 
 ## 更新日志
 

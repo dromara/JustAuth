@@ -153,6 +153,13 @@ AuthUser authUser = response.getData();
 - Building a client snapshots the map structure, not the mutable `AuthConfig` values. Do not mutate configuration objects concurrently; create a new client when changing configuration.
 - Third-party authentication does not complete local application login. Account bindings, account status checks, and sessions remain application responsibilities. Existing Builder and direct `AuthRequest` usage remain unchanged.
 
+### Capabilities, Dependencies, And Deployment
+
+- [Full built-in capability table and integration guide](docs/integration.md): authorize/login/refresh/revoke implementations for every built-in key, inherited method tracing, special configuration, and source support versus offline tests versus real-provider verification.
+- Commons Lang, Commons Collections, Guava, Jackson 3, and Caffeine are transitive core dependencies. Alipay SDK and Apple's JJWT/Bouncy Castle dependencies are provider-specific and must be declared explicitly by consumers; the guide includes Maven XML and current versions.
+- The default shared in-process state cache expires entries **5 minutes after write**; it is not shared across nodes. Clustered deployments must inject an `AuthStateCache` implementation through the two-argument constructor. The guide includes framework-neutral Redis pseudocode, TTL and logging constraints, and the existing non-atomic state-validation semantics.
+- Review current AFDIAN mapping, QQ mini-program Builder entry, and Apple configuration-lifecycle limitations before use. An implemented method is not proof of successful real-provider integration.
+
 ## Contributions
 
 1. Fork this project to your repository
