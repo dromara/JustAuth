@@ -3,7 +3,6 @@ package org.dromara.anduin.http;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Strings;
 import org.dromara.anduin.utils.MapUtil;
 
 import java.util.Collections;
@@ -97,7 +96,9 @@ public class UrlBuilder {
             return this.baseUrl;
         }
 
-        String baseUrl = Strings.CS.appendIfMissing(this.baseUrl, "?", "&");
+        String separator = this.baseUrl.contains("?") ? "&" : "?";
+        String baseUrl = this.baseUrl.endsWith("?") || this.baseUrl.endsWith("&")
+                ? this.baseUrl : this.baseUrl + separator;
         String paramString = MapUtil.parseMapToString(this.params, encode);
         return baseUrl + paramString;
     }
