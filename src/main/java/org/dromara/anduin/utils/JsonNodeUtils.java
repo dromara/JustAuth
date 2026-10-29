@@ -60,7 +60,13 @@ public class JsonNodeUtils {
             return null;
         }
         JsonNode value = jsonNode.findValue(fieldName);
-        return (value != null && !value.isNull() && value.isString()) ? value.asString() : null;
+        if (value == null || value.isNull()) {
+            return null;
+        }
+        if (value.isString()) {
+            return value.asString();
+        }
+        return value.isNumber() || value.isBoolean() ? value.toString() : null;
     }
 
     public static boolean findBooleanValue(JsonNode jsonNode, String fieldName) {
