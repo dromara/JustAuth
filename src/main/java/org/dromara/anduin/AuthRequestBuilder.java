@@ -10,6 +10,7 @@ import org.dromara.anduin.exception.AuthException;
 import org.dromara.anduin.request.AuthDefaultRequest;
 import org.dromara.anduin.request.AuthRequest;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.function.Function;
 
@@ -62,7 +63,8 @@ public class AuthRequestBuilder {
 
     public AuthRequest build() {
         if (StringUtils.isEmpty(this.source) || null == this.authConfig) {
-            throw new AuthException(AuthResponseStatus.NOT_IMPLEMENTED);
+            throw new AuthException(AuthResponseStatus.NOT_IMPLEMENTED.getCode(),
+                    "Missing source or authConfig");
         }
         // 合并 JustAuth 默认的 AuthDefaultSource 和 开发者自定义的 AuthSource
         AuthSource[] sources = this.concat(AuthDefaultSource.values(), extendSource);
@@ -70,22 +72,38 @@ public class AuthRequestBuilder {
         AuthSource source = Arrays.stream(sources).distinct()
                 .filter(authSource -> authSource.getName().equalsIgnoreCase(this.source))
                 .findAny()
-                .orElseThrow(() -> new AuthException(AuthResponseStatus.NOT_IMPLEMENTED));
+                .orElseThrow(() -> new AuthException(AuthResponseStatus.NOT_IMPLEMENTED.getCode(),
+                        "Unknown source: " + this.source));
 
-        Class<? extends AuthDefaultRequest> targetClass = source.getTargetClass();
-        if (null == targetClass) {
-            throw new AuthException(AuthResponseStatus.NOT_IMPLEMENTED);
-        }
+        Class<? extends AuthDefaultRequest> targetClass = null;
         try {
+            targetClass = source.getTargetClass();
+            if (null == targetClass) {
+                throw new AuthException(AuthResponseStatus.NOT_IMPLEMENTED.getCode(),
+                        "No request class for source: " + source.getName());
+            }
             if (this.authStateCache == null) {
                 return targetClass.getDeclaredConstructor(AuthConfig.class).newInstance(this.authConfig);
             } else {
                 return targetClass.getDeclaredConstructor(AuthConfig.class, AuthStateCache.class).newInstance(this.authConfig, this.authStateCache);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new AuthException(AuthResponseStatus.NOT_IMPLEMENTED);
+        } catch (InvocationTargetException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof AuthException) {
+                throw (AuthException) cause;
+            }
+            throw constructionFailure(source, targetClass, cause);
+        } catch (ReflectiveOperationException | SecurityException | LinkageError e) {
+            throw constructionFailure(source, targetClass, e);
         }
+    }
+
+    private AuthException constructionFailure(AuthSource source,
+                                              Class<? extends AuthDefaultRequest> targetClass,
+                                              Throwable cause) {
+        String requestClass = targetClass == null ? "unresolved" : targetClass.getName();
+        return new AuthException("Unable to construct request for source " + source.getName()
+                + " using " + requestClass, cause);
     }
 
     private AuthSource[] concat(AuthSource[] first, AuthSource[] second) {
