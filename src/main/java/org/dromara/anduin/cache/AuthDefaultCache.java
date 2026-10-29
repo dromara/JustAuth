@@ -17,7 +17,7 @@ public class AuthDefaultCache implements AuthCache {
     /**
      * state cache
      */
-    private static Cache<String, String> stateCache = null;
+    private final Cache<String, String> stateCache;
 
     public AuthDefaultCache() {
         stateCache = Caffeine.newBuilder()
